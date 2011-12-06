@@ -7,6 +7,7 @@ import se.l4.aurochs.serialization.format.StreamingInput;
 import se.l4.aurochs.serialization.format.StreamingInput.Token;
 import se.l4.aurochs.serialization.format.StreamingOutput;
 import se.l4.aurochs.serialization.internal.TypeViaResolvedType;
+import se.l4.aurochs.serialization.internal.reflection.FieldDefinition;
 import se.l4.aurochs.serialization.standard.DynamicSerializer;
 
 import com.fasterxml.classmate.MemberResolver;
@@ -14,7 +15,6 @@ import com.fasterxml.classmate.ResolvedType;
 import com.fasterxml.classmate.ResolvedTypeWithMembers;
 import com.fasterxml.classmate.TypeResolver;
 import com.fasterxml.classmate.members.ResolvedField;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -174,67 +174,5 @@ public class ReflectionSerializer<T>
 		}
 		
 		stream.writeObjectEnd(name);
-	}
-
-	private static class FieldDefinition
-	{
-		private final Field field;
-		private final Serializer serializer;
-		private final String name;
-
-		public FieldDefinition(Field field, String name, Serializer serializer)
-		{
-			this.field = field;
-			this.name = name;
-			this.serializer = serializer;
-		}
-		
-		public void read(Object target, StreamingInput in)
-			throws IOException
-		{
-			Object value = serializer.read(in);
-			try
-			{
-				field.set(target, value);
-			}
-			catch(Exception e)
-			{
-				Throwables.propagateIfPossible(e);
-				
-				throw new SerializationException("Unable to read object; " + e.getMessage(), e);
-			}
-		}
-		
-		public Object getValue(Object target)
-		{
-			try
-			{
-				return field.get(target);
-			}
-			catch(IllegalArgumentException e)
-			{
-				throw new SerializationException("Unable to write object; " + e.getMessage(), e);
-			}
-			catch(IllegalAccessException e)
-			{
-				throw new SerializationException("Unable to write object; " + e.getMessage(), e);
-			}
-			
-		}
-		
-		public void write(Object target, StreamingOutput stream)
-			throws IOException
-		{
-			Object value = getValue(target);
-			
-			if(value == null)
-			{
-				stream.writeNull(name);
-			}
-			else
-			{
-				serializer.write(value, name, stream);
-			}
-		}
 	}
 }

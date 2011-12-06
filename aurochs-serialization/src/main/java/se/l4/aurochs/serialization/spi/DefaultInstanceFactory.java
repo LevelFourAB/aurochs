@@ -1,5 +1,7 @@
 package se.l4.aurochs.serialization.spi;
 
+import java.lang.annotation.Annotation;
+
 import se.l4.aurochs.serialization.SerializationException;
 
 /**
@@ -29,4 +31,9 @@ public class DefaultInstanceFactory
 		}
 	}
 
+	@Override
+	public <T> T create(Class<T> type, Annotation[] annotations)
+	{
+		throw new SerializationException("Automatic type creation for parameters with annotations is not supported");
+	}
 }

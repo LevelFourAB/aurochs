@@ -2,6 +2,7 @@ package se.l4.aurochs.serialization.internal.reflection;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 
 import se.l4.aurochs.serialization.SerializationException;
 import se.l4.aurochs.serialization.Serializer;
@@ -21,18 +22,43 @@ public class FieldDefinition
 	private final Field field;
 	private final Serializer serializer;
 	private final String name;
+	private final Class<?> type;
+	private final boolean readOnly;
 
-	public FieldDefinition(Field field, String name, Serializer serializer)
+	public FieldDefinition(Field field, String name, Serializer serializer, Class type)
 	{
 		this.field = field;
 		this.name = name;
 		this.serializer = serializer;
+		this.type = type;
+		readOnly = Modifier.isFinal(field.getModifiers());
+	}
+	
+	public boolean isReadOnly()
+	{
+		return readOnly;
+	}
+	
+	public Class<?> getType()
+	{
+		return type;
+	}
+	
+	public Object read(StreamingInput in)
+		throws IOException
+	{
+		return serializer.read(in);
 	}
 	
 	public void read(Object target, StreamingInput in)
 		throws IOException
 	{
-		Object value = serializer.read(in);
+		set(target, read(in));
+	}
+	
+	public void set(Object target, Object value)
+		throws IOException
+	{
 		try
 		{
 			field.set(target, value);

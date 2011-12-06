@@ -1,19 +1,22 @@
 package se.l4.aurochs.serialization;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
 
-import se.l4.aurochs.serialization.format.StreamingInput;
-import se.l4.aurochs.serialization.format.StreamingInput.Token;
-import se.l4.aurochs.serialization.format.StreamingOutput;
 import se.l4.aurochs.serialization.internal.TypeViaResolvedType;
+import se.l4.aurochs.serialization.internal.reflection.FactoryDefinition;
 import se.l4.aurochs.serialization.internal.reflection.FieldDefinition;
+import se.l4.aurochs.serialization.internal.reflection.ReflectionNonStreamingSerializer;
+import se.l4.aurochs.serialization.internal.reflection.ReflectionStreamingSerializer;
+import se.l4.aurochs.serialization.internal.reflection.TypeInfo;
 import se.l4.aurochs.serialization.standard.DynamicSerializer;
 
 import com.fasterxml.classmate.MemberResolver;
 import com.fasterxml.classmate.ResolvedType;
 import com.fasterxml.classmate.ResolvedTypeWithMembers;
 import com.fasterxml.classmate.TypeResolver;
+import com.fasterxml.classmate.members.ResolvedConstructor;
 import com.fasterxml.classmate.members.ResolvedField;
 import com.google.common.collect.ImmutableMap;
 
@@ -32,20 +35,22 @@ import com.google.common.collect.ImmutableMap;
  * </ul>
  * 
  * @author Andreas Holstenson
- *
- * @param <T>
  */
-public class ReflectionSerializer<T>
-	implements Serializer<T>
+public class ReflectionSerializer
 {
-	private final Class<T> type;
-	private final ImmutableMap<String, FieldDefinition> fields;
-	private final FieldDefinition[] fieldCache;
-
-	public ReflectionSerializer(SerializerCollection collection, Class<T> type)
+	private ReflectionSerializer()
 	{
-		this.type = type;
-		
+	}
+	
+	/**
+	 * Create a new serializer that will use reflection.
+	 * 
+	 * @param type
+	 * @param collection
+	 * @return
+	 */
+	public static <T> Serializer<T> create(Class<T> type, SerializerCollection collection)
+	{
 		// TODO: Support for constructors
 		
 		ImmutableMap.Builder<String, FieldDefinition> builder = ImmutableMap.builder();
@@ -90,89 +95,52 @@ public class ReflectionSerializer<T>
 			
 			// Define how we access this field
 			String name = getName(reflectiveField);
-			FieldDefinition def = new FieldDefinition(reflectiveField, name, serializer);
+			FieldDefinition def = new FieldDefinition(reflectiveField, name, serializer, fieldType.getErasedType());
 			builder.put(name, def);
 		}
 		
-		fields = builder.build();
-		fieldCache = fields.values().toArray(new FieldDefinition[0]);
+		// Create field map and cache
+		ImmutableMap<String, FieldDefinition> fields = builder.build();
+		FieldDefinition[] fieldsCache = fields.values().toArray(new FieldDefinition[0]);
+		
+		// Get all of the factories
+		boolean hasSerializerInFactory = false;
+		List<FactoryDefinition<T>> factories = new ArrayList<FactoryDefinition<T>>();
+		
+		for(ResolvedConstructor constructor : typeWithMembers.getConstructors())
+		{
+			FactoryDefinition<T> def = new FactoryDefinition<T>(collection, fields, constructor);
+			hasSerializerInFactory |= def.hasSerializedFields();
+			
+			factories.add(def);
+		}
+		
+		if(factories.isEmpty())
+		{
+			throw new SerializationException("Unable to create any instance of " + type + ", at least a default constructor is needed");
+		}
+		
+		FactoryDefinition<T>[] factoryCache = factories.toArray(new FactoryDefinition[factories.size()]);
+		
+		// Create the actual serializer to use
+		TypeInfo<T> typeInfo = new TypeInfo<T>(type, factoryCache, fields, fieldsCache);
+		
+		return hasSerializerInFactory 
+			? new ReflectionNonStreamingSerializer<T>(typeInfo)
+			: new ReflectionStreamingSerializer<T>(typeInfo);
 	}
 	
-	private String getName(Field field)
+	private static String getName(Field field)
 	{
-		if(field.isAnnotationPresent(Named.class))
+		if(field.isAnnotationPresent(Expose.class))
 		{
-			Named named = field.getAnnotation(Named.class);
-			if(! named.namespace().isEmpty())
+			Expose annotation = field.getAnnotation(Expose.class);
+			if(! "".equals(annotation.value()))
 			{
-				throw new SerializationException(
-					"Fields can not have namespaces in @" + 
-					Named.class.getSimpleName() + 
-					" (for " + field + ")"
-				);
+				return annotation.value();
 			}
-			
-			return named.name();
 		}
 		
 		return field.getName();
-	}
-	
-	private T createViaDefaultConstructor()
-	{
-		try
-		{
-			return type.newInstance();
-		}
-		catch(InstantiationException e)
-		{
-			throw new SerializationException("Unable to create; " + e.getMessage());
-		}
-		catch(IllegalAccessException e)
-		{
-			throw new SerializationException("Unable to create; " + e.getMessage());
-		}
-	}
-
-	@Override
-	public T read(StreamingInput in)
-		throws IOException
-	{
-		in.next(Token.OBJECT_START);
-		
-		T instance = createViaDefaultConstructor();
-		while(in.peek() != Token.OBJECT_END)
-		{
-			in.next(Token.KEY);
-			String key = in.getString();
-			
-			FieldDefinition def = fields.get(key);
-			if(def == null)
-			{
-				// No such field, skip the entire value
-				in.skipValue();
-			}
-			else
-			{
-				def.read(instance, in);
-			}
-		}
-		
-		in.next(Token.OBJECT_END);
-		return instance;
-	}
-
-	@Override
-	public void write(T object, String name, StreamingOutput stream)
-		throws IOException
-	{
-		stream.writeObjectStart(name);
-		
-		for(FieldDefinition def : fieldCache)
-		{
-			def.write(object, stream);
-		}
-		
-		stream.writeObjectEnd(name);
 	}
 }

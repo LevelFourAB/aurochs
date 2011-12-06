@@ -225,7 +225,7 @@ public class DefaultSerializerCollection
 			Class<? extends Serializer> serializer = annotation.value();
 			if(serializer == ReflectionSerializer.class)
 			{
-				return new ReflectionSerializer(this, from);
+				return ReflectionSerializer.create(from, this);
 			}
 			
 			return instanceFactory.create(annotation.value());

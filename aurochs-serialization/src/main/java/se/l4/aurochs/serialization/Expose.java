@@ -13,9 +13,15 @@ import java.lang.annotation.Target;
  *
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.FIELD })
+@Target({ ElementType.FIELD, ElementType.PARAMETER })
 @Documented
 public @interface Expose
 {
-
+	/**
+	 * Get the name of the exposed value. Default is to automatically resolve
+	 * this.
+	 * 
+	 * @return
+	 */
+	String value() default "";
 }

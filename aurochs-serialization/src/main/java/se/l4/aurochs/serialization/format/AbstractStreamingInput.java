@@ -33,6 +33,7 @@ public abstract class AbstractStreamingInput
 			case OBJECT_START:
 			case LIST_START:
 				level++;
+				break;
 		}
 		
 		return this.token = token;

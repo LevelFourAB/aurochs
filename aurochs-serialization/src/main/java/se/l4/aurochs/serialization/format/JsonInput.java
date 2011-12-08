@@ -296,7 +296,7 @@ public class JsonInput
 			case OBJECT_START:
 			case LIST_START:
 				readNext();
-				lists[level] = token == Token.LIST_START;
+				lists[level + 1] = token == Token.LIST_START;
 				return token;
 			case KEY:
 			{

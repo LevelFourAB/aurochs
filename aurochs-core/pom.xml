@@ -16,8 +16,9 @@
 	
 	<dependencies>
 		<dependency>
-			<groupId>com.google.guava</groupId>
-			<artifactId>guava</artifactId>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>aurochs-config</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 		
 		<dependency>

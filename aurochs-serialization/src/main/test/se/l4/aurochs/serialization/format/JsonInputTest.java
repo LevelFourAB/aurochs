@@ -8,9 +8,6 @@ import java.io.StringReader;
 
 import org.junit.Test;
 
-import se.l4.aurochs.serialization.format.JsonInput;
-import se.l4.aurochs.serialization.format.StreamingInput;
-
 /**
  * Test for {@link JsonInput}. Runs a set of JSON documents and makes sure
  * that we return the correct tokens.
@@ -26,7 +23,7 @@ public class JsonInputTest
 		throws Exception
 	{
 		String v = "\"key\": \"value\"";
-		JsonInput input = createInput(v);
+		StreamingInput input = createInput(v);
 		assertStream(input, KEY, VALUE);
 		
 		input = createInput(v);
@@ -37,7 +34,7 @@ public class JsonInputTest
 	public void testStringQuote()
 		throws Exception
 	{
-		JsonInput input;
+		StreamingInput input;
 		
 		input = createInput("\"key\": \"va\\\"lue\"");
 		assertStreamValues(input, "key", "va\"lue");
@@ -53,7 +50,7 @@ public class JsonInputTest
 	public void testEmptyObject()
 		throws Exception
 	{
-		JsonInput input = createInput("{}");
+		StreamingInput input = createInput("{}");
 		assertStream(input, OBJECT_START, OBJECT_END);
 		
 		input = createInput("{ }");
@@ -64,7 +61,7 @@ public class JsonInputTest
 	public void testEmptyList()
 		throws Exception
 	{
-		JsonInput input = createInput("[]");
+		StreamingInput input = createInput("[]");
 		assertStream(input, LIST_START, LIST_END);
 		
 		input = createInput("[ ]");
@@ -76,7 +73,7 @@ public class JsonInputTest
 		throws Exception
 	{
 		String v = "[ \"one\" ]";
-		JsonInput input = createInput(v);
+		StreamingInput input = createInput(v);
 		assertStream(input, LIST_START, VALUE, LIST_END);
 		
 		input = createInput(v);
@@ -88,7 +85,7 @@ public class JsonInputTest
 		throws Exception
 	{
 		String v = "[ \"one\", \"two\" ]";
-		JsonInput input = createInput(v);
+		StreamingInput input = createInput(v);
 		assertStream(input, LIST_START, VALUE, VALUE, LIST_END);
 		
 		input = createInput(v);
@@ -100,7 +97,7 @@ public class JsonInputTest
 		throws Exception
 	{
 		String v = "{ \"key1\": \"value1\" }";
-		JsonInput input = createInput(v);
+		StreamingInput input = createInput(v);
 		assertStream(input, OBJECT_START, KEY, VALUE, OBJECT_END);
 		
 		input = createInput(v);
@@ -112,7 +109,7 @@ public class JsonInputTest
 		throws Exception
 	{
 		String v = "{ \"key1\": \"value1\", \"key2\": \"value2\" }";
-		JsonInput input = createInput(v);
+		StreamingInput input = createInput(v);
 		assertStream(input, OBJECT_START, KEY, VALUE, KEY, VALUE, OBJECT_END);
 		
 		input = createInput(v);
@@ -124,7 +121,7 @@ public class JsonInputTest
 		throws Exception
 	{
 		String v = "{ \"key1\": \"value1\", \"key2\": [ \"value2\" ] }";
-		JsonInput input = createInput(v);
+		StreamingInput input = createInput(v);
 		assertStream(input, OBJECT_START, KEY, VALUE, KEY, LIST_START, VALUE, LIST_END, OBJECT_END);
 		
 		input = createInput(v);
@@ -136,7 +133,7 @@ public class JsonInputTest
 		throws Exception
 	{
 		String v = "{\"languages\": [],\"fields\": {\"test\": {}}}";
-		JsonInput input = createInput(v);
+		StreamingInput input = createInput(v);
 		assertStream(input, OBJECT_START, KEY, LIST_START, LIST_END, KEY, OBJECT_START, KEY, OBJECT_START, OBJECT_END, OBJECT_END, OBJECT_END);
 		
 		input = createInput(v);
@@ -148,7 +145,7 @@ public class JsonInputTest
 		throws Exception
 	{
 		String v = "{\"languages\": [],\"fields\": {\"test\": {\"type\": \"token\",\"primary\": true}}}";
-		JsonInput input = createInput(v);
+		StreamingInput input = createInput(v);
 		assertStream(input, OBJECT_START, KEY, LIST_START, LIST_END, KEY, OBJECT_START, KEY, 
 			OBJECT_START,
 				KEY, VALUE, // type = token
@@ -165,7 +162,7 @@ public class JsonInputTest
 		throws Exception
 	{
 		String v = "{\"languages\": false,\"fields\": \"value\"}";
-		JsonInput input = createInput(v);
+		StreamingInput input = createInput(v);
 		assertStream(input, OBJECT_START, KEY, VALUE, KEY, VALUE, OBJECT_END); 
 		
 		input = createInput(v);
@@ -177,7 +174,7 @@ public class JsonInputTest
 		throws Exception
 	{
 		String v = "{\"languages\": false,\"fields\": {\"test\": {\"type\": \"token\",\"primary\": true}}}";
-		JsonInput input = createInput(v);
+		StreamingInput input = createInput(v);
 		
 		// Fast forward
 		input.next(OBJECT_START);
@@ -203,7 +200,7 @@ public class JsonInputTest
 		throws Exception
 	{
 		String v = "{ \"key1\": \"value1\", \"key2\": [ \"value2\" ], \"key3\": \"value3\" }";
-		JsonInput input = createInput(v);
+		StreamingInput input = createInput(v);
 		
 		boolean ended = false;
 		input.next(OBJECT_START);
@@ -235,7 +232,7 @@ public class JsonInputTest
 		
 		if(! ended) fail("Did not read of the object");
 	}
-
+	
 	/**
 	 * Assert that the stream contains the specified tokens.
 	 * 
@@ -243,7 +240,7 @@ public class JsonInputTest
 	 * @param tokens
 	 * @throws IOException
 	 */
-	private void assertStream(StreamingInput in, StreamingInput.Token... tokens)
+	protected void assertStream(StreamingInput in, StreamingInput.Token... tokens)
 		throws IOException
 	{
 		int i = 0;
@@ -273,7 +270,7 @@ public class JsonInputTest
 	 * @param values
 	 * @throws IOException
 	 */
-	private void assertStreamValues(StreamingInput in, Object... values)
+	protected void assertStreamValues(StreamingInput in, Object... values)
 		throws IOException
 	{
 		int i = 0;
@@ -300,7 +297,7 @@ public class JsonInputTest
 		}
 	}
 
-	private JsonInput createInput(String in)
+	protected StreamingInput createInput(String in)
 	{
 		return new JsonInput(new StringReader(in));
 	}

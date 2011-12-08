@@ -12,7 +12,7 @@ import java.io.Reader;
  *
  */
 public class JsonInput
-	implements StreamingInput
+	extends AbstractStreamingInput
 {
 	private static final char NULL = 0;
 
@@ -23,10 +23,6 @@ public class JsonInput
 	private int limit;
 	
 	private final boolean[] lists;
-	private int level;
-	
-	private Token token;
-	private Object value;
 	
 	public JsonInput(Reader in)
 	{
@@ -129,7 +125,7 @@ public class JsonInput
 			case ']':
 				return Token.LIST_END;
 			case '"':
-				if(token != Token.KEY && ! lists[level])
+				if(current() != Token.KEY && ! lists[level])
 				{
 					return Token.KEY;
 				}
@@ -287,7 +283,7 @@ public class JsonInput
 	}
 	
 	@Override
-	public Token next()
+	public Token next0()
 		throws IOException
 	{
 		Token token = toToken(peekChar());
@@ -296,14 +292,12 @@ public class JsonInput
 			case OBJECT_END:
 			case LIST_END:
 				readNext();
-				level--;
-				return this.token = token; 
+				return token; 
 			case OBJECT_START:
 			case LIST_START:
 				readNext();
-				level++;
 				lists[level] = token == Token.LIST_START;
-				return this.token = token;
+				return token;
 			case KEY:
 			{
 				readWhitespace();
@@ -314,19 +308,19 @@ public class JsonInput
 					throw new IOException("Expected :, got " + next);
 				}
 				
-				value = key;
-				return this.token = token;
+				setValue(key);
+				return token;
 			}
 			case VALUE:
 			{
-				value = readNextValue();
+				setValue(readNextValue());
 				
 				// Check for trailing commas
 				readWhitespace();
 				char c = peekChar();
 				if(c == ',') read();
 				
-				return this.token = token;
+				return token;
 			}
 		}
 		
@@ -379,120 +373,5 @@ public class JsonInput
 		return null;
 	}
 	
-	@Override
-	public void skipValue()
-		throws IOException
-	{
-		if(token != Token.KEY)
-		{
-			throw new IOException("Value skipping can only be used with when token is " + Token.KEY);
-		}
-		
-		switch(peek())
-		{
-			case LIST_START:
-			case LIST_END:
-			case OBJECT_START:
-			case OBJECT_END:
-				next();
-				skip();
-				break;
-			default:
-				next();
-		}
-	}
 	
-	@Override
-	public void skip()
-		throws IOException
-	{
-		Token stop;
-		switch(token)
-		{
-			case LIST_START:
-				stop = Token.LIST_END;
-				break;
-			case OBJECT_START:
-				stop = Token.OBJECT_END;
-				break;
-			default:
-				throw new IOException("Can only skip when start of object or list, token is now " + token);
-		}
-		
-		int currentLevel = level;
-		
-		Token next = peek();
-		while(true)
-		{
-			// Loop until no more tokens or if we stopped and the level has been reset
-			if(next == null)
-			{
-				throw new IOException("No more tokens, but end of skipped value not found");
-			}
-			else if(next == stop && level == currentLevel)
-			{
-				// Consume this last token
-				next();
-				break;
-			}
-
-			// Read peeked value and peek for next one
-			next();
-			next = peek(); 
-		}
-	}
-	
-	@Override
-	public Token current()
-	{
-		return token;
-	}
-	
-	@Override
-	public Object getValue()
-	{
-		return value;
-	}
-	
-	@Override
-	public String getString()
-	{
-		return (String) value;
-	}
-
-	@Override
-	public boolean getBoolean()
-	{
-		return (Boolean) value;
-	}
-	
-	@Override
-	public double getDouble()
-	{
-		return ((Number) value).doubleValue();
-	}
-	
-	@Override
-	public float getFloat()
-	{
-		return ((Number) value).floatValue();
-	}
-	
-	@Override
-	public long getLong()
-	{
-		return ((Number) value).longValue();
-	}
-	
-	@Override
-	public int getInt()
-	{
-		return ((Number) value).intValue();
-	}
-	
-	@Override
-	public short getShort()
-	{
-		return ((Number) value).shortValue();
-	}
 }

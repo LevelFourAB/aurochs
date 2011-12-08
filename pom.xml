@@ -17,6 +17,8 @@
 
 	<name>Aurochs</name>
 	
+	<url>https://github.com/LevelFourAB/aurochs</url>
+	
 	<description>
 		Aurochs is a collection of libraries that form a basic framework
 		for building applications.
@@ -88,6 +90,12 @@
 			</plugin>
 		</plugins>
 	</build>
+	
+	<scm>
+		<connection>scm:git:git@github.com:LevelFourAB/aurochs.git</connection>
+		<url>git@github.com:LevelFourAB/aurochs.git</url>
+		<developerConnection>scm:git:git@github.com:LevelFourAB/aurochs.git</developerConnection>
+	</scm>
 	
 	<developers>
 		<developer>

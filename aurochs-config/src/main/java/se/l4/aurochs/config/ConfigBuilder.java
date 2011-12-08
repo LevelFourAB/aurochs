@@ -9,6 +9,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.validation.ValidatorFactory;
+
+import org.apache.bval.jsr303.ApacheValidationProvider;
+import org.apache.bval.jsr303.ConfigurationImpl;
+import org.apache.bval.jsr303.DefaultConstraintValidatorFactory;
+import org.apache.bval.jsr303.DefaultMessageInterpolator;
+import org.apache.bval.jsr303.resolver.SimpleTraversableResolver;
+
 import se.l4.aurochs.config.internal.ConfigResolver;
 import se.l4.aurochs.config.internal.DefaultConfig;
 import se.l4.aurochs.config.internal.RawFormatReader;
@@ -123,6 +131,18 @@ public class ConfigBuilder
 		return this;
 	}
 	
+	private ValidatorFactory createValidator()
+	{
+		ApacheValidationProvider provider = new ApacheValidationProvider();
+		
+		ConfigurationImpl config = new ConfigurationImpl(null, provider);
+		config.messageInterpolator(new DefaultMessageInterpolator());
+		config.traversableResolver(new SimpleTraversableResolver());
+		config.constraintValidatorFactory(new DefaultConstraintValidatorFactory());
+		
+		return provider.buildValidatorFactory(config);
+	}
+	
 	/**
 	 * Create the configuration object. This will load any declared input
 	 * files.
@@ -152,6 +172,7 @@ public class ConfigBuilder
 			}
 		}
 		
-		return new DefaultConfig(collection, data);
+		ValidatorFactory validatorFactory = createValidator();
+		return new DefaultConfig(collection, validatorFactory, data);
 	}
 }

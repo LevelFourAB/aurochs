@@ -32,3 +32,33 @@ thumbs: {
 # Override the width
 thumbs.small.width: 150
 ``` 
+
+## Validation
+
+The config library uses JSR-303 Bean Validation to validate objects returned.
+
+Example:
+
+```java
+@Use(ReflectionSerializer.class)
+class Thumbnails {
+	@Expose
+	@NotNull @Valid // should not be null and the value should be validated
+	private Size medium;
+	
+	@Expose
+	@Valid // can be null, but it not the value should be validated
+	private Size large;
+}
+
+@Use(ReflectionSerializer.class)
+class Size {
+	@Expose
+	@Min(10)
+	int width;
+	
+	@Expose
+	@Min(10)
+	int height;
+}
+```

@@ -2,6 +2,13 @@ package se.l4.aurochs.config.internal;
 
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Set;
+
+import javax.validation.ConstraintViolation;
+import javax.validation.Path;
+import javax.validation.Path.Node;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 
 import se.l4.aurochs.config.Config;
 import se.l4.aurochs.config.ConfigException;
@@ -24,10 +31,14 @@ public class DefaultConfig
 {
 	private final SerializerCollection collection;
 	private final Map<String, Object> data;
+	private final ValidatorFactory validatorFactory;
 	
-	public DefaultConfig(SerializerCollection collection, Map<String, Object> data)
+	public DefaultConfig(SerializerCollection collection, 
+			ValidatorFactory validatorFactory, 
+			Map<String, Object> data)
 	{
 		this.collection = collection;
+		this.validatorFactory = validatorFactory;
 		this.data = data;
 	}
 	
@@ -69,6 +80,52 @@ public class DefaultConfig
 		return get(path, type).get();
 	}
 	
+	private void validateInstance(String path, Object object)
+	{
+		Validator validator = validatorFactory.getValidator();
+		Set<ConstraintViolation<Object>> violations = validator.validate(object);
+		
+		if(violations.isEmpty())
+		{
+			// No violations
+			return;
+		}
+		
+		StringBuilder builder = new StringBuilder("Validation failed for " + path + ":\n");
+		
+		for(ConstraintViolation<Object> violation : violations)
+		{
+			builder
+				.append("* ")
+				.append(join(violation.getPropertyPath()))
+				.append(violation.getMessage())
+				.append("\n");
+		}
+		
+		throw new ConfigException(builder.toString());
+	}
+	
+	private String join(Path path)
+	{
+		StringBuilder builder = new StringBuilder();
+		for(Node node : path)
+		{
+			if(builder.length() > 0)
+			{
+				builder.append(".");
+			}
+			
+			builder.append(node.getName());
+		}
+		
+		if(builder.length() > 0)
+		{
+			builder.append(": ");
+		}
+		
+		return builder.toString();
+	}
+	
 	@Override
 	public <T> Value<T> get(String path, Class<T> type)
 	{
@@ -88,7 +145,14 @@ public class DefaultConfig
 		try
 		{
 			T instance = serializer.read(input);
+			
+			validateInstance(path, instance);
+			
 			return new ValueImpl<T>(instance);
+		}
+		catch(ConfigException e)
+		{
+			throw e;
 		}
 		catch(Exception e)
 		{

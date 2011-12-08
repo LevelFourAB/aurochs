@@ -6,6 +6,10 @@ import static org.junit.Assert.*;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
+import javax.validation.Valid;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+
 import org.junit.Test;
 
 import se.l4.aurochs.serialization.DefaultSerializerCollection;
@@ -56,6 +60,42 @@ public class DefaultConfigTest
 		assertThat(thumbs.medium, notNullValue());
 	}
 	
+	@Test
+	public void testInvalidSize()
+	{
+		Config config = ConfigBuilder.with(new DefaultSerializerCollection())
+			.addStream(stream("medium: { width: 100 }\n }"))
+			.build();
+		
+		try
+		{
+			config.get("medium", Size.class);
+			
+			fail("validation should have failed");
+		}
+		catch(ConfigException e)
+		{
+		}
+	}
+	
+	@Test
+	public void testInvalidThumbnailsSize()
+	{
+		Config config = ConfigBuilder.with(new DefaultSerializerCollection())
+			.addStream(stream("thumbnails: { \n medium: { width: 100, height: 4000 }\n }"))
+			.build();
+		
+		try
+		{
+			config.get("thumbnails", Thumbnails.class);
+			
+			fail("validation should have failed");
+		}
+		catch(ConfigException e)
+		{
+		}
+	}
+	
 	private InputStream stream(String in)
 	{
 		return new ByteArrayInputStream(in.getBytes(Charsets.UTF_8));
@@ -64,17 +104,20 @@ public class DefaultConfigTest
 	@Use(ReflectionSerializer.class)
 	public static class Thumbnails
 	{
-		@Expose
+		@Expose @Valid
 		private Size medium;
-		@Expose
+		@Expose @Valid
 		private Size large;
 	}
 	
 	@Use(ReflectionSerializer.class)
 	public static class Size
 	{
+		@Min(1) @Max(1000)
 		@Expose
 		private int width;
+		
+		@Min(1) @Max(1000)
 		@Expose
 		private int height;
 	}

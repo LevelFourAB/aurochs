@@ -62,7 +62,7 @@ public class DefaultConfig
 						.on('.')
 						.join(Arrays.copyOf(parts, i+1));
 					
-					throw new ConfigException("Expected several values at " + subPath + " but only got a single value: " + o);
+					throw new ConfigException("Expected several values at `" + subPath + "` but only got a single value: " + o);
 				}
 			}
 			else
@@ -91,7 +91,7 @@ public class DefaultConfig
 			return;
 		}
 		
-		StringBuilder builder = new StringBuilder("Validation failed for " + path + ":\n");
+		StringBuilder builder = new StringBuilder("Validation failed for `" + path + "`:\n");
 		
 		for(ConstraintViolation<Object> violation : violations)
 		{
@@ -138,7 +138,7 @@ public class DefaultConfig
 		Object data = get(path);
 		if(data == null)
 		{
-			throw new ConfigException("Configuration data for " + path + " is missing");
+			throw new ConfigException("Configuration data for `" + path + "` is missing");
 		}
 		
 		StreamingInput input = MapInput.resolveInput(data);
@@ -156,7 +156,7 @@ public class DefaultConfig
 		}
 		catch(Exception e)
 		{
-			throw new ConfigException("Unable to create " + type + " from data at " + path + "; " + e.getMessage(), e);
+			throw new ConfigException("Unable to create " + type + " from data at `" + path + "`; " + e.getMessage(), e);
 		}
 	}
 	

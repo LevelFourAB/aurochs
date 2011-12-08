@@ -28,6 +28,7 @@
 
 	<modules>
 		<module>aurochs-serialization</module>
+		<module>aurochs-config</module>
 	</modules>
 	
 	<!-- License -->

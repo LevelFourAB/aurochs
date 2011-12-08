@@ -121,6 +121,23 @@ public class ConfigJsonInputTest
 		input = createInput(v);
 		assertStreamValues(input, "key", "value with spaces", "key2", "another value 21.0");
 	}
+	
+	/**
+	 * Test reading with a comment.
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void testMultipleValuesWithComment()
+		throws Exception
+	{
+		String v = "key: value with spaces\n# This is a comment\nkey2: another value 21.0";
+		StreamingInput input = createInput(v);
+		assertStream(input, KEY, VALUE, KEY, VALUE);
+		
+		input = createInput(v);
+		assertStreamValues(input, "key", "value with spaces", "key2", "another value 21.0");
+	}
 
 	protected ConfigJsonInput createInput(String in)
 	{

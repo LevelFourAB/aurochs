@@ -61,6 +61,31 @@ public class ConfigJsonInput
 		}
 	}
 	
+	private void readUntilEndOfLine()
+		throws IOException
+	{
+		while(true)
+		{
+			if(limit - position < 1)
+			{
+				if(! read(1))
+				{
+					return;
+				}
+			}
+			
+			char c = buffer[position];
+			if(c == '\n' || c == '\r')
+			{
+				return;
+			}
+			else
+			{
+				position++;
+			}
+		}
+	}
+	
 	private char readNext()
 		throws IOException
 	{
@@ -303,6 +328,12 @@ public class ConfigJsonInput
 		throws IOException
 	{
 		char peeked = peekChar();
+		if(peeked == '#')
+		{
+			// Comment
+			readUntilEndOfLine();
+		}
+		
 		Token token = toToken(peeked);
 		switch(token)
 		{

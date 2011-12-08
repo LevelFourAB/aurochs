@@ -1,9 +1,12 @@
 package se.l4.aurochs.serialization;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
+import se.l4.aurochs.serialization.format.StreamingInput;
+import se.l4.aurochs.serialization.format.StreamingOutput;
 import se.l4.aurochs.serialization.internal.TypeViaResolvedType;
 import se.l4.aurochs.serialization.internal.reflection.FactoryDefinition;
 import se.l4.aurochs.serialization.internal.reflection.FieldDefinition;
@@ -36,9 +39,22 @@ import com.google.common.collect.ImmutableMap;
  * 
  * @author Andreas Holstenson
  */
-public class ReflectionSerializer
+public class ReflectionSerializer<T>
+	implements Serializer<T>
 {
 	private ReflectionSerializer()
+	{
+	}
+	
+	@Override
+	public T read(StreamingInput in)
+		throws IOException
+	{
+		return null;
+	}
+	
+	public void write(T object, String name, StreamingOutput stream)
+		throws IOException
 	{
 	}
 	

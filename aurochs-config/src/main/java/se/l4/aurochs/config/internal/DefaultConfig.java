@@ -1,6 +1,7 @@
 package se.l4.aurochs.config.internal;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -138,7 +139,8 @@ public class DefaultConfig
 		Object data = get(path);
 		if(data == null)
 		{
-			throw new ConfigException("Configuration data for `" + path + "` is missing");
+			data = new HashMap<String, Object>();
+//			throw new ConfigException("Configuration data for `" + path + "` is missing");
 		}
 		
 		StreamingInput input = MapInput.resolveInput(data);

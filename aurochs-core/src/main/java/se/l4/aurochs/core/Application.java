@@ -2,6 +2,7 @@ package se.l4.aurochs.core;
 
 import java.io.File;
 
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.helpers.NOPLogger;
 
@@ -25,18 +26,43 @@ import com.google.inject.Stage;
  */
 public class Application
 {
+	private final Logger logger;
 	private final Configurator configurator;
 	private final SerializerCollection collection;
 	private final ConfigBuilder configBuilder;
 	
+	/**
+	 * Start an application in {@link Stage#PRODUCTION}.
+	 * 
+	 */
 	public Application()
 	{
 		this(Stage.PRODUCTION);
 	}
 
+	/**
+	 * Start an application in the specified stage.
+	 * 
+	 * @param stage
+	 */
 	public Application(Stage stage)
 	{
-		configurator = new Configurator(stage);
+		this(new Configurator(stage));
+	}
+	
+	/**
+	 * Start an application on the specified configurator. Useful when
+	 * integrating with other frameworks.
+	 * 
+	 * @param configurator
+	 */
+	public Application(Configurator configurator)
+	{
+		this.configurator = configurator;
+		
+		logger = LoggerFactory.getLogger(Application.class);
+		configurator.setLogger(logger);
+		
 		collection = new DefaultSerializerCollection();
 		configBuilder = ConfigBuilder.with(collection);
 	}
@@ -121,7 +147,7 @@ public class Application
 		Injector injector = configurator
 			.setLogger(NOPLogger.NOP_LOGGER)
 			.add(new InternalModule(collection, configBuilder.build()))
-			.setLogger(LoggerFactory.getLogger(Application.class))
+			.setLogger(logger)
 			.configure();
 		
 		return new SystemSessionImpl(injector);

@@ -1,6 +1,7 @@
 package se.l4.aurochs.serialization.format;
 
-import static junit.framework.Assert.*;
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
 import static se.l4.aurochs.serialization.format.StreamingInput.Token.*;
 
 import java.io.ByteArrayInputStream;
@@ -9,6 +10,8 @@ import java.io.IOException;
 
 import org.junit.Before;
 import org.junit.Test;
+
+import com.google.common.base.Charsets;
 
 /**
  * Tests for the binary format. Tests by first writing some values and then
@@ -127,6 +130,31 @@ public class BinaryTest
 	}
 	
 	@Test
+	public void singleString()
+		throws IOException
+	{
+		output.writeObjectStart("");
+		output.write("name", "string");
+		output.writeObjectEnd("");
+		
+		assertStream(OBJECT_START, KEY, VALUE, OBJECT_END);
+		assertStreamValues("name", "string");
+	}
+	
+	@Test
+	public void singleByteArray()
+		throws IOException
+	{
+		byte[] in = "kaka".getBytes(Charsets.UTF_8);
+		output.writeObjectStart("");
+		output.write("name", in);
+		output.writeObjectEnd("");
+		
+		assertStream(OBJECT_START, KEY, VALUE, OBJECT_END);
+		assertStreamValues("name", in);
+	}
+	
+	@Test
 	public void severalObjectValues()
 		throws IOException
 	{
@@ -219,7 +247,7 @@ public class BinaryTest
 						fail("Did not expect more values, but got " + in.getValue());
 					}
 					
-					assertEquals(values[i++], in.getValue());
+					assertThat(values[i++], is(in.getValue()));
 					break;
 			}
 		}

@@ -4,6 +4,8 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.Reader;
 
+import javax.xml.bind.DatatypeConverter;
+
 /**
  * Input for JSON. Please note that this class is not intended for general use
  * and does not strictly conform to the JSON standard.
@@ -373,5 +375,13 @@ public class JsonInput
 		return null;
 	}
 	
-	
+	@Override
+	public byte[] getByteArray()
+	{
+		/*
+		 * JSON uses Base64 strings, so we need to decode on demand.
+		 */
+		String value = getString();
+		return DatatypeConverter.parseBase64Binary(value);
+	}
 }

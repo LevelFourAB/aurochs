@@ -1,12 +1,15 @@
 package se.l4.aurochs.serialization.format;
 
-import static junit.framework.Assert.*;
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
 import static se.l4.aurochs.serialization.format.StreamingInput.Token.*;
 
 import java.io.IOException;
 import java.io.StringReader;
 
 import org.junit.Test;
+
+import com.google.common.base.Charsets;
 
 /**
  * Test for {@link JsonInput}. Runs a set of JSON documents and makes sure
@@ -231,6 +234,18 @@ public class JsonInputTest
 		}
 		
 		if(! ended) fail("Did not read of the object");
+	}
+	
+	@Test
+	public void testBinary()
+		throws Exception
+	{
+		String v = "\"key\": \"a2FrYQ==\"";
+		StreamingInput input = createInput(v);
+		input.next(); // key
+		input.next(); // value
+		
+		assertThat(input.getByteArray(), is("kaka".getBytes(Charsets.UTF_8)));
 	}
 	
 	/**

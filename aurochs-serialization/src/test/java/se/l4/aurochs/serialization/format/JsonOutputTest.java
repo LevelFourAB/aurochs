@@ -8,6 +8,8 @@ import java.io.StringWriter;
 
 import org.junit.Test;
 
+import com.google.common.base.Charsets;
+
 /**
  * Test for {@link JsonOutput}. Writes a few objects and values and verifies
  * that the returned JSON is correct.
@@ -280,6 +282,16 @@ public class JsonOutputTest
 		out.writeListEnd("object");
 		
 		assertStream(out, "[12,\"value\"]");
+	}
+	
+	@Test
+	public void testByteArray()
+		throws IOException
+	{
+		StreamingOutput out = createOutput();
+		out.write("", "kaka".getBytes(Charsets.UTF_8));
+		
+		assertStream(out, "\"a2FrYQ==\"");
 	}
 	
 	private StreamingOutput createOutput()

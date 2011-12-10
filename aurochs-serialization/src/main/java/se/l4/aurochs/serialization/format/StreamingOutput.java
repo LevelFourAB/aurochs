@@ -113,6 +113,16 @@ public interface StreamingOutput
 		throws IOException;
 	
 	/**
+	 * Write a byte array to the output.
+	 * 
+	 * @param name
+	 * @param data
+	 * @throws IOException
+	 */
+	void write(String name, byte[] data)
+		throws IOException;
+	
+	/**
 	 * Write a null value.
 	 * 
 	 * @param name
@@ -121,6 +131,5 @@ public interface StreamingOutput
 	 */
 	void writeNull(String name)
 		throws IOException;
-
 
 }

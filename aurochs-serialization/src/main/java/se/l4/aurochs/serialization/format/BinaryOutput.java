@@ -30,6 +30,7 @@ public class BinaryOutput
 	public static final int TAG_FLOAT = 14;
 	public static final int TAG_DOUBLE = 15;
 	public static final int TAG_BOOLEAN = 16;
+	public static final int TAG_BYTE_ARRAY = 17;
 	
 	private final OutputStream out;
 	
@@ -245,6 +246,16 @@ public class BinaryOutput
 		out.write(b ? 1 : 0);
 	}
 	
+	private void writeByteArray(byte[] data)
+		throws IOException
+	{
+		out.write(TAG_BYTE_ARRAY);
+		
+		writeIntegerNoTag(data.length);
+		
+		out.write(data);
+	}
+	
 	@Override
 	public void writeObjectStart(String name)
 		throws IOException
@@ -357,10 +368,21 @@ public class BinaryOutput
 	}
 	
 	@Override
+	public void write(String name, byte[] data)
+		throws IOException
+	{
+		startWrite();
+		
+		writeName(name);
+		writeByteArray(data);
+	}
+	
+	@Override
 	public void writeNull(String name)
 		throws IOException
 	{
-		write(name, null);
+		writeName(name);
+		writeNull();
 	}
 	
 	@Override

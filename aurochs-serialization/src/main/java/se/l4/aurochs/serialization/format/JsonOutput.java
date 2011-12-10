@@ -20,7 +20,15 @@ public class JsonOutput
 		'0', '1', '2', '3', '4', '5', '6', '7',
 		'8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
 	};
-	  
+	
+	private final static char[] BASE64 = {
+		'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N',
+		'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+		'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
+		'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+		'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '/'
+	};
+	
 	private static final int MAX_LEVELS = 10;
 	
 	protected final Writer writer;
@@ -359,10 +367,86 @@ public class JsonOutput
 	}
 	
 	@Override
+	public void write(String name, byte[] data)
+		throws IOException
+	{
+		startWrite();
+		
+		if(shouldOutputName())
+		{
+			writer.write('"');
+			writeEscaped(name);
+			writer.write('"');
+			writer.write(':');
+		}
+		
+		if(data == null)
+		{
+			writer.write("null");
+			return;
+		}
+		
+		writer.write('"');
+
+		int i = 0;
+		for(int n=data.length - 2; i<n; i+=3)
+		{
+			write(data, i, 3);
+		}
+
+		if(i < data.length)
+		{
+			write(data, i, data.length - i);
+		}
+		
+		writer.write('"');
+	}
+	
+	/**
+	 * Write some BASE64 encoded bytes.
+	 * 
+	 * @param data
+	 * @param pos
+	 * @param chars
+	 * @param len
+	 * @throws IOException
+	 */
+	private void write(byte[] data, int pos, int len)
+		throws IOException
+	{
+		char[] chars = BASE64;
+		
+		int loc = (len > 0 ? (data[pos] << 24) >>> 8 : 0) |
+			(len > 1 ? (data[pos+1] << 24) >>> 16 : 0) |
+			(len > 2 ? (data[pos+2] << 24) >>> 24 : 0);
+		
+		switch(len)
+		{
+			case 3:
+				writer.write(chars[loc >>> 18]);
+				writer.write(chars[(loc >>> 12) & 0x3f]);
+				writer.write(chars[(loc >>> 6) & 0x3f]);
+				writer.write(chars[loc & 0x3f]);
+				break;
+			case 2:
+				writer.write(chars[loc >>> 18]);
+				writer.write(chars[(loc >>> 12) & 0x3f]);
+				writer.write(chars[(loc >>> 6) & 0x3f]);
+				writer.write('=');
+				break;
+			case 1:
+				writer.write(chars[loc >>> 18]);
+				writer.write(chars[(loc >>> 12) & 0x3f]);
+				writer.write('=');
+				writer.write('=');
+		}
+	}
+	
+	@Override
 	public void writeNull(String name)
 		throws IOException
 	{
-		write(name, null);
+		write(name, (String) null);
 	}
 	
 	@Override

@@ -159,7 +159,21 @@ public class BinaryInput
 		
 		return new String(buffer, Charsets.UTF_8);
 	}
-	
+
+	private byte[] readByteArray()
+		throws IOException
+	{
+		int length = readInteger();
+		byte[] buffer = new byte[length];
+		int read = in.read(buffer);
+		
+		if(read != length)
+		{
+			throw new EOFException("Stream ended before entire byte array was sent");
+		}
+		
+		return buffer;
+	}
 	
 	private void readValue()
 		throws IOException
@@ -192,6 +206,9 @@ public class BinaryInput
 			case BinaryOutput.TAG_KEY:
 			case BinaryOutput.TAG_STRING:
 				setValue(readString());
+				break;
+			case BinaryOutput.TAG_BYTE_ARRAY:
+				setValue(readByteArray());
 				break;
 			default:
 				throw new IOException("Unexpected value type, no idea what to do (type was " + peekedByte + ")");

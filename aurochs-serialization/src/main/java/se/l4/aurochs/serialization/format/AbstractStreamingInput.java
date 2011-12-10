@@ -170,4 +170,10 @@ public abstract class AbstractStreamingInput
 	{
 		return ((Number) value).shortValue();
 	}
+	
+	@Override
+	public byte[] getByteArray()
+	{
+		return (byte[]) value;
+	}
 }

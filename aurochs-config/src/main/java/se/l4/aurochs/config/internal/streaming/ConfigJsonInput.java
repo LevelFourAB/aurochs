@@ -4,6 +4,8 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.Reader;
 
+import javax.xml.bind.DatatypeConverter;
+
 import se.l4.aurochs.serialization.format.JsonInput;
 import se.l4.aurochs.serialization.format.StreamingInput;
 
@@ -547,5 +549,15 @@ public class ConfigJsonInput
 	public short getShort()
 	{
 		return ((Number) value).shortValue();
+	}
+	
+	@Override
+	public byte[] getByteArray()
+	{
+		/*
+		 * JSON uses Base64 strings, so we need to decode on demand.
+		 */
+		String value = getString();
+		return DatatypeConverter.parseBase64Binary(value);
 	}
 }

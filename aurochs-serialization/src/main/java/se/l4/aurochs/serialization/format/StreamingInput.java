@@ -150,4 +150,11 @@ public interface StreamingInput
 	 * @return
 	 */
 	short getShort();
+	
+	/**
+	 * Get the value as a byte[] array.
+	 * 
+	 * @return
+	 */
+	byte[] getByteArray();
 }

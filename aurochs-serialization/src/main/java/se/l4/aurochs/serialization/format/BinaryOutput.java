@@ -3,8 +3,6 @@ package se.l4.aurochs.serialization.format;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import com.google.common.base.Charsets;
-
 /**
  * Output for custom binary format.
  * 
@@ -192,9 +190,26 @@ public class BinaryOutput
 	private void writeStringNoTag(String value)
 		throws IOException
 	{
-		byte[] data = value.getBytes(Charsets.UTF_8);
-		writeIntegerNoTag(data.length);
-		out.write(data);
+		writeIntegerNoTag(value.length());
+		for(int i=0, n=value.length(); i<n; i++)
+		{
+			char c = value.charAt(i);
+			if(c >= 0x007f)
+			{
+				out.write((byte) c);
+			}
+			else if(c > 0x007f)
+			{
+				out.write((byte) (0xe0 | c >> 12 & 0x0f));
+				out.write((byte) (0x80 | c >> 6 & 0x3f));
+				out.write((byte) (0x80 | c >> 0 & 0x3f));
+			}
+			else
+			{
+				out.write((byte) (0xc0 | c >> 6 & 0x1f));
+				out.write((byte) (0x80 | c >> 0 & 0x3f));
+			}
+		}
 	}
 	
 	private void writeString(String value)

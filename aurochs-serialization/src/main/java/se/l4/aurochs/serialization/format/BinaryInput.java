@@ -4,8 +4,6 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 
-import com.google.common.base.Charsets;
-
 /**
  * Input for binary format.
  * 
@@ -15,6 +13,16 @@ import com.google.common.base.Charsets;
 public class BinaryInput
 	extends AbstractStreamingInput
 {
+	private static final int CHARS_SIZE = 1024;
+	private static final ThreadLocal<char[]> CHARS = new ThreadLocal<char[]>()
+	{
+		@Override
+		protected char[] initialValue()
+		{
+			return new char[1024];
+		}
+	};
+	
 	private final InputStream in;
 	
 	private final byte[] buffer;
@@ -149,15 +157,29 @@ public class BinaryInput
 		throws IOException
 	{
 		int length = readInteger();
-		byte[] buffer = new byte[length];
-		int read = in.read(buffer);
+		char[] chars = length < CHARS_SIZE ? CHARS.get() : new char[length];
 		
-		if(read != length)
+		for(int i=0; i<length; i++)
 		{
-			throw new EOFException("Stream ended before entire string was sent");
+			int c = in.read() & 0xff;
+			int t = c >> 4;
+			if(t > -1 && t < 8)
+			{
+				chars[i] = (char) c;
+			}
+			else if(t == 12 || t == 13)
+			{
+				chars[i] = (char) ((c & 0x1f) << 6 | in.read() & 0x3f);
+			}
+			else if(t == 14)
+			{
+				chars[i] = (char) ((c & 0x0f) << 12 
+					| (in.read() & 0x3f) << 6
+					| (in.read() & 0x3f) << 0);
+			}
 		}
 		
-		return new String(buffer, Charsets.UTF_8);
+		return new String(chars, 0, length);
 	}
 
 	private byte[] readByteArray()

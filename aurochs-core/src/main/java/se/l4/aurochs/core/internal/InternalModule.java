@@ -1,6 +1,7 @@
 package se.l4.aurochs.core.internal;
 
 import se.l4.aurochs.config.Config;
+import se.l4.aurochs.core.spi.Sessions;
 import se.l4.aurochs.serialization.SerializerCollection;
 import se.l4.crayon.CrayonModule;
 
@@ -27,5 +28,7 @@ public class InternalModule
 	{
 		bind(Config.class).toInstance(config);
 		bind(SerializerCollection.class).toInstance(collection);
+		
+		bind(Sessions.class).to(SessionsImpl.class);
 	}
 }

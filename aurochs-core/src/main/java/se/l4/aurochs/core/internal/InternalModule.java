@@ -4,6 +4,7 @@ import se.l4.aurochs.config.Config;
 import se.l4.aurochs.core.spi.Sessions;
 import se.l4.aurochs.serialization.SerializerCollection;
 import se.l4.crayon.CrayonModule;
+import se.l4.crayon.services.ServicesModule;
 
 /**
  * Module that binds up internal services.
@@ -26,6 +27,8 @@ public class InternalModule
 	@Override
 	protected void configure()
 	{
+		install(new ServicesModule());
+		
 		bind(Config.class).toInstance(config);
 		bind(SerializerCollection.class).toInstance(collection);
 		

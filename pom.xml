@@ -81,6 +81,12 @@
 				<artifactId>crayon-core</artifactId>
 				<version>0.6</version>
 			</dependency>
+			
+			<dependency>
+				<groupId>se.l4.crayon</groupId>
+				<artifactId>crayon-lib-services</artifactId>
+				<version>0.6</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 	

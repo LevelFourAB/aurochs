@@ -27,6 +27,11 @@
 		</dependency>
 		
 		<dependency>
+			<groupId>se.l4.crayon</groupId>
+			<artifactId>crayon-lib-services</artifactId>
+		</dependency>
+		
+		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<scope>test</scope>

@@ -32,6 +32,7 @@
 		<module>aurochs-serialization</module>
 		<module>aurochs-config</module>
 		<module>aurochs-core</module>
+		<module>aurochs-net</module>
 	</modules>
 	
 	<!-- License -->

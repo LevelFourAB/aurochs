@@ -1,6 +1,8 @@
 package se.l4.aurochs.net.internal;
 
 import java.net.InetSocketAddress;
+import java.net.URI;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -18,6 +20,8 @@ import org.jboss.netty.handler.codec.frame.Delimiters;
 import se.l4.aurochs.core.Session;
 import se.l4.aurochs.net.ConnectionException;
 import se.l4.aurochs.net.ServerConnection;
+import se.l4.aurochs.net.hosts.HostSet;
+import se.l4.aurochs.net.hosts.Hosts;
 import se.l4.aurochs.net.internal.handlers.ClientHandshakeHandler;
 import se.l4.aurochs.net.internal.handlers.HandshakeDecoder;
 import se.l4.aurochs.net.internal.handlers.HandshakeEncoder;
@@ -35,7 +39,7 @@ public class ServerConnectionImpl
 	implements ServerConnection
 {
 	private final ClientTransportFunctions functions;
-	private InetSocketAddress address;
+	private HostSet hosts;
 
 	@Inject
 	public ServerConnectionImpl(ClientTransportFunctions functions)
@@ -44,9 +48,21 @@ public class ServerConnectionImpl
 	}
 	
 	@Override
-	public ServerConnection setAddress(String hostname, int port)
+	public ServerConnection setHost(String uri)
 	{
-		this.address = new InetSocketAddress(hostname, port);
+		return setHosts(Hosts.create(uri));
+	}
+	
+	@Override
+	public ServerConnection setHost(URI uri)
+	{
+		return setHosts(Hosts.create(uri));
+	}
+	
+	@Override
+	public ServerConnection setHosts(HostSet hosts)
+	{
+		this.hosts = hosts;
 		
 		return this;
 	}
@@ -54,9 +70,15 @@ public class ServerConnectionImpl
 	public Session connect()
 		throws ConnectionException
 	{
-		if(address == null)
+		if(hosts == null)
 		{
-			throw new IllegalArgumentException("No address specified");
+			throw new IllegalArgumentException("No hosts specified");
+		}
+		
+		Set<URI> hosts = this.hosts.list();
+		if(hosts.isEmpty())
+		{
+			throw new IllegalArgumentException("No hosts specified in set");
 		}
 		
 		ClientBootstrap bootstrap = new ClientBootstrap(
@@ -86,6 +108,11 @@ public class ServerConnectionImpl
 		bootstrap.setOption("tcpNoDelay", true);
 		bootstrap.setOption("keepAlive", true);
 		
+		URI uri = hosts.iterator().next();
+		InetSocketAddress address = new InetSocketAddress(
+			uri.getHost(), 
+			uri.getPort() > 0 ? uri.getPort() : 7400
+		);
 		ChannelFuture cf = bootstrap.connect(address);
 		
 		try

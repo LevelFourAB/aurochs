@@ -1,6 +1,9 @@
 package se.l4.aurochs.net;
 
+import java.net.URI;
+
 import se.l4.aurochs.core.Session;
+import se.l4.aurochs.net.hosts.HostSet;
 
 /**
  * Creator of a connection to a server.
@@ -11,13 +14,28 @@ import se.l4.aurochs.core.Session;
 public interface ServerConnection
 {
 	/**
-	 * Set the address to connect to.
+	 * Set the host to connect to.
 	 * 
-	 * @param hostname
-	 * @param port
+	 * @param uri
 	 * @return
 	 */
-	ServerConnection setAddress(String hostname, int port);
+	ServerConnection setHost(String uri);
+	
+	/**
+	 * Set the host to connect to.
+	 * 
+	 * @param uri
+	 * @return
+	 */
+	ServerConnection setHost(URI uri);
+	
+	/**
+	 * Set a number of hosts to connect to.
+	 * 
+	 * @param hosts
+	 * @return
+	 */
+	ServerConnection setHosts(HostSet hosts);
 	
 	/**
 	 * Establish the connection, blocking until it is established.

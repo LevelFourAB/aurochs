@@ -1,7 +1,10 @@
 package se.l4.aurochs.core.channel;
 
 /**
- * Event for when a channel receives a message.
+ * Event for when a channel receives a message. The event originates from a
+ * {@link #getChannel() channel} but may have a different 
+ * {@link #getReturnPath() return path} that should be used to send answers
+ * to the message.
  * 
  * @author Andreas Holstenson
  *
@@ -10,20 +13,42 @@ package se.l4.aurochs.core.channel;
 public class MessageEvent<T>
 {
 	private final Channel<T> channel;
+	private final Channel<Object> returnPath;
 	private final T object;
 
-	public MessageEvent(Channel<T> channel, T object)
+	public MessageEvent(Channel<T> channel, Channel<?> returnPath, T object)
 	{
 		this.channel = channel;
+		this.returnPath = (Channel) returnPath;
 		this.object = object;
 	}
 
+	/**
+	 * Get the channel where this message was received.
+	 * 
+	 * @return
+	 */
 	public Channel<T> getChannel()
 	{
 		return channel;
 	}
 	
-	public T getObject()
+	/**
+	 * Get a channel that can be used to send a message back to the sender.
+	 * 
+	 * @return
+	 */
+	public Channel<Object> getReturnPath()
+	{
+		return returnPath;
+	}
+
+	/**
+	 * Get the actual object received.
+	 * 
+	 * @return
+	 */
+	public T getMessage()
 	{
 		return object;
 	}
@@ -35,6 +60,8 @@ public class MessageEvent<T>
 		int result = 1;
 		result = prime * result + ((channel == null) ? 0 : channel.hashCode());
 		result = prime * result + ((object == null) ? 0 : object.hashCode());
+		result = prime * result
+				+ ((returnPath == null) ? 0 : returnPath.hashCode());
 		return result;
 	}
 
@@ -61,6 +88,13 @@ public class MessageEvent<T>
 				return false;
 		}
 		else if(!object.equals(other.object))
+			return false;
+		if(returnPath == null)
+		{
+			if(other.returnPath != null)
+				return false;
+		}
+		else if(!returnPath.equals(other.returnPath))
 			return false;
 		return true;
 	}

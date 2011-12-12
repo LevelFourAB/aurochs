@@ -1,8 +1,6 @@
 package se.l4.aurochs.core.spi;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 import org.junit.Test;
 
@@ -28,7 +26,7 @@ public class AbstractChannelTest
 		String message = "message";
 		channel.send(message);
 		
-		verify(listener).messageReceived(new MessageEvent<Object>(channel, message));
+		verify(listener).messageReceived(new MessageEvent<Object>(channel, channel, message));
 	}
 	
 	@Test
@@ -43,7 +41,7 @@ public class AbstractChannelTest
 		String message = "message";
 		channel.send(message);
 		
-		verify(listener, never()).messageReceived(new MessageEvent<Object>(channel, message));
+		verify(listener, never()).messageReceived(new MessageEvent<Object>(channel, channel, message));
 	}
 	
 	@Test
@@ -62,8 +60,8 @@ public class AbstractChannelTest
 		String message = "message";
 		channel.send(message);
 		
-		verify(listener1, never()).messageReceived(new MessageEvent<Object>(channel, message));
-		verify(listener2).messageReceived(new MessageEvent<Object>(channel, message));
+		verify(listener1, never()).messageReceived(new MessageEvent<Object>(channel, channel, message));
+		verify(listener2).messageReceived(new MessageEvent<Object>(channel, channel, message));
 	}
 	
 	@Test
@@ -82,8 +80,8 @@ public class AbstractChannelTest
 		String message = "message";
 		channel.send(message);
 		
-		verify(listener1).messageReceived(new MessageEvent<Object>(channel, message));
-		verify(listener2, never()).messageReceived(new MessageEvent<Object>(channel, message));
+		verify(listener1).messageReceived(new MessageEvent<Object>(channel, channel, message));
+		verify(listener2, never()).messageReceived(new MessageEvent<Object>(channel, channel, message));
 	}
 	
 	
@@ -92,7 +90,7 @@ public class AbstractChannelTest
 	{
 		public void send(T message)
 		{
-			fireMessageReceived(new MessageEvent<T>(this, message));
+			fireMessageReceived(new MessageEvent<T>(this, this, message));
 		}
 	}
 }

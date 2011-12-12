@@ -21,6 +21,6 @@ public class MessagingHandler
 		throws Exception
 	{
 		Object msg = e.getMessage();
-		session.fireMessageReceived(new se.l4.aurochs.core.channel.MessageEvent<Object>(session, msg));
+		session.fireMessageReceived(new se.l4.aurochs.core.channel.MessageEvent<Object>(session, session, msg));
 	}
 }

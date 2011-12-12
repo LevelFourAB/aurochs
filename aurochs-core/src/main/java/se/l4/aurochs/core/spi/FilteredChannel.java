@@ -37,7 +37,7 @@ public class FilteredChannel<T>
 
 	protected void handleMessageReceived(MessageEvent event)
 	{
-		if(predicate.apply(event.getObject()))
+		if(predicate.apply(event.getMessage()))
 		{
 			fireMessageReceived(event);
 		}

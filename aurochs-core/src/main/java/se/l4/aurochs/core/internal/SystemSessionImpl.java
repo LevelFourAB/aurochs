@@ -30,6 +30,6 @@ public class SystemSessionImpl
 	@Override
 	public void send(Object message)
 	{
-		fireMessageReceived(new MessageEvent(this, message));
+		fireMessageReceived(new MessageEvent<Object>(this, this, message));
 	}
 }

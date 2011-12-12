@@ -1,5 +1,6 @@
 package se.l4.aurochs.config.internal;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,6 +18,7 @@ import se.l4.aurochs.config.Value;
 import se.l4.aurochs.config.internal.streaming.MapInput;
 import se.l4.aurochs.serialization.Serializer;
 import se.l4.aurochs.serialization.SerializerCollection;
+import se.l4.aurochs.serialization.WrappedSerializerCollection;
 import se.l4.aurochs.serialization.format.StreamingInput;
 
 import com.google.common.base.Joiner;
@@ -36,11 +38,14 @@ public class DefaultConfig
 	
 	public DefaultConfig(SerializerCollection collection, 
 			ValidatorFactory validatorFactory, 
+			File root, 
 			Map<String, Object> data)
 	{
-		this.collection = collection;
+		this.collection = new WrappedSerializerCollection(collection);
 		this.validatorFactory = validatorFactory;
 		this.data = data;
+		
+		collection.bind(File.class, new FileSerializer(root));
 	}
 	
 	private Object get(String path)

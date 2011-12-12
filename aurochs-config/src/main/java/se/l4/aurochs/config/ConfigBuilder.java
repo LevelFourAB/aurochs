@@ -36,6 +36,8 @@ public class ConfigBuilder
 	private final SerializerCollection collection;
 	private final List<InputSupplier<InputStream>> suppliers;
 	
+	private File root;
+	
 	private ConfigBuilder(SerializerCollection collection)
 	{
 		this.collection = collection;
@@ -52,6 +54,31 @@ public class ConfigBuilder
 	{
 		return new ConfigBuilder(collection);
 	}
+	
+	/**
+	 * Set the root folder of the configuration.
+	 * 
+	 * @param root
+	 * @return
+	 */
+	public ConfigBuilder withRoot(String root)
+	{
+		return withRoot(new File(root));
+	}
+	
+	/**
+	 * Set the root folder of the configuration.
+	 * 
+	 * @param root
+	 * @return
+	 */
+	public ConfigBuilder withRoot(File root)
+	{
+		this.root = root;
+		
+		return this;
+	}
+	
 	
 	/**
 	 * Add a file that should be loaded.
@@ -72,6 +99,11 @@ public class ConfigBuilder
 	 */
 	public ConfigBuilder addFile(final File file)
 	{
+		if(root == null)
+		{
+			root = file.getParentFile();
+		}
+		
 		suppliers.add(new InputSupplier<InputStream>()
 		{
 			@Override
@@ -173,6 +205,6 @@ public class ConfigBuilder
 		}
 		
 		ValidatorFactory validatorFactory = createValidator();
-		return new DefaultConfig(collection, validatorFactory, data);
+		return new DefaultConfig(collection, validatorFactory, root, data);
 	}
 }

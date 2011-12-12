@@ -8,6 +8,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import javax.net.ssl.TrustManager;
+
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelPipeline;
@@ -39,12 +41,20 @@ public class ServerConnectionImpl
 	implements ServerConnection
 {
 	private final ClientTransportFunctions functions;
+	
 	private HostSet hosts;
+	
+	private TLSMode tlsMode;
+	private TrustManager trustManager;
+	
 
 	@Inject
 	public ServerConnectionImpl(ClientTransportFunctions functions)
 	{
 		this.functions = functions;
+		
+		tlsMode = TLSMode.AUTOMATIC;
+		trustManager = SslHelper.TRUSTING;
 	}
 	
 	@Override
@@ -63,6 +73,32 @@ public class ServerConnectionImpl
 	public ServerConnection setHosts(HostSet hosts)
 	{
 		this.hosts = hosts;
+		
+		return this;
+	}
+	
+	@Override
+	public ServerConnection setTLS(TLSMode mode)
+	{
+		if(mode == null)
+		{
+			throw new IllegalArgumentException("TLS mode can not be null");
+		}
+		
+		this.tlsMode = mode;
+		
+		return this;
+	}
+	
+	@Override
+	public ServerConnection setTrustManager(TrustManager trustManager)
+	{
+		if(trustManager == null)
+		{
+			throw new IllegalArgumentException("A trust manager is required");
+		}
+		
+		this.trustManager = trustManager;
 		
 		return this;
 	}
@@ -99,7 +135,7 @@ public class ServerConnectionImpl
 				pipeline.addLast("handshakeDecoder", new HandshakeDecoder());
 				pipeline.addLast("handshakeEncoder", new HandshakeEncoder());
 				
-				pipeline.addLast("handshake", new ClientHandshakeHandler(functions));
+				pipeline.addLast("handshake", new ClientHandshakeHandler(functions, tlsMode, trustManager));
 				
 				return pipeline;
 			}

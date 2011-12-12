@@ -3,6 +3,8 @@ package se.l4.aurochs.net.internal;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
 
+import javax.net.ssl.SSLEngine;
+
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFactory;
@@ -24,6 +26,7 @@ import se.l4.aurochs.net.internal.handlers.ServerHandshakeHandler;
 import se.l4.crayon.services.ManagedService;
 
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 
 /**
  * Server implementation.
@@ -48,7 +51,7 @@ public class Server
 	{
 		this.functions = functions;
 		
-		this.config = config.asObject("transport.server", ServerConfig.class);
+		this.config = config.asObject("net.server", ServerConfig.class);
 		group = new DefaultChannelGroup("aurochs-server-" + this.config.getPort());
 	}
 	
@@ -63,6 +66,10 @@ public class Server
 			Executors.newCachedThreadPool()
 		);
 		ServerBootstrap bootstrap = new ServerBootstrap(factory);
+		
+		final Provider<SSLEngine> engines = config.getTls() != null 
+			? SslHelper.createEngine(config.getTls())
+			: null;
 
 		bootstrap.setPipelineFactory(new ChannelPipelineFactory()
 		{
@@ -74,7 +81,7 @@ public class Server
 				pipeline.addLast("handshakeDecoder", new HandshakeDecoder());
 				pipeline.addLast("handshakeEncoder", new HandshakeEncoder());
 				
-				pipeline.addLast("handshake", new ServerHandshakeHandler(functions));
+				pipeline.addLast("handshake", new ServerHandshakeHandler(functions, engines));
 				
 				pipeline.addLast("server", new ServerHandler(group));
 				
@@ -97,5 +104,11 @@ public class Server
 			factory.releaseExternalResources();
 			channel = null;
 		}
+	}
+	
+	@Override
+	public String toString()
+	{
+		return "Server (port " + config.getPort() + ")";
 	}
 }

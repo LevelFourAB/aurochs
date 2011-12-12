@@ -2,11 +2,14 @@ package se.l4.aurochs.net.internal.handlers;
 
 import java.util.UUID;
 
+import javax.net.ssl.SSLEngine;
+
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelHandler;
+import org.jboss.netty.handler.ssl.SslHandler;
 
 import se.l4.aurochs.net.internal.TransportFunctions;
 import se.l4.aurochs.net.internal.TransportSession;
@@ -17,6 +20,8 @@ import se.l4.aurochs.net.internal.handshake.Ok;
 import se.l4.aurochs.net.internal.handshake.Reject;
 import se.l4.aurochs.net.internal.handshake.SelectCapabilities;
 import se.l4.aurochs.net.internal.handshake.SessionStatus;
+
+import com.google.inject.Provider;
 
 /**
  * Handler for the handshake as seen by a server.
@@ -35,12 +40,14 @@ public class ServerHandshakeHandler
 	}
 
 	private final TransportFunctions functions;
+	private final Provider<SSLEngine> engines;
 	
 	private State state;
 	
-	public ServerHandshakeHandler(TransportFunctions functions)
+	public ServerHandshakeHandler(TransportFunctions functions, Provider<SSLEngine> engines)
 	{
 		this.functions = functions;
+		this.engines = engines;
 		
 		state = State.WAITING_FOR_CAPS;
 	}
@@ -51,7 +58,7 @@ public class ServerHandshakeHandler
 	{
 		Channel channel = e.getChannel();
 		
-		channel.write(new Capabilities("NONE"));
+		channel.write(new Capabilities(engines == null ? "NONE" : "TLS"));
 	}
 	
 	@Override
@@ -66,6 +73,13 @@ public class ServerHandshakeHandler
 			case WAITING_FOR_CAPS:
 				if(msg instanceof SelectCapabilities)
 				{
+					SelectCapabilities caps = (SelectCapabilities) msg;
+					if(caps.isSelected("TLS"))
+					{
+						SslHandler handler = new SslHandler(engines.get(), true);
+						channel.getPipeline().addFirst("ssl", handler);
+					}
+					
 					state = State.WAITING_FOR_AUTH;
 					channel.write(new Ok());
 				}

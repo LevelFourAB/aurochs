@@ -22,6 +22,25 @@ public class SelectCapabilities
 		this.values = values;
 	}
 	
+	/**
+	 * Check if a certain value was selected.
+	 * 
+	 * @param value
+	 * @return
+	 */
+	public boolean isSelected(String value)
+	{
+		for(String s : values)
+		{
+			if(value.equals(s))
+			{
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
 	@Override
 	public String toString()
 	{

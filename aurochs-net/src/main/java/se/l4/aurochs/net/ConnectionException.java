@@ -1,5 +1,11 @@
 package se.l4.aurochs.net;
 
+/**
+ * Exception thrown when a connection can not be established.
+ * 
+ * @author Andreas Holstenson
+ *
+ */
 public class ConnectionException
 	extends Exception
 {

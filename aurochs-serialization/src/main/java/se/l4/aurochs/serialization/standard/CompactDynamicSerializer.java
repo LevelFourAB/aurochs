@@ -46,8 +46,7 @@ public class CompactDynamicSerializer
 		Serializer<?> serializer = collection.find(namespace, name);
 		if(serializer == null)
 		{
-			// TODO: What should we do if we have no serializer?
-			in.skipValue();
+			throw new SerializationException("No serializer found for `" + name + (namespace != null ? "` in `" + namespace + "`" : "`"));
 		}
 		else
 		{

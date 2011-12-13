@@ -52,6 +52,12 @@ public class MessageEvent<T>
 	{
 		return object;
 	}
+	
+	@Override
+	public String toString()
+	{
+		return getClass().getSimpleName() + "[message=" + object + ", channel=" + channel + ", returnPath=" + returnPath + "]";
+	}
 
 	@Override
 	public int hashCode()

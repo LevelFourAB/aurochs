@@ -4,6 +4,7 @@ import java.net.InetSocketAddress;
 import java.net.URI;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -29,6 +30,7 @@ import se.l4.aurochs.net.internal.handlers.HandshakeDecoder;
 import se.l4.aurochs.net.internal.handlers.HandshakeEncoder;
 
 import com.google.common.util.concurrent.SettableFuture;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.Inject;
 
 /**
@@ -124,6 +126,12 @@ public class ServerConnectionImpl
 			)
 		);
 		
+		final ExecutorService executor = Executors.newCachedThreadPool(new ThreadFactoryBuilder()
+			.setNameFormat("aurochs-client-%s " + this.hosts)
+			.setDaemon(true)
+			.build()
+		);
+		
 		// Set up the event pipeline factory.
 		bootstrap.setPipelineFactory(new ChannelPipelineFactory()
 		{
@@ -135,7 +143,7 @@ public class ServerConnectionImpl
 				pipeline.addLast("handshakeDecoder", new HandshakeDecoder());
 				pipeline.addLast("handshakeEncoder", new HandshakeEncoder());
 				
-				pipeline.addLast("handshake", new ClientHandshakeHandler(functions, tlsMode, trustManager));
+				pipeline.addLast("handshake", new ClientHandshakeHandler(functions, executor, tlsMode, trustManager));
 				
 				return pipeline;
 			}
@@ -157,11 +165,13 @@ public class ServerConnectionImpl
 		}
 		catch(InterruptedException e)
 		{
+			bootstrap.releaseExternalResources();
 			throw new RuntimeException("Unable to connect to server");
 		}
 		
 		if(! cf.isSuccess())
 		{
+			bootstrap.releaseExternalResources();
 			throw new RuntimeException("Unable to connect to server");
 		}
 		

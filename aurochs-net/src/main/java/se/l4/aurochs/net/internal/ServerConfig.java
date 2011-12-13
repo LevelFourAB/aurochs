@@ -25,17 +25,38 @@ public class ServerConfig
 	private int port;
 	
 	@Expose
+	@Min(1)
+	private int minThreads;
+	
+	@Expose
+	@Min(1)
+	private int maxThreads;
+	
+	@Expose
 	@Valid
 	private TLS tls;
 	
 	public ServerConfig()
 	{
 		port = 7400;
+		
+		minThreads = 16;
+		maxThreads = 256;
 	}
 	
 	public int getPort()
 	{
 		return port;
+	}
+	
+	public int getMinThreads()
+	{
+		return minThreads;
+	}
+	
+	public int getMaxThreads()
+	{
+		return maxThreads;
 	}
 	
 	public TLS getTls()

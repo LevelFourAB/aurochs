@@ -1,6 +1,7 @@
 package se.l4.aurochs.net.internal.handlers;
 
 import java.util.UUID;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import javax.net.ssl.SSLEngine;
 
@@ -40,13 +41,17 @@ public class ServerHandshakeHandler
 	}
 
 	private final TransportFunctions functions;
+	private final ThreadPoolExecutor executor;
 	private final Provider<SSLEngine> engines;
 	
 	private State state;
 	
-	public ServerHandshakeHandler(TransportFunctions functions, Provider<SSLEngine> engines)
+	public ServerHandshakeHandler(TransportFunctions functions, 
+			ThreadPoolExecutor executor, 
+			Provider<SSLEngine> engines)
 	{
 		this.functions = functions;
+		this.executor = executor;
 		this.engines = engines;
 		
 		state = State.WAITING_FOR_CAPS;
@@ -127,7 +132,7 @@ public class ServerHandshakeHandler
 					// Send the final handshake message
 					channel.write(new SessionStatus(id));
 					
-					functions.setupPipeline(session, channel);
+					functions.setupPipeline(executor, session, channel);
 				}
 					
 		}

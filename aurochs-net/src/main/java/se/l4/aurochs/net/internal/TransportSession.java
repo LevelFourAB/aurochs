@@ -3,6 +3,7 @@ package se.l4.aurochs.net.internal;
 import se.l4.aurochs.core.channel.MessageEvent;
 import se.l4.aurochs.core.spi.AbstractSession;
 
+import com.google.common.base.Objects;
 import com.google.inject.Injector;
 
 public class TransportSession
@@ -27,5 +28,13 @@ public class TransportSession
 	public void fireMessageReceived(MessageEvent event)
 	{
 		super.fireMessageReceived(event);
+	}
+	
+	@Override
+	public String toString()
+	{
+		return Objects.toStringHelper(this)
+			.add("connection", nettyChannel.getRemoteAddress())
+			.toString();
 	}
 }

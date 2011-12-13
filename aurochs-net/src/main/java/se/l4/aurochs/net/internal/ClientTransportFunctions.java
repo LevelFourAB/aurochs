@@ -1,5 +1,7 @@
 package se.l4.aurochs.net.internal;
 
+import java.util.concurrent.Executor;
+
 import org.jboss.netty.channel.Channel;
 
 import se.l4.aurochs.core.spi.Sessions;
@@ -21,7 +23,9 @@ public class ClientTransportFunctions
 	private final SettableFuture<ConnectionResult> future;
 
 	@Inject
-	public ClientTransportFunctions(Injector injector, Sessions sessions, SerializerCollection collection)
+	public ClientTransportFunctions(Injector injector, 
+			Sessions sessions, 
+			SerializerCollection collection)
 	{
 		super(injector, sessions, collection);
 		
@@ -34,9 +38,9 @@ public class ClientTransportFunctions
 	}
 
 	@Override
-	public void setupPipeline(TransportSession session, Channel channel)
+	public void setupPipeline(Executor executor, TransportSession session, Channel channel)
 	{
-		super.setupPipeline(session, channel);
+		super.setupPipeline(executor, session, channel);
 		
 		// Pipeline is setup, session is now usable
 		future.set(new ConnectionResult(session));

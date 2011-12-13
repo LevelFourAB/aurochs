@@ -4,6 +4,7 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.Set;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -40,5 +41,13 @@ public class StaticHostSet
 	
 	public void removeListener(Listener listener)
 	{
+	}
+	
+	@Override
+	public String toString()
+	{
+		return Objects.toStringHelper(this)
+			.addValue(value)
+			.toString();
 	}
 }

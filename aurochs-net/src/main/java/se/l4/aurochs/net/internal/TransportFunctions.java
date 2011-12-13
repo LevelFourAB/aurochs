@@ -1,5 +1,7 @@
 package se.l4.aurochs.net.internal;
 
+import java.util.concurrent.Executor;
+
 import org.jboss.netty.channel.Channel;
 
 /**
@@ -12,5 +14,5 @@ public interface TransportFunctions
 {
 	TransportSession createSession(Channel channel, String id);
 	
-	void setupPipeline(TransportSession session, Channel channel);
+	void setupPipeline(Executor messageExecutor, TransportSession session, Channel channel);
 }

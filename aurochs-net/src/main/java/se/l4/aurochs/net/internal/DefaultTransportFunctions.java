@@ -1,5 +1,7 @@
 package se.l4.aurochs.net.internal;
 
+import java.util.concurrent.Executor;
+
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBufferInputStream;
 import org.jboss.netty.buffer.ChannelBufferOutputStream;
@@ -44,7 +46,9 @@ public class DefaultTransportFunctions
 	{
 		this.injector = injector;
 		this.sessions = sessions;
+		
 		serializer = new CompactDynamicSerializer(collection);
+		
 		this.streamFactory = new StreamFactory()
 		{
 			@Override
@@ -67,13 +71,8 @@ public class DefaultTransportFunctions
 		return new TransportSession(injector, channel);
 	}
 
-	public MessagingHandler createHandler(TransportSession session)
-	{
-		return new MessagingHandler(session);
-	}
-
 	@Override
-	public void setupPipeline(TransportSession session, Channel channel)
+	public void setupPipeline(Executor messageExecutor, TransportSession session, Channel channel)
 	{
 		ChannelPipeline pipeline = channel.getPipeline();
 		
@@ -81,6 +80,7 @@ public class DefaultTransportFunctions
 		pipeline.remove("handshake");
 		pipeline.remove("handshakeDecoderByLine");
 		pipeline.remove("handshakeDecoder");
+		
 		
 		// Decoders
 		pipeline.addLast("frameDecoder", new VarintFrameDecoder());
@@ -91,7 +91,7 @@ public class DefaultTransportFunctions
 		pipeline.addLast("encoder", new SerializationEncoder(serializer, streamFactory));
 		
 		// Actual handler
-		pipeline.addLast("messaging", new MessagingHandler(session));
+		pipeline.addLast("messaging", new MessagingHandler(messageExecutor, session));
 		
 		// "Create" the session
 		sessions.create(session);

@@ -20,7 +20,7 @@ public class ServerModule
 	{
 	}
 
-	@Contribution(name="transport:server")
+	@Contribution(name="aurochs-server")
 	public void contributeServer(ServiceManager manager, Server server)
 	{
 		manager.addService(server);

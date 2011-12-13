@@ -2,6 +2,9 @@ package se.l4.aurochs.net.internal;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.SSLEngine;
 
@@ -25,6 +28,7 @@ import se.l4.aurochs.net.internal.handlers.ServerHandler;
 import se.l4.aurochs.net.internal.handlers.ServerHandshakeHandler;
 import se.l4.crayon.services.ManagedService;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 
@@ -37,7 +41,7 @@ import com.google.inject.Provider;
 public class Server
 	implements ManagedService
 {
-	private final DefaultTransportFunctions functions;
+	private final TransportFunctions functions;
 	
 	private final ServerConfig config;
 	
@@ -45,6 +49,7 @@ public class Server
 	
 	private volatile Channel channel;
 	private volatile ChannelFactory factory;
+	private volatile ThreadPoolExecutor executor;
 
 	@Inject
 	public Server(Config config, DefaultTransportFunctions functions)
@@ -60,6 +65,17 @@ public class Server
 		throws Exception
 	{
 		if(channel != null) return;
+		
+		// The executor for messages
+		executor = new ThreadPoolExecutor(
+			config.getMinThreads(),
+			config.getMaxThreads(), 
+			60, TimeUnit.SECONDS, 
+			new SynchronousQueue<Runnable>(), 
+			new ThreadFactoryBuilder()
+				.setNameFormat("aurochs-server-%s")
+				.build()
+			);
 		
 		factory = new NioServerSocketChannelFactory(
 			Executors.newCachedThreadPool(),
@@ -81,7 +97,7 @@ public class Server
 				pipeline.addLast("handshakeDecoder", new HandshakeDecoder());
 				pipeline.addLast("handshakeEncoder", new HandshakeEncoder());
 				
-				pipeline.addLast("handshake", new ServerHandshakeHandler(functions, engines));
+				pipeline.addLast("handshake", new ServerHandshakeHandler(functions, executor, engines));
 				
 				pipeline.addLast("server", new ServerHandler(group));
 				
@@ -99,6 +115,8 @@ public class Server
 	{
 		if(channel != null)
 		{
+			executor.shutdownNow();
+			
 			ChannelGroupFuture future = group.close();
 			future.awaitUninterruptibly();
 			factory.releaseExternalResources();

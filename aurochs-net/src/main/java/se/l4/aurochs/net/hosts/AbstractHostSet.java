@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -52,5 +53,13 @@ public abstract class AbstractHostSet
 	public void removeListener(Listener listener)
 	{
 		listeners.remove(listener);
+	}
+	
+	@Override
+	public String toString()
+	{
+		return Objects.toStringHelper(this)
+			.addValue(value)
+			.toString();
 	}
 }

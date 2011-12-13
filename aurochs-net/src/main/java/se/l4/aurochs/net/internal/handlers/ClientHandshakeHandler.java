@@ -3,6 +3,7 @@ package se.l4.aurochs.net.internal.handlers;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executor;
 
 import javax.net.ssl.TrustManager;
 
@@ -41,18 +42,22 @@ public class ClientHandshakeHandler
 	}
 
 	private final ClientTransportFunctions functions;
+	private final Executor executor;
 	
 	private final TLSMode tlsMode;
 	private final TrustManager trustManager;
 	
 	private State state;
 	private boolean tls;
+
 	
-	public ClientHandshakeHandler(ClientTransportFunctions functions, 
+	public ClientHandshakeHandler(ClientTransportFunctions functions,
+			Executor executor,
 			TLSMode tlsMode, 
 			TrustManager trustManager)
 	{
 		this.functions = functions;
+		this.executor = executor;
 		
 		this.tlsMode = tlsMode;
 		this.trustManager = trustManager;
@@ -135,7 +140,7 @@ public class ClientHandshakeHandler
 				{
 					// TODO: Send back the session
 					TransportSession session = functions.createSession(channel, ((SessionStatus) msg).getId());
-					functions.setupPipeline(session, channel);
+					functions.setupPipeline(executor, session, channel);
 				}
 				else
 				{

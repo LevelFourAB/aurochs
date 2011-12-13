@@ -33,6 +33,10 @@ public class ServerConfig
 	private int maxThreads;
 	
 	@Expose
+	@Min(1)
+	private int queueSize;
+	
+	@Expose
 	@Valid
 	private TLS tls;
 	
@@ -42,6 +46,8 @@ public class ServerConfig
 		
 		minThreads = 16;
 		maxThreads = 256;
+		
+		queueSize = Integer.MAX_VALUE;
 	}
 	
 	public int getPort()
@@ -57,6 +63,11 @@ public class ServerConfig
 	public int getMaxThreads()
 	{
 		return maxThreads;
+	}
+	
+	public int getQueueSize()
+	{
+		return queueSize;
 	}
 	
 	public TLS getTls()

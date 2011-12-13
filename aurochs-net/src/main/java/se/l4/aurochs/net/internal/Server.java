@@ -2,7 +2,7 @@ package se.l4.aurochs.net.internal;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
-import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -71,7 +71,7 @@ public class Server
 			config.getMinThreads(),
 			config.getMaxThreads(), 
 			60, TimeUnit.SECONDS, 
-			new SynchronousQueue<Runnable>(), 
+			new LinkedBlockingDeque<Runnable>(config.getQueueSize()), 
 			new ThreadFactoryBuilder()
 				.setNameFormat("aurochs-server-%s")
 				.build()

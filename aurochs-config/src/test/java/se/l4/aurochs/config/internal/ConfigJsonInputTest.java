@@ -123,6 +123,23 @@ public class ConfigJsonInputTest
 	}
 	
 	/**
+	 * Test reading a key and value separated with equals.
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void testKeyWithEquals()
+		throws Exception
+	{
+		String v = "key = value with spaces";
+		StreamingInput input = createInput(v);
+		assertStream(input, KEY, VALUE);
+		
+		input = createInput(v);
+		assertStreamValues(input, "key", "value with spaces");
+	}
+	
+	/**
 	 * Test reading with a comment.
 	 * 
 	 * @throws Exception
@@ -137,6 +154,20 @@ public class ConfigJsonInputTest
 		
 		input = createInput(v);
 		assertStreamValues(input, "key", "value with spaces", "key2", "another value 21.0");
+	}
+	
+	/**
+	 * Test reading a string value that does not use quotes.
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void testOnlyComment()
+		throws Exception
+	{
+		String v = "# comment";
+		StreamingInput input = createInput(v);
+		assertStream(input);
 	}
 
 	protected ConfigJsonInput createInput(String in)

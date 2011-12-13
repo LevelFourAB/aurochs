@@ -48,13 +48,21 @@ public class ConfigJsonInput
 		{
 			if(limit - position < 1)
 			{
-				read(1);
+				if(! read(1))
+				{
+					return;
+				}
 			}
 			
 			char c = buffer[position];
 			if(Character.isWhitespace(c) || c == ',')
 			{
 				position++;
+			}
+			else if(c == '#')
+			{
+				// Comment
+				readUntilEndOfLine();
 			}
 			else
 			{
@@ -192,6 +200,7 @@ public class ConfigJsonInput
 					case ']':
 					case ',':
 					case ':':
+					case '=':
 					case '\n':
 					case '\r':
 					case NULL: // EOF
@@ -239,27 +248,43 @@ public class ConfigJsonInput
 	private String readString(boolean readStart)
 		throws IOException
 	{
-		return readString(readStart, '"');
-	}
-	
-	private String readString(boolean readStart, char end)
-		throws IOException
-	{
 		StringBuilder key = new StringBuilder();
 		char c = read();
 		if(readStart)
 		{
-			if(c != end) throw new IOException("Expected \", but got " + c);
+			if(c != '"') throw new IOException("Expected \", but got " + c);
 			c = read();
 		}
 		
-		while(c != end)
+		while(c != '"')
 		{
 			if(c == '\\')
 			{
 				readEscaped(key);
 			}
 			else
+			{
+				key.append(c);
+			}
+			
+			c = read();
+		}
+		
+		return key.toString();
+	}
+	
+	private String readKey()
+		throws IOException
+	{
+		StringBuilder key = new StringBuilder();
+		char c = read();
+		while(c != ':' && c != '=')
+		{
+			if(c == '\\')
+			{
+				readEscaped(key);
+			}
+			else if(! Character.isWhitespace(c))
 			{
 				key.append(c);
 			}
@@ -330,11 +355,6 @@ public class ConfigJsonInput
 		throws IOException
 	{
 		char peeked = peekChar();
-		if(peeked == '#')
-		{
-			// Comment
-			readUntilEndOfLine();
-		}
 		
 		Token token = toToken(peeked);
 		switch(token)
@@ -358,7 +378,7 @@ public class ConfigJsonInput
 				{
 					key = readString(true);
 					char next = readNext();
-					if(next != ':')
+					if(next != ':' && next != '=')
 					{
 						throw new IOException("Expected :, got " + next);
 					}
@@ -366,7 +386,7 @@ public class ConfigJsonInput
 				else
 				{
 					// Case where keys do not include quotes
-					key = readString(false, ':');
+					key = readKey();
 				}
 				
 				value = key;

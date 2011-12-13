@@ -101,18 +101,30 @@ public class DefaultSerializerCollection
 	}
 
 	@Override
-	public <T> void bind(Class<T> type, Serializer<T> serializer)
+	public SerializerCollection bind(Class<?> type)
+	{
+		find(type);
+		
+		return this;
+	}
+	
+	@Override
+	public <T> SerializerCollection bind(Class<T> type, Serializer<T> serializer)
 	{
 		bind(type, new StaticSerializer<T>(serializer));
 		
 		registerIfNamed(type, serializer);
+		
+		return this;
 	}
 	
 	@Override
-	public <T> void bind(Class<T> type, SerializerResolver<? extends T> resolver)
+	public <T> SerializerCollection bind(Class<T> type, SerializerResolver<? extends T> resolver)
 	{
 		typeToResolverCache.put(type, resolver);
 		boundTypeToResolver.put(type, resolver);
+		
+		return this;
 	}
 	
 	@Override

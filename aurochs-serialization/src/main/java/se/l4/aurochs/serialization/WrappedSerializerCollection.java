@@ -47,6 +47,14 @@ public class WrappedSerializerCollection
 		return other.getInstanceFactory();
 	}
 	
+	@Override
+	public SerializerCollection bind(Class<?> type)
+	{
+		other.bind(type);
+		
+		return this;
+	}
+	
 	private <T> void bind(Class<T> type, Serializer<T> serializer, String ns, String name)
 	{
 		bind(type, new StaticSerializer<T>(serializer));
@@ -57,18 +65,22 @@ public class WrappedSerializerCollection
 	}
 
 	@Override
-	public <T> void bind(Class<T> type, Serializer<T> serializer)
+	public <T> SerializerCollection bind(Class<T> type, Serializer<T> serializer)
 	{
 		bind(type, new StaticSerializer<T>(serializer));
 		
 		registerIfNamed(type, serializer);
+		
+		return this;
 	}
 	
 	@Override
-	public <T> void bind(Class<T> type, SerializerResolver<? extends T> resolver)
+	public <T> SerializerCollection bind(Class<T> type, SerializerResolver<? extends T> resolver)
 	{
 		typeToResolverCache.put(type, resolver);
 		boundTypeToResolver.put(type, resolver);
+		
+		return this;
 	}
 	
 	@Override

@@ -23,13 +23,21 @@ public interface SerializerCollection
 	InstanceFactory getInstanceFactory();
 	
 	/**
+	 * Bind a certain type automatically discovering which serializer to
+	 * use.
+	 * 
+	 * @param type
+	 */
+	SerializerCollection bind(Class<?> type);
+	
+	/**
 	 * Bind a given type to the specified serializer.
 	 * 
 	 * @param <T>
 	 * @param type
 	 * @param serializer
 	 */
-	<T> void bind(Class<T> type, Serializer<T> serializer);
+	<T> SerializerCollection bind(Class<T> type, Serializer<T> serializer);
 	
 	/**
 	 * Bind a given type to the specified resolver. The resolver will be
@@ -39,7 +47,7 @@ public interface SerializerCollection
 	 * @param type
 	 * @param resolver
 	 */
-	<T> void bind(Class<T> type, SerializerResolver<? extends T> resolver);
+	<T> SerializerCollection bind(Class<T> type, SerializerResolver<? extends T> resolver);
 	
 	/**
 	 * Find a serializer suitable for the specific type.

@@ -1,5 +1,7 @@
 package se.l4.aurochs.core.channel;
 
+import java.util.concurrent.Executor;
+
 import com.google.common.base.Predicate;
 
 /**
@@ -49,4 +51,12 @@ public interface Channel<T>
 	 * @return
 	 */
 	Channel<T> filter(Predicate<T> predicate);
+	
+	/**
+	 * Run all events on the specified executor.
+	 * 
+	 * @param executor
+	 * @return
+	 */
+	Channel<T> on(Executor executor);
 }

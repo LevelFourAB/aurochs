@@ -1,5 +1,6 @@
 package se.l4.aurochs.core.spi;
 
+import java.util.concurrent.Executor;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -109,5 +110,11 @@ public abstract class AbstractChannel<T>
 	public Channel<T> filter(Predicate<T> predicate)
 	{
 		return new FilteredChannel(this, predicate);
+	}
+	
+	@Override
+	public Channel<T> on(Executor executor)
+	{
+		return new ExecutorChannel<T>(this, executor);
 	}
 }

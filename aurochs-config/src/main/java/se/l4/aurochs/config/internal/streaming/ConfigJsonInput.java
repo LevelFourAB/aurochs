@@ -289,6 +289,15 @@ public class ConfigJsonInput
 				key.append(c);
 			}
 			
+			// Peek to see if we should end reading
+			c = peekChar();
+			if(c == '{' || c == '[')
+			{
+				// Next is object or list, break
+				break;
+			}
+			
+			// Read the actual character
 			c = read();
 		}
 		
@@ -355,7 +364,6 @@ public class ConfigJsonInput
 		throws IOException
 	{
 		char peeked = peekChar();
-		
 		Token token = toToken(peeked);
 		switch(token)
 		{

@@ -169,6 +169,40 @@ public class ConfigJsonInputTest
 		StreamingInput input = createInput(v);
 		assertStream(input);
 	}
+	
+	/**
+	 * Test key without equal or colon.
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void testKeyThenObject()
+		throws Exception
+	{
+		String v = "key { key2: value }";
+		StreamingInput input = createInput(v);
+		assertStream(input, KEY, OBJECT_START, KEY, VALUE, OBJECT_END);
+		
+		input = createInput(v);
+		assertStreamValues(input, "key", "key2", "value");
+	}
+	
+	/**
+	 * Test key without equal or colon.
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void testKeyThenObjectWithNewline()
+		throws Exception
+	{
+		String v = "key\n{ key2: value }";
+		StreamingInput input = createInput(v);
+		assertStream(input, KEY, OBJECT_START, KEY, VALUE, OBJECT_END);
+		
+		input = createInput(v);
+		assertStreamValues(input, "key", "key2", "value");
+	}
 
 	protected ConfigJsonInput createInput(String in)
 	{

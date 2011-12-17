@@ -2,6 +2,8 @@ package se.l4.aurochs.serialization.format;
 
 import java.io.EOFException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Reader;
 
 import javax.xml.bind.DatatypeConverter;
@@ -25,6 +27,11 @@ public class JsonInput
 	private int limit;
 	
 	private final boolean[] lists;
+	
+	public JsonInput(InputStream in)
+	{
+		this(new InputStreamReader(in));
+	}
 	
 	public JsonInput(Reader in)
 	{

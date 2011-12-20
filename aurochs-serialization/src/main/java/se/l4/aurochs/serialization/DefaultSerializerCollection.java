@@ -17,6 +17,7 @@ import se.l4.aurochs.serialization.spi.Type;
 import se.l4.aurochs.serialization.spi.TypeEncounter;
 import se.l4.aurochs.serialization.spi.TypeViaClass;
 import se.l4.aurochs.serialization.standard.BooleanSerializer;
+import se.l4.aurochs.serialization.standard.ByteArraySerializer;
 import se.l4.aurochs.serialization.standard.DoubleSerializer;
 import se.l4.aurochs.serialization.standard.FloatSerializer;
 import se.l4.aurochs.serialization.standard.IntSerializer;
@@ -78,6 +79,7 @@ public class DefaultSerializerCollection
 		bind(Integer.class, new IntSerializer(), "", "integer");
 		bind(Long.class, new LongSerializer(), "", "long");
 		bind(String.class, new StringSerializer(), "", "string");
+		bind(byte[].class, new ByteArraySerializer(), "", "byte[]");
 		
 		// Collections
 		bind(List.class, new ListSerializerResolver());

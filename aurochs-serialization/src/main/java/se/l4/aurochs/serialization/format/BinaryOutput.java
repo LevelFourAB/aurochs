@@ -194,11 +194,11 @@ public class BinaryOutput
 		for(int i=0, n=value.length(); i<n; i++)
 		{
 			char c = value.charAt(i);
-			if(c >= 0x007f)
+			if(c <= 0x007f)
 			{
 				out.write((byte) c);
 			}
-			else if(c > 0x007f)
+			else if(c > 0x07ff)
 			{
 				out.write((byte) (0xe0 | c >> 12 & 0x0f));
 				out.write((byte) (0x80 | c >> 6 & 0x3f));

@@ -385,8 +385,16 @@ public class ConfigJsonInput
 				if(peeked == '"')
 				{
 					key = readString(true);
-					char next = readNext();
-					if(next != ':' && next != '=')
+					char next = peekChar();
+					if(next == ':' && next == '=')
+					{
+						readNext();
+					}
+					else if(next == '{' || next == '[')
+					{
+						// Just skip
+					}
+					else
 					{
 						throw new IOException("Expected :, got " + next);
 					}

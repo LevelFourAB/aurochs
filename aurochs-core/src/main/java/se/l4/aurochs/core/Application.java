@@ -1,6 +1,7 @@
 package se.l4.aurochs.core;
 
 import java.io.File;
+import java.lang.annotation.Annotation;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,7 +12,9 @@ import se.l4.aurochs.core.internal.InternalModule;
 import se.l4.aurochs.core.internal.SystemSessionImpl;
 import se.l4.aurochs.serialization.DefaultSerializerCollection;
 import se.l4.aurochs.serialization.SerializerCollection;
+import se.l4.aurochs.serialization.spi.InstanceFactory;
 import se.l4.crayon.Configurator;
+import se.l4.crayon.Crayon;
 
 import com.google.inject.Injector;
 import com.google.inject.Module;
@@ -30,6 +33,8 @@ public class Application
 	private final Configurator configurator;
 	private final SerializerCollection collection;
 	private final ConfigBuilder configBuilder;
+	
+	private volatile Injector injector;
 	
 	/**
 	 * Start an application in {@link Stage#PRODUCTION}.
@@ -63,7 +68,20 @@ public class Application
 		logger = LoggerFactory.getLogger(Application.class);
 		configurator.setLogger(logger);
 		
-		collection = new DefaultSerializerCollection();
+		collection = new DefaultSerializerCollection(new InstanceFactory()
+		{
+			@Override
+			public <T> T create(Class<T> type, Annotation[] annotations)
+			{
+				return injector.getInstance(type);
+			}
+			
+			@Override
+			public <T> T create(Class<T> type)
+			{
+				return injector.getInstance(type);
+			}
+		});
 		configBuilder = ConfigBuilder.with(collection);
 	}
 
@@ -148,7 +166,12 @@ public class Application
 			.setLogger(NOPLogger.NOP_LOGGER)
 			.add(new InternalModule(collection, configBuilder.build()))
 			.setLogger(logger)
+			.setAutoStart(false)
 			.configure();
+		
+		// Set injector and then start
+		this.injector = injector;
+		injector.getInstance(Crayon.class).start();
 		
 		return new SystemSessionImpl(injector);
 	}

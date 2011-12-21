@@ -34,6 +34,8 @@ public class UuidSerializer
 
 	public static UUID fromBytes(byte[] bytes)
 	{
+		if(bytes == null) return null;
+		
 		long msb = 0;
 		long lsb = 0;
 		for(int i=0; i<8; i++)

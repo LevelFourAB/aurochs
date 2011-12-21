@@ -1,18 +1,9 @@
 package se.l4.aurochs.serialization.standard;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.UUID;
 
-import se.l4.aurochs.serialization.DefaultSerializerCollection;
-import se.l4.aurochs.serialization.Expose;
-import se.l4.aurochs.serialization.ReflectionSerializer;
 import se.l4.aurochs.serialization.Serializer;
-import se.l4.aurochs.serialization.SerializerCollection;
-import se.l4.aurochs.serialization.Use;
-import se.l4.aurochs.serialization.format.BinaryInput;
-import se.l4.aurochs.serialization.format.BinaryOutput;
 import se.l4.aurochs.serialization.format.StreamingInput;
 import se.l4.aurochs.serialization.format.StreamingInput.Token;
 import se.l4.aurochs.serialization.format.StreamingOutput;
@@ -31,8 +22,18 @@ public class UuidSerializer
 	public UUID read(StreamingInput in) throws IOException
 	{
 		in.next(Token.VALUE);
-		byte[] bytes = in.getByteArray();
-		
+		return fromBytes(in.getByteArray());
+	}
+	
+	@Override
+	public void write(UUID object, String name, StreamingOutput stream)
+		throws IOException
+	{
+		stream.write(name, toBytes(object));
+	}
+
+	public static UUID fromBytes(byte[] bytes)
+	{
 		long msb = 0;
 		long lsb = 0;
 		for(int i=0; i<8; i++)
@@ -43,13 +44,11 @@ public class UuidSerializer
 		
 		return new UUID(msb, lsb);
 	}
-
-	@Override
-	public void write(UUID object, String name, StreamingOutput stream)
-		throws IOException
+	
+	public static byte[] toBytes(UUID uuid)
 	{
-		long msb = object.getMostSignificantBits();
-		long lsb = object.getLeastSignificantBits();
+		long msb = uuid.getMostSignificantBits();
+		long lsb = uuid.getLeastSignificantBits();
 		
 		byte[] buffer = new byte[16];
 		for(int i=0; i<8; i++)
@@ -58,37 +57,6 @@ public class UuidSerializer
 			buffer[8+i] = (byte) (lsb >>> 8 * (7 - i));
 		}
 		
-		stream.write(name, buffer);
-	}
-	
-	@Use(ReflectionSerializer.class)
-	public static class UuidClass
-	{
-		@Expose
-		@Use(UuidSerializer.class)
-		private UUID id;
-	}
-
-	public static void main(String[] args)
-		throws Exception
-	{
-		SerializerCollection col = new DefaultSerializerCollection();
-		
-		UUID uuid = UUID.randomUUID();
-		System.out.println(uuid);
-		
-		UuidClass uc = new UuidClass();
-		uc.id = uuid;
-		
-		Serializer<UuidClass> serializer = col.find(UuidClass.class);
-		
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		StreamingOutput output = new BinaryOutput(out);
-		serializer.write(uc, "", output);
-		output.flush();
-		byte[] data = out.toByteArray();
-		
-		UuidClass read = serializer.read(new BinaryInput(new ByteArrayInputStream(data)));
-		System.out.println(read.id);
+		return buffer;
 	}
 }

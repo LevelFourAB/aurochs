@@ -144,7 +144,7 @@ public class BinaryInput
 		while(shift < 64)
 		{
 			final byte b = (byte) in.read();
-			result |= (int) (b & 0x7F) << shift;
+			result |= (long) (b & 0x7F) << shift;
 			if((b & 0x80) == 0) return result;
 			
 			shift += 7;

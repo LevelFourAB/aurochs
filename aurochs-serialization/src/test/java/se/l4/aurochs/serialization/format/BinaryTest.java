@@ -180,6 +180,18 @@ public class BinaryTest
 		assertStreamValues("value", 74749);
 	}
 	
+	@Test
+	public void largeLong()
+		throws IOException
+	{
+		output.writeListStart("");
+		output.write("entry", 1324475548554l);
+		output.writeListEnd("");
+		
+		assertStream(LIST_START, VALUE, LIST_END);
+		assertStreamValues(1324475548554l);
+	}
+	
 	@Before
 	public void beforeTest()
 	{

@@ -101,6 +101,14 @@ public interface SerializerCollection
 	Serializer<?> find(String namespace, String name);
 	
 	/**
+	 * Get if the given type can be serialized.
+	 * 
+	 * @param type
+	 * @return
+	 */
+	boolean isSupported(Class<?> type);
+	
+	/**
 	 * Find the name of the given serializer (if any).
 	 * 
 	 * @param serializer

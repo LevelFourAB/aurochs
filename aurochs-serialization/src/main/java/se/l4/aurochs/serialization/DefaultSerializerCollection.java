@@ -190,6 +190,19 @@ public class DefaultSerializerCollection
 		return serializerToName.get(serializer);
 	}
 	
+	@Override
+	public boolean isSupported(Class<?> type)
+	{
+		SerializerResolver finder = typeToResolverCache.get(Primitives.wrap(type));
+		if(finder instanceof StaticSerializer)
+		{
+			return true;
+		}
+		
+		Serializer serializer = finder.find(new TypeEncounterImpl(this, new TypeViaClass(type), null));
+		return serializer != null;
+	}
+	
 	protected SerializerResolver<?> findOrCreateSerializerResolver(Class<?> from)
 	{
 		Serializer<?> serializer = createSerializer(from);

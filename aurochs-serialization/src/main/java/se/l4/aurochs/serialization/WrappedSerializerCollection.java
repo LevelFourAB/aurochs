@@ -159,6 +159,12 @@ public class WrappedSerializerCollection
 			serializerToName.put(serializer, key);
 		}
 	}
+	
+	@Override
+	public boolean isSupported(Class<?> type)
+	{
+		return other.isSupported(type);
+	}
 
 	/**
 	 * Resolver for types that have only one serializer.

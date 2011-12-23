@@ -17,16 +17,20 @@ public class InternalModule
 {
 	private final SerializerCollection collection;
 	private final Config config;
+	private final Object factory;
 
-	public InternalModule(SerializerCollection collection, Config config)
+	public InternalModule(SerializerCollection collection, Config config, Object factory)
 	{
 		this.collection = collection;
 		this.config = config;
+		this.factory = factory;
 	}
 	
 	@Override
 	protected void configure()
 	{
+		requestInjection(factory);
+		
 		install(new ServicesModule());
 		
 		bind(Config.class).toInstance(config);

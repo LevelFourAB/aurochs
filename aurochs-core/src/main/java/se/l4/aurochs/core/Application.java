@@ -14,8 +14,8 @@ import se.l4.aurochs.serialization.DefaultSerializerCollection;
 import se.l4.aurochs.serialization.SerializerCollection;
 import se.l4.aurochs.serialization.spi.InstanceFactory;
 import se.l4.crayon.Configurator;
-import se.l4.crayon.Crayon;
 
+import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.google.inject.Stage;
@@ -34,7 +34,7 @@ public class Application
 	private final SerializerCollection collection;
 	private final ConfigBuilder configBuilder;
 	
-	private volatile Injector injector;
+	private final InstanceFactory instanceFactory;
 	
 	/**
 	 * Start an application in {@link Stage#PRODUCTION}.
@@ -68,8 +68,11 @@ public class Application
 		logger = LoggerFactory.getLogger(Application.class);
 		configurator.setLogger(logger);
 		
-		collection = new DefaultSerializerCollection(new InstanceFactory()
+		instanceFactory = new InstanceFactory()
 		{
+			@Inject
+			private final Injector injector = null;
+			
 			@Override
 			public <T> T create(Class<T> type, Annotation[] annotations)
 			{
@@ -81,7 +84,9 @@ public class Application
 			{
 				return injector.getInstance(type);
 			}
-		});
+		};
+		
+		collection = new DefaultSerializerCollection(instanceFactory);
 		configBuilder = ConfigBuilder.with(collection);
 	}
 
@@ -164,14 +169,9 @@ public class Application
 		 */
 		Injector injector = configurator
 			.setLogger(NOPLogger.NOP_LOGGER)
-			.add(new InternalModule(collection, configBuilder.build()))
+			.add(new InternalModule(collection, configBuilder.build(), instanceFactory))
 			.setLogger(logger)
-			.setAutoStart(false)
 			.configure();
-		
-		// Set injector and then start
-		this.injector = injector;
-		injector.getInstance(Crayon.class).start();
 		
 		return new SystemSessionImpl(injector);
 	}

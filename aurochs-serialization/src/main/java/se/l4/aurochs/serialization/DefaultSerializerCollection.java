@@ -3,6 +3,7 @@ package se.l4.aurochs.serialization;
 import java.lang.annotation.Annotation;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import se.l4.aurochs.serialization.collections.ArraySerializerResolver;
@@ -24,6 +25,7 @@ import se.l4.aurochs.serialization.standard.IntSerializer;
 import se.l4.aurochs.serialization.standard.LongSerializer;
 import se.l4.aurochs.serialization.standard.ShortSerializer;
 import se.l4.aurochs.serialization.standard.StringSerializer;
+import se.l4.aurochs.serialization.standard.UuidSerializer;
 
 import com.google.common.base.Function;
 import com.google.common.base.Throwables;
@@ -80,6 +82,7 @@ public class DefaultSerializerCollection
 		bind(Long.class, new LongSerializer(), "", "long");
 		bind(String.class, new StringSerializer(), "", "string");
 		bind(byte[].class, new ByteArraySerializer(), "", "byte[]");
+		bind(UUID.class, new UuidSerializer(), "", "uuid");
 		
 		// Collections
 		bind(List.class, new ListSerializerResolver());

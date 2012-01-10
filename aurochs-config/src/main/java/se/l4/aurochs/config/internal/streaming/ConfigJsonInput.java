@@ -386,7 +386,7 @@ public class ConfigJsonInput
 				{
 					key = readString(true);
 					char next = peekChar();
-					if(next == ':' && next == '=')
+					if(next == ':' || next == '=')
 					{
 						readNext();
 					}

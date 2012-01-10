@@ -31,13 +31,17 @@ public class FileSerializer
 		in.next(Token.VALUE);
 		
 		String file = in.getString();
-		File current = root;
-		for(String part : file.split(File.separator))
-		{
-			current = new File(current, part);
-		}
+		if(file == null) return null;
 		
-		return current;
+		File temp = new File(file);
+		if(temp.isAbsolute())
+		{
+			return temp;
+		}
+		else
+		{
+			return new File(root, file);
+		}
 	}
 
 	@Override

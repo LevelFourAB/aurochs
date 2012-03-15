@@ -1,6 +1,5 @@
 package se.l4.aurochs.serialization.collections;
 
-import java.util.List;
 import java.util.Set;
 
 import se.l4.aurochs.serialization.SerializationException;
@@ -23,9 +22,9 @@ public class SetSerializerResolver
 		
 		// Check that we can create the type of list requested
 		Class<?> erasedType = encounter.getType().getErasedType();
-		if(erasedType != List.class)
+		if(erasedType != Set.class)
 		{
-			throw new SerializationException("Lists can only be serialized if they are declared as the interface List");
+			throw new SerializationException("Sets can only be serialized if they are declared as the interface Set");
 		}
 		
 		// Create the serializer, either a specific or dynamic

@@ -3,8 +3,10 @@ package se.l4.aurochs.serialization;
 import java.lang.annotation.Annotation;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 
 import se.l4.aurochs.serialization.collections.ArraySerializerResolver;
 import se.l4.aurochs.serialization.collections.ListSerializerResolver;
@@ -28,10 +30,10 @@ import se.l4.aurochs.serialization.standard.ShortSerializer;
 import se.l4.aurochs.serialization.standard.StringSerializer;
 import se.l4.aurochs.serialization.standard.UuidSerializer;
 
-import com.google.common.base.Function;
 import com.google.common.base.Throwables;
-import com.google.common.collect.ComputationException;
-import com.google.common.collect.MapMaker;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.primitives.Primitives;
 
 /**
@@ -47,7 +49,7 @@ public class DefaultSerializerCollection
 	
 	private final InstanceFactory instanceFactory;
 	private final Map<Class<?>, SerializerResolver<?>> boundTypeToResolver;
-	private final Map<Class<?>, SerializerResolver<?>> typeToResolverCache;
+	private final LoadingCache<Class<?>, SerializerResolver<?>> typeToResolverCache;
 	private final Map<QualifiedName, Serializer<?>> nameToSerializer;
 	private final Map<Serializer<?>, QualifiedName> serializerToName;
 	
@@ -64,13 +66,14 @@ public class DefaultSerializerCollection
 		serializerToName = new ConcurrentHashMap<Serializer<?>, QualifiedName>();
 		
 		boundTypeToResolver = new ConcurrentHashMap<Class<?>, SerializerResolver<?>>();
-		typeToResolverCache = new MapMaker()
-			.makeComputingMap(new Function<Class<?>, SerializerResolver<?>>()
+		typeToResolverCache = CacheBuilder.newBuilder()
+			.build(new CacheLoader<Class<?>, SerializerResolver<?>>()
 			{
 				@Override
-				public SerializerResolver<?> apply(Class<?> from)
+				public SerializerResolver<?> load(Class<?> key)
+					throws Exception
 				{
-					return findOrCreateSerializerResolver(from);
+					return findOrCreateSerializerResolver(key);
 				}
 			});
 		
@@ -169,7 +172,7 @@ public class DefaultSerializerCollection
 			
 			return serializer;
 		}
-		catch(ComputationException e)
+		catch(ExecutionException e)
 		{
 			Throwables.propagateIfInstanceOf(e.getCause(), SerializationException.class);
 			
@@ -198,14 +201,23 @@ public class DefaultSerializerCollection
 	@Override
 	public boolean isSupported(Class<?> type)
 	{
-		SerializerResolver finder = typeToResolverCache.get(Primitives.wrap(type));
-		if(finder instanceof StaticSerializer)
+		try
 		{
-			return true;
+			SerializerResolver finder = typeToResolverCache.get(Primitives.wrap(type));
+			if(finder instanceof StaticSerializer)
+			{
+				return true;
+			}
+			
+			Serializer serializer = finder.find(new TypeEncounterImpl(this, new TypeViaClass(type), null));
+			return serializer != null;
 		}
-		
-		Serializer serializer = finder.find(new TypeEncounterImpl(this, new TypeViaClass(type), null));
-		return serializer != null;
+		catch(ExecutionException e)
+		{
+			Throwables.propagateIfInstanceOf(e.getCause(), SerializationException.class);
+			
+			throw new SerializationException("Unable to retrieve serializer for " + type + "; " + e.getCause().getMessage(), e.getCause());
+		}
 	}
 	
 	protected SerializerResolver<?> findOrCreateSerializerResolver(Class<?> from)

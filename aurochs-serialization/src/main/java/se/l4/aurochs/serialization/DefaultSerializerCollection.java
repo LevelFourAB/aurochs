@@ -9,6 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import se.l4.aurochs.serialization.collections.ArraySerializerResolver;
 import se.l4.aurochs.serialization.collections.ListSerializerResolver;
 import se.l4.aurochs.serialization.collections.MapSerializerResolver;
+import se.l4.aurochs.serialization.collections.SetSerializerResolver;
 import se.l4.aurochs.serialization.enums.EnumSerializerResolver;
 import se.l4.aurochs.serialization.internal.TypeEncounterImpl;
 import se.l4.aurochs.serialization.spi.DefaultInstanceFactory;
@@ -87,6 +88,7 @@ public class DefaultSerializerCollection
 		// Collections
 		bind(List.class, new ListSerializerResolver());
 		bind(Map.class, new MapSerializerResolver());
+		bind(Set.class, new SetSerializerResolver());
 		
 		// Enums
 		bind(Enum.class, new EnumSerializerResolver());

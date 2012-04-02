@@ -50,6 +50,11 @@ public class DefaultConfig
 	
 	private Object get(String path)
 	{
+		if(path == null || path.equals(""))
+		{
+			return data;
+		}
+		
 		String[] parts = path.split("\\.");
 		Map<String, Object> current = data;
 		for(int i=0, n=parts.length-1; i<n; i++)

@@ -22,10 +22,6 @@ public class BooleanSerializer
 		throws IOException
 	{
 		in.next(Token.VALUE);
-		if(in.getValue() == null)
-		{
-			return null;
-		}
 		return in.getBoolean();
 	}
 

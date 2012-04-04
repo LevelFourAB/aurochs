@@ -78,6 +78,7 @@ public class BasicReadWriteTest
 	{
 		StreamingInput input = mock(StreamingInput.class);
 		when(input.next()).thenReturn(Token.VALUE);
+		when(input.getValue()).thenReturn(12);
 		when(input.getInt()).thenReturn(12);
 		
 		IntSerializer serializer = new IntSerializer();
@@ -104,6 +105,7 @@ public class BasicReadWriteTest
 	{
 		StreamingInput input = mock(StreamingInput.class);
 		when(input.next()).thenReturn(Token.VALUE);
+		when(input.getValue()).thenReturn(true);
 		when(input.getBoolean()).thenReturn(true);
 		
 		BooleanSerializer serializer = new BooleanSerializer();
@@ -130,6 +132,7 @@ public class BasicReadWriteTest
 	{
 		StreamingInput input = mock(StreamingInput.class);
 		when(input.next()).thenReturn(Token.VALUE);
+		when(input.getValue()).thenReturn(3.14);
 		when(input.getDouble()).thenReturn(3.14);
 		
 		DoubleSerializer serializer = new DoubleSerializer();

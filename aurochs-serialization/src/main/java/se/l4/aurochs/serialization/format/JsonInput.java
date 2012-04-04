@@ -140,6 +140,12 @@ public class JsonInput
 				}
 		}
 		
+		if(c == 'n')
+		{
+			// TODO: Better error detection?
+			return Token.NULL;
+		}
+		
 		return Token.VALUE;
 	}
 	
@@ -323,6 +329,19 @@ public class JsonInput
 			case VALUE:
 			{
 				setValue(readNextValue());
+				
+				// Check for trailing commas
+				readWhitespace();
+				char c = peekChar();
+				if(c == ',') read();
+				
+				return token;
+			}
+			case NULL:
+			{
+				readNextValue();
+				
+				setValue(null);
 				
 				// Check for trailing commas
 				readWhitespace();

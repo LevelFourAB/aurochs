@@ -36,6 +36,18 @@ public class ConfigJsonInputTest
 		assertStreamValues(input, "key1", "value1", "key2", "value2");
 	}
 	
+	@Test
+	public void testObjectValuesWithNull()
+		throws Exception
+	{
+		String v = "\"key1\": null, \"key2\": normal";
+		StreamingInput input = createInput(v);
+		assertStream(input, KEY, NULL, KEY, VALUE);
+		
+		input = createInput(v);
+		assertStreamValues(input, "key1", null, "key2", "normal");
+	}
+	
 	/**
 	 * Test reading without any object braces or commas. Optional.
 	 * 
@@ -257,6 +269,7 @@ public class ConfigJsonInputTest
 			{
 				case KEY:
 				case VALUE:
+				case NULL:
 					if(i == values.length)
 					{
 						fail("Did not expect more values, but got " + in.getValue());

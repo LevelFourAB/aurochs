@@ -57,6 +57,7 @@ public class RawFormatReader
 			case LIST_END:
 			case OBJECT_END:
 			case VALUE:
+			case NULL:
 				throw new SerializationException("Error in configuration file, should be in in key, value format");
 		}
 		
@@ -142,6 +143,9 @@ public class RawFormatReader
 		switch(input.peek())
 		{
 			case VALUE:
+				input.next();
+				return input.getValue();
+			case NULL:
 				input.next();
 				return input.getValue();
 			case LIST_START:

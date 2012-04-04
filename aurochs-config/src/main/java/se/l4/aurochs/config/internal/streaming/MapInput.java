@@ -52,6 +52,10 @@ public class MapInput
 		{
 			return new ListInput((List) data);
 		}
+		else if(data == null)
+		{
+			return new NullInput();
+		}
 		else
 		{
 			return new ValueInput(data);

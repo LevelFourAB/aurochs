@@ -7,6 +7,7 @@ import java.lang.reflect.Modifier;
 import se.l4.aurochs.serialization.SerializationException;
 import se.l4.aurochs.serialization.Serializer;
 import se.l4.aurochs.serialization.format.StreamingInput;
+import se.l4.aurochs.serialization.format.StreamingInput.Token;
 import se.l4.aurochs.serialization.format.StreamingOutput;
 
 import com.google.common.base.Throwables;
@@ -47,6 +48,13 @@ public class FieldDefinition
 	public Object read(StreamingInput in)
 		throws IOException
 	{
+		if(in.peek() == Token.NULL)
+		{
+			// Consume and return null
+			in.next();
+			return null;
+		}
+		
 		return serializer.read(in);
 	}
 	

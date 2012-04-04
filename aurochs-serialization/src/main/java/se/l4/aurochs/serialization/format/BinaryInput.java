@@ -60,6 +60,8 @@ public class BinaryInput
 				return Token.LIST_START;
 			case BinaryOutput.TAG_LIST_END:
 				return Token.LIST_END;
+			case BinaryOutput.TAG_NULL:
+				return Token.NULL;
 			default:
 				return Token.VALUE;
 		}
@@ -70,7 +72,7 @@ public class BinaryInput
 		throws IOException
 	{
 		Token current = peek();
-		if(current == Token.KEY || current == Token.VALUE)
+		if(current == Token.KEY || current == Token.VALUE || current == Token.NULL)
 		{
 			// Read actual data of keys and values
 			readValue();

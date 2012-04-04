@@ -34,6 +34,18 @@ public class JsonInputTest
 	}
 	
 	@Test
+	public void testNullValue()
+		throws Exception
+	{
+		String v = "{\"key\": null}";
+		StreamingInput input = createInput(v);
+		assertStream(input, OBJECT_START, KEY, NULL, OBJECT_END);
+		
+		input = createInput(v);
+		assertStreamValues(input, "key", null);
+	}
+	
+	@Test
 	public void testStringQuote()
 		throws Exception
 	{
@@ -296,6 +308,7 @@ public class JsonInputTest
 			{
 				case KEY:
 				case VALUE:
+				case NULL:
 					if(i == values.length)
 					{
 						fail("Did not expect more values, but got " + in.getValue());

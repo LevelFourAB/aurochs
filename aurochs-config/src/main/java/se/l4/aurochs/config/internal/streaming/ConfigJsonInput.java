@@ -154,8 +154,16 @@ public class ConfigJsonInput
 		return true;
 	}
 	
-	private Token toToken(char c)
+	private Token toToken(int position)
+		throws IOException
 	{
+		if(position > limit)
+		{
+			return null;
+		}
+		
+		char c = buffer[position];
+				
 		switch(c)
 		{
 			case '{':
@@ -171,6 +179,11 @@ public class ConfigJsonInput
 		if(token != Token.KEY && ! lists[level])
 		{
 			return Token.KEY;
+		}
+		
+		if(c == 'n')
+		{
+			return checkString("null", false) ? Token.NULL : Token.VALUE;
 		}
 		
 		return Token.VALUE;
@@ -364,7 +377,7 @@ public class ConfigJsonInput
 		throws IOException
 	{
 		char peeked = peekChar();
-		Token token = toToken(peeked);
+		Token token = toToken(position);
 		switch(token)
 		{
 			case OBJECT_END:
@@ -419,6 +432,22 @@ public class ConfigJsonInput
 				
 				return this.token = token;
 			}
+			case NULL:
+			{
+				value = null;
+				Object s = readNextValue();
+				if(! s.equals("null"))
+				{
+					throw new IOException("Invalid stream, encountered null value with trailing data");
+				}
+				
+				// Check for trailing commas
+				readWhitespace();
+				char c = peekChar();
+				if(c == ',') read();
+				
+				return this.token = token;
+			}
 		}
 		
 		return null;
@@ -451,6 +480,38 @@ public class ConfigJsonInput
 		return NULL;
 	}
 	
+	private boolean checkString(String value, boolean ws)
+		throws IOException
+	{
+		if(ws) readWhitespace();
+		
+		int length = value.length();
+		
+		if(limit - position < length)
+		{
+			if(false == read(length))
+			{
+				return false;
+			}
+		}
+		
+		if(limit - position < length)
+		{
+			// Still not enough data
+			return false;
+		}
+		
+		for(int i=0, n=length; i<n; i++)
+		{
+			if(buffer[position+i] != value.charAt(i))
+			{
+				return false;
+			}
+		}
+			
+		return true;
+	}
+	
 	@Override
 	public Token peek()
 		throws IOException
@@ -464,7 +525,7 @@ public class ConfigJsonInput
 		
 		if(limit - position > 0)
 		{
-			return toToken(buffer[position]);
+			return toToken(position);
 		}
 		
 		return null;

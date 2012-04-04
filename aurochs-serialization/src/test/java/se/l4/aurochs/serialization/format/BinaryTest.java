@@ -53,7 +53,7 @@ public class BinaryTest
 		output.writeNull("name");
 		output.writeObjectEnd("");
 		
-		assertStream(OBJECT_START, KEY, VALUE, OBJECT_END);
+		assertStream(OBJECT_START, KEY, NULL, OBJECT_END);
 		assertStreamValues("name", null);
 	}
 	
@@ -254,6 +254,7 @@ public class BinaryTest
 			{
 				case KEY:
 				case VALUE:
+				case NULL:
 					if(i == values.length)
 					{
 						fail("Did not expect more values, but got " + in.getValue());

@@ -41,7 +41,11 @@ public interface StreamingInput
 		/**
 		 * Value, available via getters (and {@link StreamingInput#getValue()}).
 		 */
-		VALUE
+		VALUE,
+		/**
+		 * Null, special case of {@link #VALUE}.
+		 */
+		NULL
 	}
 	
 	/**

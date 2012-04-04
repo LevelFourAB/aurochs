@@ -147,6 +147,7 @@ public class DefaultConfig
 		}
 		
 		Object data = get(path);
+		System.out.println(data);
 		if(data == null)
 		{
 			data = new HashMap<String, Object>();

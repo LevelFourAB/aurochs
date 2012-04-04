@@ -66,6 +66,13 @@ public class ConfigResolver
 	private static void store(Map<String, Object> root, String key, Object value)
 	{
 		Map<String, Object> current = root;
+		if(key.startsWith("\""))
+		{
+			// Quoted key, do not resolve dots
+			root.put(key.substring(1, key.length()-1), value);
+			return;
+		}
+		
 		String[] path = key.split("\\.");
 		for(int i=0, n=path.length-1; i<n; i++)
 		{

@@ -398,6 +398,9 @@ public class ConfigJsonInput
 				if(peeked == '"')
 				{
 					key = readString(true);
+					
+					key = "\"" + key + "\""; // Wrap with quotes for correct translation
+					
 					char next = peekChar();
 					if(next == ':' || next == '=')
 					{

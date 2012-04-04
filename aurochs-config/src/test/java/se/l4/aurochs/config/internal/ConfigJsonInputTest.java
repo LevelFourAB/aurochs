@@ -33,7 +33,7 @@ public class ConfigJsonInputTest
 		assertStream(input, KEY, VALUE, KEY, VALUE);
 		
 		input = createInput(v);
-		assertStreamValues(input, "key1", "value1", "key2", "value2");
+		assertStreamValues(input, "\"key1\"", "value1", "\"key2\"", "value2");
 	}
 	
 	@Test
@@ -45,7 +45,7 @@ public class ConfigJsonInputTest
 		assertStream(input, KEY, NULL, KEY, VALUE);
 		
 		input = createInput(v);
-		assertStreamValues(input, "key1", null, "key2", "normal");
+		assertStreamValues(input, "\"key1\"", null, "\"key2\"", "normal");
 	}
 	
 	/**
@@ -62,7 +62,7 @@ public class ConfigJsonInputTest
 		assertStream(input, KEY, VALUE, KEY, VALUE);
 		
 		input = createInput(v);
-		assertStreamValues(input, "key1", "value1", "key2", "value2");
+		assertStreamValues(input, "\"key1\"", "value1", "\"key2\"", "value2");
 	}
 	
 	/**
@@ -80,7 +80,7 @@ public class ConfigJsonInputTest
 		assertStream(input, KEY, VALUE, KEY, VALUE);
 		
 		input = createInput(v);
-		assertStreamValues(input, "key1", 22.0, "key2", "value2");
+		assertStreamValues(input, "\"key1\"", 22.0, "\"key2\"", "value2");
 	}
 	
 	/**

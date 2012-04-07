@@ -13,6 +13,7 @@ import se.l4.aurochs.serialization.SerializerCollection;
 
 import com.fasterxml.classmate.ResolvedType;
 import com.fasterxml.classmate.members.ResolvedConstructor;
+import com.google.common.primitives.Primitives;
 
 /**
  * Factory that can be used to create an instance of a certain object.
@@ -63,7 +64,7 @@ public class FactoryDefinition<T>
 							"constructor but the there was no such field declared" + 
 							" (for " + raw.getDeclaringClass() + ")");
 				}
-				else if(def.getType() != type.getErasedType())
+				else if(Primitives.wrap(def.getType()) != Primitives.wrap(type.getErasedType()))
 				{
 					throw new SerializationException(expose + " was used on a " +
 						"constructor but the type of the argument was different " +

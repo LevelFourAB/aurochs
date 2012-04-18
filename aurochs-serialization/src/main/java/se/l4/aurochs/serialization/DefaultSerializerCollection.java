@@ -35,6 +35,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.primitives.Primitives;
+import com.google.common.util.concurrent.UncheckedExecutionException;
 
 /**
  * Default implementation of {@link SerializerCollection}.
@@ -162,7 +163,7 @@ public class DefaultSerializerCollection
 	{
 		try
 		{
-			SerializerResolver finder = typeToResolverCache.get(Primitives.wrap(type.getErasedType()));
+			SerializerResolver finder = typeToResolverCache.getUnchecked(Primitives.wrap(type.getErasedType()));
 			
 			Serializer serializer = finder.find(new TypeEncounterImpl(this, type, hints));
 			if(serializer == null)
@@ -172,7 +173,7 @@ public class DefaultSerializerCollection
 			
 			return serializer;
 		}
-		catch(ExecutionException e)
+		catch(UncheckedExecutionException e)
 		{
 			Throwables.propagateIfInstanceOf(e.getCause(), SerializationException.class);
 			
@@ -222,12 +223,10 @@ public class DefaultSerializerCollection
 	
 	protected SerializerResolver<?> findOrCreateSerializerResolver(Class<?> from)
 	{
-		Serializer<?> serializer = createSerializer(from);
-		if(serializer != null)
+		SerializerResolver<?> resolver = createViaUse(from);
+		if(resolver != null)
 		{
-			registerIfNamed(from, serializer);
-		
-			return new StaticSerializer(serializer);
+			return resolver;
 		}
 		
 		if(from.isArray())
@@ -236,7 +235,7 @@ public class DefaultSerializerCollection
 			return ARRAY_RESOLVER;
 		}
 		
-		SerializerResolver<?> resolver = findSerializerResolver(from);
+		resolver = findSerializerResolver(from);
 		if(resolver != null)
 		{
 			return resolver;
@@ -262,19 +261,40 @@ public class DefaultSerializerCollection
 		return null;
 	}
 	
-	protected Serializer<?> createSerializer(Class<?> from)
+	protected SerializerResolver<?> createViaUse(Class<?> from)
 	{
 		if(from.isAnnotationPresent(Use.class))
 		{
 			// A specific serializer should be used
 			Use annotation = from.getAnnotation(Use.class);
-			Class<? extends Serializer> serializer = annotation.value();
-			if(serializer == ReflectionSerializer.class)
+			final Class<? extends Serializer> value = annotation.value();
+			Serializer serializer;
+			if(value == ReflectionSerializer.class)
 			{
-				return ReflectionSerializer.create(from, this);
+				if(from.getTypeParameters().length == 0)
+				{
+					serializer = ReflectionSerializer.create(new TypeViaClass(from), this);
+				}
+				else
+				{
+					// Generic types are present
+					return new SerializerResolver()
+					{
+						@Override
+						public Serializer find(TypeEncounter encounter)
+						{
+							return ReflectionSerializer.create(encounter.getType(), DefaultSerializerCollection.this);
+						}
+					};
+				}
+			}
+			else
+			{
+				serializer = instanceFactory.create(value);
 			}
 			
-			return instanceFactory.create(annotation.value());
+			registerIfNamed(from, serializer);
+			return new StaticSerializer(serializer);
 		}
 		
 		return null;

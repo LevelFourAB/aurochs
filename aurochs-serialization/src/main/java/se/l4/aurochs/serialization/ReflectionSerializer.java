@@ -13,6 +13,7 @@ import se.l4.aurochs.serialization.internal.reflection.FieldDefinition;
 import se.l4.aurochs.serialization.internal.reflection.ReflectionNonStreamingSerializer;
 import se.l4.aurochs.serialization.internal.reflection.ReflectionStreamingSerializer;
 import se.l4.aurochs.serialization.internal.reflection.TypeInfo;
+import se.l4.aurochs.serialization.spi.Type;
 import se.l4.aurochs.serialization.standard.DynamicSerializer;
 
 import com.fasterxml.classmate.MemberResolver;
@@ -65,7 +66,7 @@ public class ReflectionSerializer<T>
 	 * @param collection
 	 * @return
 	 */
-	public static <T> Serializer<T> create(Class<T> type, SerializerCollection collection)
+	public static <T> Serializer<T> create(Type type, SerializerCollection collection)
 	{
 		// TODO: Support for constructors
 		
@@ -73,7 +74,11 @@ public class ReflectionSerializer<T>
 		
 		TypeResolver typeResolver = new TypeResolver();
 		MemberResolver memberResolver = new MemberResolver(typeResolver);
-		ResolvedType rt = typeResolver.resolve(type);
+		
+		Type[] params = type.getParameters();
+		ResolvedType rt = params.length == 0 
+			? typeResolver.resolve(type.getErasedType())
+			: resolveWithParams(typeResolver, type);
 		
 		ResolvedTypeWithMembers typeWithMembers = memberResolver.resolve(rt, null, null);
 		
@@ -94,7 +99,14 @@ public class ReflectionSerializer<T>
 			{
 				// Serializer has been set to a specific type
 				Use annotation = reflectiveField.getAnnotation(Use.class);
-				serializer = collection.getInstanceFactory().create(annotation.value());
+				try
+				{
+					serializer = collection.getInstanceFactory().create(annotation.value());
+				}
+				catch(Exception e)
+				{
+					throw new SerializationException("Unable to create " + annotation.value() + " for " + type + "; " + e.getMessage(), e);
+				}
 			}
 			else if(reflectiveField.isAnnotationPresent(AllowAny.class))
 			{
@@ -103,7 +115,14 @@ public class ReflectionSerializer<T>
 			else
 			{
 				// Dynamically find a suitable type
-				serializer = collection.find(new TypeViaResolvedType(fieldType), reflectiveField.getAnnotations());
+				try
+				{
+					serializer = collection.find(new TypeViaResolvedType(fieldType), reflectiveField.getAnnotations());
+				}
+				catch(SerializationException e)
+				{
+					throw new SerializationException("Could not resolve " + field.getName() + " for " + type + "; " + e.getMessage(), e);
+				}
 			}
 
 			// Force the field to be accessible
@@ -139,13 +158,23 @@ public class ReflectionSerializer<T>
 		FactoryDefinition<T>[] factoryCache = factories.toArray(new FactoryDefinition[factories.size()]);
 		
 		// Create the actual serializer to use
-		TypeInfo<T> typeInfo = new TypeInfo<T>(type, factoryCache, fields, fieldsCache);
+		TypeInfo<T> typeInfo = new TypeInfo<T>((Class) type.getErasedType(), factoryCache, fields, fieldsCache);
 		
 		return hasSerializerInFactory 
 			? new ReflectionNonStreamingSerializer<T>(typeInfo)
 			: new ReflectionStreamingSerializer<T>(typeInfo);
 	}
 	
+	private static ResolvedType resolveWithParams(TypeResolver typeResolver, Type type)
+	{
+		if(type instanceof TypeViaResolvedType)
+		{
+			return ((TypeViaResolvedType) type).getResolvedType();
+		}
+		
+		return null;
+	}
+
 	private static String getName(Field field)
 	{
 		if(field.isAnnotationPresent(Expose.class))

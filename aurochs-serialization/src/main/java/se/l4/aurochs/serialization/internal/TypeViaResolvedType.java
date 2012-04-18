@@ -24,6 +24,11 @@ public class TypeViaResolvedType
 		this.rt = rt;
 		bindings = rt.getTypeBindings();
 	}
+	
+	public ResolvedType getResolvedType()
+	{
+		return rt;
+	}
 
 	@Override
 	public Class<?> getErasedType()

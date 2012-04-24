@@ -17,6 +17,7 @@ import se.l4.aurochs.serialization.Serializer;
 import se.l4.aurochs.serialization.SerializerCollection;
 import se.l4.aurochs.serialization.format.JsonInput;
 import se.l4.aurochs.serialization.format.JsonOutput;
+import se.l4.aurochs.serialization.spi.TypeViaClass;
 
 import com.google.common.base.Throwables;
 
@@ -33,7 +34,7 @@ public class ReflectionConstructorTest
 	@Test
 	public void testDefaultConstructor()
 	{
-		Serializer<A> serializer = ReflectionSerializer.create(A.class, collection);
+		Serializer<A> serializer = ReflectionSerializer.create(new TypeViaClass(A.class), collection);
 		
 		A instance = new A();
 		instance.field = "test value";
@@ -43,7 +44,7 @@ public class ReflectionConstructorTest
 	@Test
 	public void testNonDefaultConstructor()
 	{
-		Serializer<B> serializer = ReflectionSerializer.create(B.class, collection);
+		Serializer<B> serializer = ReflectionSerializer.create(new TypeViaClass(B.class), collection);
 		
 		B instance = new B("test value");
 		testSymmetry(serializer, instance);

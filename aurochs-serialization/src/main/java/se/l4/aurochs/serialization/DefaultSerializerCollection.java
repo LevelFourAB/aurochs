@@ -1,6 +1,7 @@
 package se.l4.aurochs.serialization;
 
 import java.lang.annotation.Annotation;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -13,6 +14,7 @@ import se.l4.aurochs.serialization.collections.ListSerializerResolver;
 import se.l4.aurochs.serialization.collections.MapSerializerResolver;
 import se.l4.aurochs.serialization.collections.SetSerializerResolver;
 import se.l4.aurochs.serialization.enums.EnumSerializerResolver;
+import se.l4.aurochs.serialization.internal.DelayedSerializer;
 import se.l4.aurochs.serialization.internal.TypeEncounterImpl;
 import se.l4.aurochs.serialization.spi.DefaultInstanceFactory;
 import se.l4.aurochs.serialization.spi.InstanceFactory;
@@ -46,7 +48,8 @@ import com.google.common.util.concurrent.UncheckedExecutionException;
 public class DefaultSerializerCollection
 	implements SerializerCollection
 {
-	private static final SerializerResolver<?> ARRAY_RESOLVER = new ArraySerializerResolver();;
+	private static final SerializerResolver<?> ARRAY_RESOLVER = new ArraySerializerResolver();
+	private static final ThreadLocal<Set<Class>> stack = new ThreadLocal<Set<Class>>();
 	
 	private final InstanceFactory instanceFactory;
 	private final Map<Class<?>, SerializerResolver<?>> boundTypeToResolver;
@@ -163,6 +166,13 @@ public class DefaultSerializerCollection
 	{
 		try
 		{
+			Set<Class> s = stack.get();
+			if(s != null && s.contains(type.getErasedType()))
+			{
+				// Already trying to create this serializer, delay creation
+				return new DelayedSerializer(this, type, hints);
+			}
+			
 			SerializerResolver finder = typeToResolverCache.getUnchecked(Primitives.wrap(type.getErasedType()));
 			
 			Serializer serializer = finder.find(new TypeEncounterImpl(this, type, hints));
@@ -273,7 +283,31 @@ public class DefaultSerializerCollection
 			{
 				if(from.getTypeParameters().length == 0)
 				{
-					serializer = ReflectionSerializer.create(new TypeViaClass(from), this);
+					Set<Class> s = stack.get();
+					if(s == null)
+					{
+						s = new HashSet<Class>();
+						stack.set(s);
+					}
+					
+					boolean remove = false;
+					try
+					{
+						remove = s.add(from);
+						serializer = ReflectionSerializer.create(new TypeViaClass(from), this);
+					}
+					finally
+					{
+						if(remove)
+						{
+							s.remove(from);
+						}
+						
+						if(s.isEmpty())
+						{
+							stack.remove();
+						}
+					}
 				}
 				else
 				{
@@ -283,7 +317,31 @@ public class DefaultSerializerCollection
 						@Override
 						public Serializer find(TypeEncounter encounter)
 						{
-							return ReflectionSerializer.create(encounter.getType(), DefaultSerializerCollection.this);
+							Set<Class> s = stack.get();
+							if(s == null)
+							{
+								s = new HashSet<Class>();
+								stack.set(s);
+							}
+							
+							boolean remove = false;
+							try
+							{
+								remove = s.add(encounter.getType().getErasedType());
+								return ReflectionSerializer.create(encounter.getType(), DefaultSerializerCollection.this);
+							}
+							finally
+							{
+								if(remove)
+								{
+									s.remove(encounter.getType().getErasedType());
+								}
+								
+								if(s.isEmpty())
+								{
+									stack.remove();
+								}
+							}
 						}
 					};
 				}

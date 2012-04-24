@@ -37,7 +37,7 @@ public class ConfigJsonInput
 	{
 		this.in = in;
 		
-		lists = new boolean[10];
+		lists = new boolean[20];
 		buffer = new char[1024];
 	}
 	

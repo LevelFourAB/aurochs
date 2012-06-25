@@ -121,8 +121,13 @@ public class ReflectionSerializer<T>
 				}
 				catch(SerializationException e)
 				{
-					throw new SerializationException("Could not resolve " + field.getName() + " for " + type + "; " + e.getMessage(), e);
+					throw new SerializationException("Could not resolve " + field.getName() + " for " + type.getErasedType() + "; " + e.getMessage(), e);
 				}
+			}
+			
+			if(serializer == null)
+			{
+				throw new SerializationException("Could not resolve " + field.getName() + " for " + type.getErasedType() + "; No serializer found");
 			}
 
 			// Force the field to be accessible

@@ -260,6 +260,23 @@ public class JsonInputTest
 		assertThat(input.getByteArray(), is("kaka".getBytes(Charsets.UTF_8)));
 	}
 	
+	@Test
+	public void testLonger()
+		throws Exception
+	{
+		String v = "{\"show_all_inline_media\":false,\"id\":21789286,\"default_profile\":false,\"profile_background_color\":\"161616\",\"profile_image_url\":\"http:\\/\\/a0.twimg.com\\/profile_images\\/1661276913\\/profile.3_normal.jpg\",\"following\":false,\"statuses_count\":514,\"followers_count\":70,\"utc_offset\":null,\"profile_background_image_url\":\"http:\\/\\/a0.twimg.com\\/profile_background_images\\/325347562\\/x24afe3def97fbe3508dfacb66c97493.png\",\"screen_name\":\"aholstenson\",\"name\":\"Andreas Holstenson\",\"profile_link_color\":\"037EC4\",\"profile_background_image_url_https\":\"https:\\/\\/si0.twimg.com\\/profile_background_images\\/325347562\\/x24afe3def97fbe3508dfacb66c97493.png\",\"listed_count\":1,\"url\":\"http:\\/\\/holstenson.se\",\"protected\":false,\"follow_request_sent\":false,\"created_at\":\"Tue Feb 24 19:52:33 +0000 2009\",\"profile_use_background_image\":true,\"verified\":false,\"profile_image_url_https\":\"https:\\/\\/si0.twimg.com\\/profile_images\\/1661276913\\/profile.3_normal.jpg\",\"is_translator\":false,\"profile_text_color\":\"C503C5\",\"description\":\"Tror p\\u00e5 att vi bara n\\u00e5r \",\"notifications\":false,\"time_zone\":null,\"id_str\":\"21789286\",\"default_profile_image\":false,\"location\":\"\",\"profile_sidebar_border_color\":\"D8D8D8\",\"favourites_count\":0,\"contributors_enabled\":false,\"lang\":\"en\",\"geo_enabled\":true,\"friends_count\":212,\"profile_background_tile\":true,\"profile_sidebar_fill_color\":\"FFFFFF\"}";
+		StreamingInput input = createInput(v);
+		input.next(OBJECT_START);
+		while(input.peek() != OBJECT_END)
+		{
+			switch(input.next())
+			{
+				case KEY:
+					input.skipValue();
+			}
+		}
+	}
+	
 	/**
 	 * Assert that the stream contains the specified tokens.
 	 * 

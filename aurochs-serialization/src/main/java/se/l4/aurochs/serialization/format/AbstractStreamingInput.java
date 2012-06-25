@@ -95,7 +95,6 @@ public abstract class AbstractStreamingInput
 		}
 		
 		int currentLevel = level;
-		
 		Token next = peek();
 		while(true)
 		{

@@ -37,18 +37,20 @@ public class JsonInput
 	{
 		this.in = in;
 		
-		lists = new boolean[10];
+		lists = new boolean[20];
 		buffer = new char[1024];
 	}
 	
 	private void readWhitespace()
 		throws IOException
 	{
+		if(limit - position > 0 && ! Character.isWhitespace(buffer[position])) return;
+		
 		while(true)
 		{
 			if(limit - position < 1)
 			{
-				read(1);
+				readAhead(1);
 			}
 			
 			char c = buffer[position];
@@ -76,7 +78,7 @@ public class JsonInput
 	{
 		if(limit - position < 1)
 		{
-			if(! read(1))
+			if(! readAhead(1))
 			{
 				throw new EOFException();
 			}
@@ -85,7 +87,7 @@ public class JsonInput
 		return buffer[position++];
 	}
 	
-	private boolean read(int minChars)
+	private boolean readAhead(int minChars)
 		throws IOException
 	{
 		if(limit < 0)
@@ -100,13 +102,20 @@ public class JsonInput
 		{
 			// If we have characters left we need to keep them in the buffer
 			int stop = limit - position;
+			
 			System.arraycopy(buffer, position, buffer, 0, stop);
+			
 			limit = stop;
+		}
+		else
+		{
+			limit = 0;
 		}
 		
 		int read = in.read(buffer, limit, buffer.length - limit);
+		
 		position = 0;
-		limit = read;
+		limit += read;
 		
 		if(read == -1)
 		{
@@ -277,7 +286,7 @@ public class JsonInput
 				break;
 			case 'u':
 				// Unicode, read 4 chars and treat as hex
-				read(4);
+				readAhead(4);
 				String s = new String(buffer, position, 4);
 				result.append((char) Integer.parseInt(s, 16));
 				position += 4;
@@ -302,11 +311,16 @@ public class JsonInput
 		throws IOException
 	{
 		Token token = toToken(peekChar());
+		char c;
 		switch(token)
 		{
 			case OBJECT_END:
 			case LIST_END:
 				readNext();
+				
+				c = peekChar();
+				if(c == ',') read();
+				
 				return token; 
 			case OBJECT_START:
 			case LIST_START:
@@ -332,7 +346,7 @@ public class JsonInput
 				
 				// Check for trailing commas
 				readWhitespace();
-				char c = peekChar();
+				c = peekChar();
 				if(c == ',') read();
 				
 				return token;
@@ -345,7 +359,7 @@ public class JsonInput
 				
 				// Check for trailing commas
 				readWhitespace();
-				char c = peekChar();
+				c = peekChar();
 				if(c == ',') read();
 				
 				return token;
@@ -368,7 +382,7 @@ public class JsonInput
 		
 		if(limit - position < 1)
 		{
-			if(false == read(1))
+			if(false == readAhead(1))
 			{
 				return NULL;
 			}
@@ -390,7 +404,7 @@ public class JsonInput
 		
 		if(limit - position < 1)
 		{
-			if(false == read(1)) return null;
+			if(false == readAhead(1)) return null;
 		}
 		
 		if(limit - position > 0)

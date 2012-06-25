@@ -13,6 +13,7 @@ import se.l4.aurochs.serialization.SerializerCollection;
 
 import com.fasterxml.classmate.ResolvedType;
 import com.fasterxml.classmate.members.ResolvedConstructor;
+import com.google.common.base.Objects;
 import com.google.common.primitives.Primitives;
 
 /**
@@ -217,6 +218,13 @@ public class FactoryDefinition<T>
 			return collection.getInstanceFactory()
 				.create(type, annotations);
 		}
-		
+	}
+	
+	@Override
+	public String toString()
+	{
+		return Objects.toStringHelper(this)
+			.add("constructor", raw)
+			.toString();
 	}
 }

@@ -89,7 +89,7 @@ public class BinaryInput
 		int read = in.read(buffer, 0, len);
 		if(read != len)
 		{
-			throw new EOFException("Expected to read " + len + " bytes, but could only read " + len);
+			throw new EOFException("Expected to read " + len + " bytes, but could only read " + read);
 		}
 	}
 	

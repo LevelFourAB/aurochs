@@ -1,5 +1,7 @@
 package se.l4.aurochs.config;
 
+import java.util.Collection;
+
 
 public interface Config
 {
@@ -22,4 +24,12 @@ public interface Config
 	 * @return
 	 */
 	<T> Value<T> get(String path, Class<T> type);
+	
+	/**
+	 * Get the direct subkeys of the given path.
+	 * 
+	 * @param path
+	 * @return
+	 */
+	Collection<String> keys(String path);
 }

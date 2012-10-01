@@ -2,6 +2,8 @@ package se.l4.aurochs.config.internal;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -89,6 +91,39 @@ public class DefaultConfig
 	public <T> T asObject(String path, Class<T> type)
 	{
 		return get(path, type).get();
+	}
+	
+	@Override
+	public Collection<String> keys(String path)
+	{
+		if(path == null || path.equals(""))
+		{
+			return data.keySet();
+		}
+			
+		String[] parts = path.split("\\.");
+		Map<String, Object> current = data;
+		for(int i=0, n=parts.length; i<n; i++)
+		{
+			if(current.containsKey(parts[i]))
+			{
+				Object o = current.get(parts[i]);
+				if(o instanceof Map)
+				{
+					current = (Map) o;
+				}
+				else
+				{
+					return Collections.emptyList();
+				}
+			}
+			else
+			{
+				return Collections.EMPTY_LIST;
+			}
+		}
+			
+		return current.keySet();
 	}
 	
 	private void validateInstance(String path, Object object)

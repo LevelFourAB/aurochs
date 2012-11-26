@@ -2,6 +2,7 @@ package se.l4.aurochs.serialization.format;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Arrays;
 
 /**
  * Output for custom binary format.
@@ -12,7 +13,7 @@ import java.io.OutputStream;
 public class BinaryOutput
 	implements StreamingOutput
 {
-	private static final int MAX_LEVELS = 10;
+	private static final int LEVELS = 20;
 
 	public static final int TAG_KEY = 0;
 	
@@ -32,8 +33,8 @@ public class BinaryOutput
 	
 	private final OutputStream out;
 	
-	private final boolean[] lists;
-	private final boolean[] hasData;
+	private boolean[] lists;
+	private boolean[] hasData;
 	
 	private int level;
 	
@@ -41,8 +42,8 @@ public class BinaryOutput
 	{
 		this.out = out;
 		
-		lists = new boolean[MAX_LEVELS];
-		hasData = new boolean[MAX_LEVELS];
+		lists = new boolean[LEVELS];
+		hasData = new boolean[LEVELS];
 	}
 	
 	/**
@@ -53,6 +54,13 @@ public class BinaryOutput
 	private void increaseLevel(boolean list)
 	{
 		level++;
+		if(hasData.length == level)
+		{
+			// Grow lists when needed
+			hasData = Arrays.copyOf(hasData, hasData.length * 2);
+			lists = Arrays.copyOf(lists, hasData.length * 2);
+		}
+		
 		hasData[level] = false;
 		lists[level] = list;
 	}

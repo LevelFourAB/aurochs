@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.util.Arrays;
 
 /**
  * Streamer that outputs JSON.
@@ -29,13 +30,13 @@ public class JsonOutput
 		'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '/'
 	};
 	
-	private static final int MAX_LEVELS = 10;
+	private static final int LEVELS = 20;
 	
 	protected final Writer writer;
 	private final boolean beautify;
 	
-	private final boolean[] lists;
-	private final boolean[] hasData;
+	private boolean[] lists;
+	private boolean[] hasData;
 	
 	private int level;
 
@@ -85,8 +86,8 @@ public class JsonOutput
 		this.writer = writer;
 		this.beautify = beautify;
 		
-		lists = new boolean[MAX_LEVELS];
-		hasData = new boolean[MAX_LEVELS];
+		lists = new boolean[LEVELS];
+		hasData = new boolean[LEVELS];
 		
 		encoded = new char[4];
 	}
@@ -165,6 +166,14 @@ public class JsonOutput
 	private void increaseLevel(boolean list)
 	{
 		level++;
+		
+		if(hasData.length == level)
+		{
+			// Grow lists when needed
+			hasData = Arrays.copyOf(hasData, hasData.length * 2);
+			lists = Arrays.copyOf(lists, hasData.length * 2);
+		}
+		
 		hasData[level] = false;
 		lists[level] = list;
 	}

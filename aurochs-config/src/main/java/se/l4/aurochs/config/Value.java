@@ -15,4 +15,19 @@ public interface Value<T>
 	 * @return
 	 */
 	T get();
+	
+	/**
+	 * Get the current value or return a default value if it is not set.
+	 * 
+	 * @param defaultInstance
+	 * @return
+	 */
+	T getOrDefault(T defaultInstance);
+	
+	/**
+	 * Get if this value exists.
+	 * 
+	 * @return
+	 */
+	boolean exists();
 }

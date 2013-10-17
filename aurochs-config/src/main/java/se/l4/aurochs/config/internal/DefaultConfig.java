@@ -119,7 +119,7 @@ public class DefaultConfig
 			}
 			else
 			{
-				return Collections.EMPTY_LIST;
+				return Collections.emptyList();
 			}
 		}
 			
@@ -184,8 +184,7 @@ public class DefaultConfig
 		Object data = get(path);
 		if(data == null)
 		{
-			data = new HashMap<String, Object>();
-//			throw new ConfigException("Configuration data for `" + path + "` is missing");
+			return new ValueImpl<T>(false, null);
 		}
 		
 		StreamingInput input = MapInput.resolveInput(data);
@@ -195,7 +194,7 @@ public class DefaultConfig
 			
 			validateInstance(path, instance);
 			
-			return new ValueImpl<T>(instance);
+			return new ValueImpl<T>(true, instance);
 		}
 		catch(ConfigException e)
 		{
@@ -210,10 +209,12 @@ public class DefaultConfig
 	private static class ValueImpl<T>
 		implements Value<T>
 	{
+		private final boolean exists;
 		private final T instance;
 
-		public ValueImpl(T instance)
+		public ValueImpl(boolean exists, T instance)
 		{
+			this.exists = exists;
 			this.instance = instance;
 		}
 
@@ -221,6 +222,18 @@ public class DefaultConfig
 		public T get()
 		{
 			return instance;
+		}
+		
+		@Override
+		public T getOrDefault(T defaultInstance)
+		{
+			return exists ? instance : defaultInstance;
+		}
+		
+		@Override
+		public boolean exists()
+		{
+			return exists;
 		}
 	}
 }

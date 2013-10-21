@@ -141,6 +141,11 @@ public class FactoryDefinition<T>
 		return score;
 	}
 	
+	public int getWeight()
+	{
+		return arguments.length;
+	}
+	
 	/**
 	 * Create a new instance using the given deserialized data. The data
 	 * is only used if this factory has any serialized fields.

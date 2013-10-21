@@ -51,19 +51,26 @@ public class TypeInfo<T>
 	 */
 	public T newInstance(Map<String, Object> fields)
 	{
-		FactoryDefinition<T> bestDef = factories[0];
-		int bestScore = bestDef.getScore(fields);
-		
-		for(int i=1, n=factories.length; i<n; i++)
+		try
 		{
-			int score = factories[i].getScore(fields);
-			if(score > bestScore)
+			FactoryDefinition<T> bestDef = factories[0];
+			int bestScore = bestDef.getScore(fields);
+			
+			for(int i=1, n=factories.length; i<n; i++)
 			{
-				bestDef = factories[i];
-				bestScore = score;
+				int score = factories[i].getScore(fields);
+				if(score > bestScore)
+				{
+					bestDef = factories[i];
+					bestScore = score;
+				}
 			}
+			
+			return bestDef.create(fields);
 		}
-		
-		return bestDef.create(fields);
+		catch(RuntimeException e)
+		{
+			throw new RuntimeException("Could not create " + type + "; " + e.getMessage(), e);
+		}
 	}
 }

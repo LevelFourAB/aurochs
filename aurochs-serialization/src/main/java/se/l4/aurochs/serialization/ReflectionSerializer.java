@@ -2,8 +2,9 @@ package se.l4.aurochs.serialization;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Comparator;
+import java.util.Set;
+import java.util.TreeSet;
 
 import se.l4.aurochs.serialization.format.StreamingInput;
 import se.l4.aurochs.serialization.format.StreamingOutput;
@@ -145,7 +146,16 @@ public class ReflectionSerializer<T>
 		
 		// Get all of the factories
 		boolean hasSerializerInFactory = false;
-		List<FactoryDefinition<T>> factories = new ArrayList<FactoryDefinition<T>>();
+		Set<FactoryDefinition<T>> factories = new TreeSet<FactoryDefinition<T>>(new Comparator<FactoryDefinition<T>>()
+		{
+			@Override
+			public int compare(FactoryDefinition<T> o1, FactoryDefinition<T> o2)
+			{
+				int i1 = o1.getWeight();
+				int i2 = o2.getWeight();
+				return i1 < i2 ? -1 : (i1 == i2 ? 0 : 1);
+			}
+		});
 		
 		for(ResolvedConstructor constructor : typeWithMembers.getConstructors())
 		{

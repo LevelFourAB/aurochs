@@ -20,11 +20,13 @@ import com.google.inject.util.Types;
  */
 public class ConfigBinder
 {
-	public interface BindingBuilder
+	public interface BindingBuilder<T>
 	{
-		BindingBuilder annotatedWith(Class<? extends Annotation> annotation);
+		BindingBuilder<T> annotatedWith(Class<? extends Annotation> annotation);
 		
-		BindingBuilder annotatedWith(Annotation annotation);
+		BindingBuilder<T> annotatedWith(Annotation annotation);
+		
+		BindingBuilder<T> withDefault(T value);
 		
 		ConfigBinder to(String path);
 	}
@@ -54,21 +56,23 @@ public class ConfigBinder
 	 * @param type
 	 * @return
 	 */
-	public BindingBuilder bind(final Class<?> type)
+	public <T> BindingBuilder<T> bind(final Class<T> type)
 	{
-		return new BindingBuilderImpl(this, type);
+		return new BindingBuilderImpl<T>(this, type);
 	}
 	
-	private static class BindingBuilderImpl
-		implements BindingBuilder
+	private static class BindingBuilderImpl<T>
+		implements BindingBuilder<T>
 	{
 		private final ConfigBinder binder;
-		private final Class<?> type;
+		private final Class<T> type;
 		
 		private Annotation annotation;
 		private Class<? extends Annotation> annotationClass;
 		
-		public BindingBuilderImpl(ConfigBinder binder, Class<?> type)
+		private T defaultValue;
+		
+		public BindingBuilderImpl(ConfigBinder binder, Class<T> type)
 		{
 			this.binder = binder;
 			this.type = type;
@@ -77,13 +81,13 @@ public class ConfigBinder
 		@Override
 		public ConfigBinder to(String path)
 		{
-			new Definition(path, type, annotationClass, annotation).bind(binder.binder);
+			new Definition(path, type, annotationClass, annotation, defaultValue).bind(binder.binder);
 			
 			return binder;
 		}
 		
 		@Override
-		public BindingBuilder annotatedWith(Annotation annotation)
+		public BindingBuilder<T> annotatedWith(Annotation annotation)
 		{
 			this.annotation = annotation;
 			
@@ -91,9 +95,17 @@ public class ConfigBinder
 		}
 		
 		@Override
-		public BindingBuilder annotatedWith(Class<? extends Annotation> annotation)
+		public BindingBuilder<T> annotatedWith(Class<? extends Annotation> annotation)
 		{
 			this.annotationClass = annotation;
+			
+			return this;
+		}
+		
+		@Override
+		public BindingBuilder<T> withDefault(T value)
+		{
+			this.defaultValue = value;
 			
 			return this;
 		}
@@ -107,12 +119,15 @@ public class ConfigBinder
 		private Class<? extends Annotation> annotationClass;
 		private Annotation annotation;
 		
-		public Definition(String key, Class<T> type, Class<? extends Annotation> annotationClass, Annotation annotation)
+		private T defaultValue;
+		
+		public Definition(String key, Class<T> type, Class<? extends Annotation> annotationClass, Annotation annotation, T defaultValue)
 		{
 			this.key = key;
 			this.type = type;
 			this.annotationClass = annotationClass;
 			this.annotation = annotation;
+			this.defaultValue = defaultValue;
 		}
 		
 		public void bind(Binder binder)
@@ -145,7 +160,7 @@ public class ConfigBinder
 				.in(Scopes.SINGLETON);
 			
 			binder.bind(key)
-				.toProvider(new ConfigObjectProvider<T>(provider));
+				.toProvider(new ConfigObjectProvider<T>(provider, defaultValue));
 		}
 
 		private Provider<Value<T>> createProvider(Binder binder)
@@ -159,16 +174,18 @@ public class ConfigBinder
 		implements Provider<T>
 	{
 		private final Provider<Value<T>> provider;
+		private final T defaultValue;
 
-		public ConfigObjectProvider(Provider<Value<T>> provider)
+		public ConfigObjectProvider(Provider<Value<T>> provider, T defaultValue)
 		{
 			this.provider = provider;
+			this.defaultValue = defaultValue;
 		}
 		
 		@Override
 		public T get()
 		{
-			return provider.get().get();
+			return provider.get().getOrDefault(defaultValue);
 		}
 	}
 	

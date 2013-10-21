@@ -399,7 +399,7 @@ public class ConfigJsonInput
 				{
 					key = readString(true);
 					
-					key = "\"" + key + "\""; // Wrap with quotes for correct translation
+					//key = "\"" + key + "\""; // Wrap with quotes for correct translation
 					
 					char next = peekChar();
 					if(next == ':' || next == '=')

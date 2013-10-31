@@ -5,6 +5,7 @@ import java.lang.annotation.Annotation;
 
 import se.l4.aurochs.serialization.Serializer;
 import se.l4.aurochs.serialization.SerializerCollection;
+import se.l4.aurochs.serialization.SerializerFormatDefinition;
 import se.l4.aurochs.serialization.format.StreamingInput;
 import se.l4.aurochs.serialization.format.StreamingOutput;
 import se.l4.aurochs.serialization.spi.Type;
@@ -60,5 +61,13 @@ public class DelayedSerializer<T>
 		ensureSerializer();
 		
 		instance.write(object, name, stream);
+	}
+	
+	@Override
+	public SerializerFormatDefinition getFormatDefinition()
+	{
+		ensureSerializer();
+		
+		return instance.getFormatDefinition();
 	}
 }

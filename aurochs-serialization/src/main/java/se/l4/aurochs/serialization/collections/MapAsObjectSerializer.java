@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import se.l4.aurochs.serialization.Serializer;
+import se.l4.aurochs.serialization.SerializerFormatDefinition;
 import se.l4.aurochs.serialization.format.StreamingInput;
 import se.l4.aurochs.serialization.format.StreamingInput.Token;
 import se.l4.aurochs.serialization.format.StreamingOutput;
@@ -14,10 +15,15 @@ public class MapAsObjectSerializer<V>
 	implements Serializer<Map<String, V>>
 {
 	private final Serializer<V> serializer;
+	private final SerializerFormatDefinition formatDefinition;
 
 	public MapAsObjectSerializer(Serializer<V> serializer)
 	{
 		this.serializer = serializer;
+		
+		formatDefinition = SerializerFormatDefinition.builder()
+			.field("*").using(serializer)
+			.build();
 	}
 	
 	@Override
@@ -54,5 +60,11 @@ public class MapAsObjectSerializer<V>
 		}
 		
 		stream.writeObjectEnd(name);
+	}
+	
+	@Override
+	public SerializerFormatDefinition getFormatDefinition()
+	{
+		return formatDefinition;
 	}
 }

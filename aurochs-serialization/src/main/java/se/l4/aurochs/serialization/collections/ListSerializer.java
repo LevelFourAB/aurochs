@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.RandomAccess;
 
 import se.l4.aurochs.serialization.Serializer;
+import se.l4.aurochs.serialization.SerializerFormatDefinition;
 import se.l4.aurochs.serialization.format.StreamingInput;
 import se.l4.aurochs.serialization.format.StreamingInput.Token;
 import se.l4.aurochs.serialization.format.StreamingOutput;
@@ -21,10 +22,15 @@ public class ListSerializer<T>
 	implements Serializer<List<T>>
 {
 	private final Serializer<T> itemSerializer;
+	private final SerializerFormatDefinition formatDefinition;
 
 	public ListSerializer(Serializer<T> itemSerializer)
 	{
 		this.itemSerializer = itemSerializer;
+		
+		formatDefinition = SerializerFormatDefinition.builder()
+			.list(itemSerializer)
+			.build();
 	}
 
 	@Override
@@ -69,4 +75,9 @@ public class ListSerializer<T>
 		stream.writeListEnd(name);
 	}
 	
+	@Override
+	public SerializerFormatDefinition getFormatDefinition()
+	{
+		return formatDefinition;
+	}
 }

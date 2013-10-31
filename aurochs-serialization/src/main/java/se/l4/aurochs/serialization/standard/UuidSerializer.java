@@ -1,12 +1,16 @@
 package se.l4.aurochs.serialization.standard;
 
 import java.io.IOException;
+import java.text.Format;
 import java.util.UUID;
 
 import se.l4.aurochs.serialization.Serializer;
+import se.l4.aurochs.serialization.SerializerFormatDefinition;
 import se.l4.aurochs.serialization.format.StreamingInput;
+import se.l4.aurochs.serialization.format.ValueType;
 import se.l4.aurochs.serialization.format.StreamingInput.Token;
 import se.l4.aurochs.serialization.format.StreamingOutput;
+import se.l4.aurochs.serialization.internal.SerializerFormatDefinitionBuilderImpl;
 
 /**
  * Serializer for {@link UUID} that transforms into a byte array.
@@ -17,6 +21,12 @@ import se.l4.aurochs.serialization.format.StreamingOutput;
 public class UuidSerializer
 	implements Serializer<UUID>
 {
+	private final SerializerFormatDefinition formatDefinition;
+
+	public UuidSerializer()
+	{
+		formatDefinition = SerializerFormatDefinition.forValue(ValueType.BYTES);
+	}
 
 	@Override
 	public UUID read(StreamingInput in) throws IOException
@@ -30,6 +40,12 @@ public class UuidSerializer
 		throws IOException
 	{
 		stream.write(name, toBytes(object));
+	}
+	
+	@Override
+	public SerializerFormatDefinition getFormatDefinition()
+	{
+		return formatDefinition;
 	}
 
 	public static UUID fromBytes(byte[] bytes)

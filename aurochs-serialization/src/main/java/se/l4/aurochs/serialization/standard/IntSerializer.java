@@ -3,9 +3,12 @@ package se.l4.aurochs.serialization.standard;
 import java.io.IOException;
 
 import se.l4.aurochs.serialization.Serializer;
+import se.l4.aurochs.serialization.SerializerFormatDefinition;
 import se.l4.aurochs.serialization.format.StreamingInput;
+import se.l4.aurochs.serialization.format.ValueType;
 import se.l4.aurochs.serialization.format.StreamingInput.Token;
 import se.l4.aurochs.serialization.format.StreamingOutput;
+import se.l4.aurochs.serialization.internal.SerializerFormatDefinitionBuilderImpl;
 
 /**
  * Serializer for {@link Integer}.
@@ -16,6 +19,12 @@ import se.l4.aurochs.serialization.format.StreamingOutput;
 public class IntSerializer
 	implements Serializer<Integer>
 {
+	private final SerializerFormatDefinition formatDefinition;
+
+	public IntSerializer()
+	{
+		formatDefinition = SerializerFormatDefinition.forValue(ValueType.INTEGER);
+	}
 
 	@Override
 	public Integer read(StreamingInput in)
@@ -32,4 +41,9 @@ public class IntSerializer
 		stream.write(name, object);
 	}
 
+	@Override
+	public SerializerFormatDefinition getFormatDefinition()
+	{
+		return formatDefinition;
+	}
 }

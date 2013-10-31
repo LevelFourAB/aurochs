@@ -3,6 +3,7 @@ package se.l4.aurochs.serialization.internal.reflection;
 import java.util.Map;
 
 import se.l4.aurochs.serialization.ReflectionSerializer;
+import se.l4.aurochs.serialization.SerializerFormatDefinition;
 
 /**
  * Information about a type used with {@link ReflectionSerializer}.
@@ -16,6 +17,7 @@ public class TypeInfo<T>
 	private final Class<T> type;
 	private final Map<String, FieldDefinition> fieldMap;
 	private final FactoryDefinition<T>[] factories;
+	private final SerializerFormatDefinition formatDefinition;
 
 	public TypeInfo(Class<T> type,
 			FactoryDefinition<T>[] factories,
@@ -26,6 +28,13 @@ public class TypeInfo<T>
 		this.factories = factories;
 		this.fieldMap = fieldMap;
 		this.fields = fields;
+		
+		SerializerFormatDefinition.Builder builder = SerializerFormatDefinition.builder();
+		for(FieldDefinition fdef : fields)
+		{
+			builder.field(fdef.getName()).withHints(fdef.getHints()).using(fdef.getSerializer());
+		}
+		formatDefinition = builder.build();
 	}
 	
 	public Class<T> getType()
@@ -72,5 +81,10 @@ public class TypeInfo<T>
 		{
 			throw new RuntimeException("Could not create " + type + "; " + e.getMessage(), e);
 		}
+	}
+	
+	public SerializerFormatDefinition getFormatDefinition()
+	{
+		return formatDefinition;
 	}
 }

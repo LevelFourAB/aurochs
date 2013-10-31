@@ -3,9 +3,11 @@ package se.l4.aurochs.serialization.enums;
 import java.io.IOException;
 
 import se.l4.aurochs.serialization.Serializer;
+import se.l4.aurochs.serialization.SerializerFormatDefinition;
 import se.l4.aurochs.serialization.format.StreamingInput;
 import se.l4.aurochs.serialization.format.StreamingInput.Token;
 import se.l4.aurochs.serialization.format.StreamingOutput;
+import se.l4.aurochs.serialization.internal.SerializerFormatDefinitionBuilderImpl;
 
 /**
  * Serializer for {@link Enum}s. The enum serializer can use different
@@ -19,10 +21,15 @@ public class EnumSerializer<T extends Enum<T>>
 	implements Serializer<T>
 {
 	private final ValueTranslator translator;
+	private final SerializerFormatDefinition formatDefinition;
 
 	public EnumSerializer(ValueTranslator translator)
 	{
 		this.translator = translator;
+		
+		formatDefinition = new SerializerFormatDefinitionBuilderImpl()
+			.value(translator.getType())
+			.build();
 	}
 	
 	@Override
@@ -93,5 +100,11 @@ public class EnumSerializer<T extends Enum<T>>
 			default:
 				throw new AssertionError("Unknown type: " + translator.getType());
 		}
+	}
+	
+	@Override
+	public SerializerFormatDefinition getFormatDefinition()
+	{
+		return formatDefinition;
 	}
 }

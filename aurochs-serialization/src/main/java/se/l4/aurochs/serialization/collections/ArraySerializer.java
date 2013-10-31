@@ -6,9 +6,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import se.l4.aurochs.serialization.Serializer;
+import se.l4.aurochs.serialization.SerializerFormatDefinition;
 import se.l4.aurochs.serialization.format.StreamingInput;
-import se.l4.aurochs.serialization.format.StreamingOutput;
 import se.l4.aurochs.serialization.format.StreamingInput.Token;
+import se.l4.aurochs.serialization.format.StreamingOutput;
 
 /**
  * Serializer for arrays.
@@ -21,11 +22,16 @@ public class ArraySerializer
 {
 	private final Class<?> componentType;
 	private final Serializer itemSerializer;
+	private final SerializerFormatDefinition formatDefinition;
 
 	public ArraySerializer(Class<?> componentType, Serializer<?> itemSerializer)
 	{
 		this.componentType = componentType;
 		this.itemSerializer = itemSerializer;
+		
+		formatDefinition = SerializerFormatDefinition.builder()
+			.list(itemSerializer)
+			.build();
 	}
 	
 	@Override
@@ -62,5 +68,11 @@ public class ArraySerializer
 			itemSerializer.write(value, "item", stream);
 		}
 		stream.writeListEnd(name);
+	}
+	
+	@Override
+	public SerializerFormatDefinition getFormatDefinition()
+	{
+		return formatDefinition;
 	}
 }

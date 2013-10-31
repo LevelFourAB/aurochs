@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import se.l4.aurochs.serialization.Serializer;
+import se.l4.aurochs.serialization.SerializerFormatDefinition;
 import se.l4.aurochs.serialization.format.StreamingInput;
 import se.l4.aurochs.serialization.format.StreamingInput.Token;
 import se.l4.aurochs.serialization.format.StreamingOutput;
@@ -81,5 +82,11 @@ public class ReflectionNonStreamingSerializer<T>
 		}
 		
 		stream.writeObjectEnd(name);
+	}
+	
+	@Override
+	public SerializerFormatDefinition getFormatDefinition()
+	{
+		return type.getFormatDefinition();
 	}
 }

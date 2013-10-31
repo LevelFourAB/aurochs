@@ -1,6 +1,7 @@
 package se.l4.aurochs.serialization.internal.reflection;
 
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
@@ -33,6 +34,16 @@ public class FieldDefinition
 		this.serializer = serializer;
 		this.type = type;
 		readOnly = Modifier.isFinal(field.getModifiers());
+	}
+	
+	public String getName()
+	{
+		return name;
+	}
+	
+	public Serializer getSerializer()
+	{
+		return serializer;
 	}
 	
 	public boolean isReadOnly()
@@ -109,5 +120,10 @@ public class FieldDefinition
 		{
 			serializer.write(value, name, stream);
 		}
+	}
+	
+	public Annotation[] getHints()
+	{
+		return field.getAnnotations();
 	}
 }

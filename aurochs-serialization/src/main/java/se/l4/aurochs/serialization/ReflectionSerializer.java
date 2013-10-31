@@ -60,6 +60,12 @@ public class ReflectionSerializer<T>
 	{
 	}
 	
+	@Override
+	public SerializerFormatDefinition getFormatDefinition()
+	{
+		return null;
+	}
+	
 	/**
 	 * Create a new serializer that will use reflection.
 	 * 

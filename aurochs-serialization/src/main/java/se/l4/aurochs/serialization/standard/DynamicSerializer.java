@@ -6,7 +6,9 @@ import se.l4.aurochs.serialization.QualifiedName;
 import se.l4.aurochs.serialization.SerializationException;
 import se.l4.aurochs.serialization.Serializer;
 import se.l4.aurochs.serialization.SerializerCollection;
+import se.l4.aurochs.serialization.SerializerFormatDefinition;
 import se.l4.aurochs.serialization.format.StreamingInput;
+import se.l4.aurochs.serialization.format.ValueType;
 import se.l4.aurochs.serialization.format.StreamingInput.Token;
 import se.l4.aurochs.serialization.format.StreamingOutput;
 
@@ -21,10 +23,17 @@ public class DynamicSerializer
 	implements Serializer<Object>
 {
 	private final SerializerCollection collection;
+	private final SerializerFormatDefinition formatDefinition;
 
 	public DynamicSerializer(SerializerCollection collection)
 	{
 		this.collection = collection;
+		
+		formatDefinition = SerializerFormatDefinition.builder()
+			.field("namespace").using(ValueType.STRING)
+			.field("name").using(ValueType.STRING)
+			.field("value").using(SerializerFormatDefinition.any())
+			.build();
 	}
 	
 	@Override
@@ -120,5 +129,11 @@ public class DynamicSerializer
 		serializer.write(object, "value", stream);
 		
 		stream.writeObjectEnd(name);
+	}
+	
+	@Override
+	public SerializerFormatDefinition getFormatDefinition()
+	{
+		return formatDefinition;
 	}
 }

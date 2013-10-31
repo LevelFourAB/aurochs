@@ -14,5 +14,6 @@ public enum ValueType
 	DOUBLE,
 	SHORT,
 	INTEGER,
-	LONG;
+	LONG,
+	BYTES;
 }

@@ -39,4 +39,12 @@ public interface Serializer<T>
 	 */
 	void write(T object, String name, StreamingOutput stream)
 		throws IOException;
+	
+	/**
+	 * Get the definition that describes what this serializer can
+	 * read and write.
+	 * 
+	 * @return
+	 */
+	SerializerFormatDefinition getFormatDefinition();
 }

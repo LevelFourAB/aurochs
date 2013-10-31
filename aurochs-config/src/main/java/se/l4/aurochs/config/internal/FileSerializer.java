@@ -4,7 +4,9 @@ import java.io.File;
 import java.io.IOException;
 
 import se.l4.aurochs.serialization.Serializer;
+import se.l4.aurochs.serialization.SerializerFormatDefinition;
 import se.l4.aurochs.serialization.format.StreamingInput;
+import se.l4.aurochs.serialization.format.ValueType;
 import se.l4.aurochs.serialization.format.StreamingInput.Token;
 import se.l4.aurochs.serialization.format.StreamingOutput;
 
@@ -18,10 +20,13 @@ public class FileSerializer
 	implements Serializer<File>
 {
 	private final File root;
+	private final SerializerFormatDefinition formatDefinition;
 
 	public FileSerializer(File root)
 	{
 		this.root = root;
+		
+		formatDefinition = SerializerFormatDefinition.forValue(ValueType.STRING);
 	}
 	
 	@Override
@@ -50,4 +55,9 @@ public class FileSerializer
 	{
 	}
 
+	@Override
+	public SerializerFormatDefinition getFormatDefinition()
+	{
+		return formatDefinition;
+	}
 }

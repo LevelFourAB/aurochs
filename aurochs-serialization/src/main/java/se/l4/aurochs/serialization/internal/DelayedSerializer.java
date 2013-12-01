@@ -68,6 +68,8 @@ public class DelayedSerializer<T>
 	{
 		ensureSerializer();
 		
+		if(instance == null) return null;
+		
 		return instance.getFormatDefinition();
 	}
 }

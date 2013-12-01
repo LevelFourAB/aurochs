@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,7 +52,10 @@ public class RawFormatReader
 	public static Map<String, Object> read(StreamingInput input)
 		throws IOException
 	{
-		switch(input.peek())
+		Token next = input.peek();
+		if(next == null) return Collections.emptyMap();
+		
+		switch(next)
 		{
 			case LIST_START:
 			case LIST_END:

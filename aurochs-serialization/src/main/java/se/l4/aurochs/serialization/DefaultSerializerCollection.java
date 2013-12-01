@@ -32,6 +32,7 @@ import se.l4.aurochs.serialization.standard.ShortSerializer;
 import se.l4.aurochs.serialization.standard.StringSerializer;
 import se.l4.aurochs.serialization.standard.UuidSerializer;
 
+import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -53,7 +54,7 @@ public class DefaultSerializerCollection
 	
 	private final InstanceFactory instanceFactory;
 	private final Map<Class<?>, SerializerResolver<?>> boundTypeToResolver;
-	private final LoadingCache<Class<?>, SerializerResolver<?>> typeToResolverCache;
+	private final LoadingCache<Class<?>, Optional<SerializerResolver<?>>> typeToResolverCache;
 	private final Map<QualifiedName, Serializer<?>> nameToSerializer;
 	private final Map<Serializer<?>, QualifiedName> serializerToName;
 	
@@ -71,13 +72,14 @@ public class DefaultSerializerCollection
 		
 		boundTypeToResolver = new ConcurrentHashMap<Class<?>, SerializerResolver<?>>();
 		typeToResolverCache = CacheBuilder.newBuilder()
-			.build(new CacheLoader<Class<?>, SerializerResolver<?>>()
+			.build(new CacheLoader<Class<?>, Optional<SerializerResolver<?>>>()
 			{
 				@Override
-				public SerializerResolver<?> load(Class<?> key)
+				public Optional<SerializerResolver<?>> load(Class<?> key)
 					throws Exception
 				{
-					return findOrCreateSerializerResolver(key);
+					SerializerResolver<?> result = findOrCreateSerializerResolver(key);
+					return Optional.<SerializerResolver<?>>fromNullable(result);
 				}
 			});
 		
@@ -137,7 +139,7 @@ public class DefaultSerializerCollection
 	@Override
 	public <T> SerializerCollection bind(Class<T> type, SerializerResolver<? extends T> resolver)
 	{
-		typeToResolverCache.put(type, resolver);
+		typeToResolverCache.put(type, Optional.<SerializerResolver<?>>of(resolver));
 		boundTypeToResolver.put(type, resolver);
 		
 		return this;
@@ -173,7 +175,7 @@ public class DefaultSerializerCollection
 				return new DelayedSerializer(this, type, hints);
 			}
 			
-			SerializerResolver finder = typeToResolverCache.getUnchecked(Primitives.wrap(type.getErasedType()));
+			SerializerResolver finder = getResolver(type.getErasedType(), true);
 			
 			Serializer serializer = finder.find(new TypeEncounterImpl(this, type, hints));
 			if(serializer == null)
@@ -212,25 +214,38 @@ public class DefaultSerializerCollection
 	@Override
 	public boolean isSupported(Class<?> type)
 	{
+		SerializerResolver finder = getResolver(type, false);
+		if(finder == null) return false;
+		
+		if(finder instanceof StaticSerializer)
+		{
+			return true;
+		}
+		
+		Serializer serializer = finder.find(new TypeEncounterImpl(this, new TypeViaClass(type), null));
+		return serializer != null;
+	}
+	
+	protected SerializerResolver<?> getResolver(Class<?> type, boolean throwIfUnavailable)
+	{
 		try
 		{
-			SerializerResolver finder = typeToResolverCache.get(Primitives.wrap(type));
-			if(finder instanceof StaticSerializer)
+			Optional<SerializerResolver<?>> optional = typeToResolverCache.get(Primitives.wrap(type));
+			
+			if(throwIfUnavailable && ! optional.isPresent())
 			{
-				return true;
+				throw new SerializationException("Unable to retreive serializer for " + type + "; Type does not appear serializable");
 			}
 			
-			Serializer serializer = finder.find(new TypeEncounterImpl(this, new TypeViaClass(type), null));
-			return serializer != null;
+			return optional.orNull();
 		}
-		catch(ExecutionException e)
+		catch (ExecutionException e)
 		{
 			Throwables.propagateIfInstanceOf(e.getCause(), SerializationException.class);
 			
 			throw new SerializationException("Unable to retrieve serializer for " + type + "; " + e.getCause().getMessage(), e.getCause());
 		}
 	}
-	
 	protected SerializerResolver<?> findOrCreateSerializerResolver(Class<?> from)
 	{
 		SerializerResolver<?> resolver = createViaUse(from);
@@ -245,13 +260,7 @@ public class DefaultSerializerCollection
 			return ARRAY_RESOLVER;
 		}
 		
-		resolver = findSerializerResolver(from);
-		if(resolver != null)
-		{
-			return resolver;
-		}
-		
-		throw new SerializationException("Unable to find a suitable serializer for " + from);
+		return findSerializerResolver(from);
 	}
 	
 	protected SerializerResolver<?> findSerializerResolver(Class<?> type)

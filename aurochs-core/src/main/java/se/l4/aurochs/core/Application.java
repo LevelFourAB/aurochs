@@ -66,6 +66,7 @@ public class Application
 		this.configurator = configurator;
 		
 		logger = LoggerFactory.getLogger(Application.class);
+		logger.info("Creating with stage " + configurator.getStage());
 		configurator.setLogger(logger);
 		
 		instanceFactory = new InstanceFactory()

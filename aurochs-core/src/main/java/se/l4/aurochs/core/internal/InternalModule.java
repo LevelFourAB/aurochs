@@ -6,10 +6,12 @@ import java.util.List;
 
 import se.l4.aurochs.config.Config;
 import se.l4.aurochs.config.ConfigBuilder;
+import se.l4.aurochs.core.SerializerRegistration;
 import se.l4.aurochs.core.spi.Sessions;
 import se.l4.aurochs.serialization.DefaultSerializerCollection;
 import se.l4.aurochs.serialization.SerializerCollection;
 import se.l4.aurochs.serialization.spi.InstanceFactory;
+import se.l4.crayon.Contributions;
 import se.l4.crayon.CrayonModule;
 import se.l4.crayon.services.ServicesModule;
 
@@ -39,6 +41,8 @@ public class InternalModule
 		install(new ServicesModule());
 		
 		bind(Sessions.class).to(SessionsImpl.class);
+		
+		bindContributions(SerializerRegistration.class);
 	}
 	
 	@Provides
@@ -63,8 +67,11 @@ public class InternalModule
 	
 	@Provides
 	@Singleton
-	public Config provideConfig(SerializerCollection collection)
+	public Config provideConfig(SerializerCollection collection,
+			@SerializerRegistration Contributions contributions)
 	{
+		contributions.run();
+		
 		ConfigBuilder builder = ConfigBuilder.with(collection);
 		for(File f : configFiles)
 		{

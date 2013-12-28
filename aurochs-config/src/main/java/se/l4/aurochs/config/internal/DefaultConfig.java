@@ -16,6 +16,7 @@ import javax.validation.ValidatorFactory;
 
 import se.l4.aurochs.config.Config;
 import se.l4.aurochs.config.ConfigException;
+import se.l4.aurochs.config.ConfigKey;
 import se.l4.aurochs.config.Value;
 import se.l4.aurochs.config.internal.streaming.MapInput;
 import se.l4.aurochs.serialization.Serializer;
@@ -48,6 +49,7 @@ public class DefaultConfig
 		this.data = data;
 		
 		collection.bind(File.class, new FileSerializer(root));
+		collection.bind(ConfigKey.class, new ConfigKey.ConfigKeySerializer(this));
 	}
 	
 	private Object get(String path)
@@ -172,6 +174,7 @@ public class DefaultConfig
 		return builder.toString();
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Override
 	public <T> Value<T> get(String path, Class<T> type)
 	{
@@ -185,6 +188,11 @@ public class DefaultConfig
 		if(data == null)
 		{
 			return new ValueImpl<T>(false, null);
+		}
+		
+		if(data instanceof Map)
+		{
+			((Map) data).put(ConfigKey.NAME, path);
 		}
 		
 		StreamingInput input = MapInput.resolveInput(data);

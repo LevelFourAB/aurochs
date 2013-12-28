@@ -2,6 +2,8 @@ package se.l4.aurochs.core;
 
 import java.io.File;
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,7 +16,9 @@ import se.l4.aurochs.serialization.DefaultSerializerCollection;
 import se.l4.aurochs.serialization.SerializerCollection;
 import se.l4.aurochs.serialization.spi.InstanceFactory;
 import se.l4.crayon.Configurator;
+import se.l4.crayon.Crayon;
 
+import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Module;
@@ -31,10 +35,7 @@ public class Application
 {
 	private final Logger logger;
 	private final Configurator configurator;
-	private final SerializerCollection collection;
-	private final ConfigBuilder configBuilder;
-	
-	private final InstanceFactory instanceFactory;
+	private final List<File> configFiles;
 	
 	/**
 	 * Start an application in {@link Stage#PRODUCTION}.
@@ -69,41 +70,9 @@ public class Application
 		logger.info("Creating with stage " + configurator.getStage());
 		configurator.setLogger(logger);
 		
-		instanceFactory = new InstanceFactory()
-		{
-			@Inject
-			private final Injector injector = null;
-			
-			@Override
-			public <T> T create(Class<T> type, Annotation[] annotations)
-			{
-				return injector.getInstance(type);
-			}
-			
-			@Override
-			public <T> T create(Class<T> type)
-			{
-				return injector.getInstance(type);
-			}
-		};
-		
-		collection = new DefaultSerializerCollection(instanceFactory);
-		configBuilder = ConfigBuilder.with(collection);
+		configFiles = new ArrayList<File>();
 	}
 
-	/**
-	 * Set that the application should be created on top of another injector.
-	 * 
-	 * @param injector
-	 * @return
-	 */
-	public Application withParentInjector(Injector injector)
-	{
-		configurator.setParentInjector(injector);
-		
-		return this;
-	}
-	
 	/**
 	 * Add a configuration file to the application.
 	 * 
@@ -112,7 +81,7 @@ public class Application
 	 */
 	public Application withConfigFile(String file)
 	{
-		configBuilder.addFile(file);
+		configFiles.add(new File(file));
 		
 		return this;
 	}
@@ -125,7 +94,7 @@ public class Application
 	 */
 	public Application withConfigFile(File file)
 	{
-		configBuilder.addFile(file);
+		configFiles.add(file);
 		
 		return this;
 	}
@@ -164,13 +133,10 @@ public class Application
 	 */
 	public SystemSession start()
 	{
-		/*
-		 * Create the actual injector. Temporarily suppress logging while
-		 * adding the internal module.
-		 */
+		InternalModule internalModule = new InternalModule(configFiles);
 		Injector injector = configurator
 			.setLogger(NOPLogger.NOP_LOGGER)
-			.add(new InternalModule(collection, configBuilder.build(), instanceFactory))
+			.add(internalModule)
 			.setLogger(logger)
 			.configure();
 		

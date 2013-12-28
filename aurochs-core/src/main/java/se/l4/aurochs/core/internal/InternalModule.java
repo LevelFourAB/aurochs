@@ -1,10 +1,21 @@
 package se.l4.aurochs.core.internal;
 
+import java.io.File;
+import java.lang.annotation.Annotation;
+import java.util.List;
+
 import se.l4.aurochs.config.Config;
+import se.l4.aurochs.config.ConfigBuilder;
 import se.l4.aurochs.core.spi.Sessions;
+import se.l4.aurochs.serialization.DefaultSerializerCollection;
 import se.l4.aurochs.serialization.SerializerCollection;
+import se.l4.aurochs.serialization.spi.InstanceFactory;
 import se.l4.crayon.CrayonModule;
 import se.l4.crayon.services.ServicesModule;
+
+import com.google.inject.Injector;
+import com.google.inject.Provides;
+import com.google.inject.Singleton;
 
 /**
  * Module that binds up internal services.
@@ -15,27 +26,50 @@ import se.l4.crayon.services.ServicesModule;
 public class InternalModule
 	extends CrayonModule
 {
-	private final SerializerCollection collection;
-	private final Config config;
-	private final Object factory;
+	private List<File> configFiles;
 
-	public InternalModule(SerializerCollection collection, Config config, Object factory)
+	public InternalModule(List<File> configFiles)
 	{
-		this.collection = collection;
-		this.config = config;
-		this.factory = factory;
+		this.configFiles = configFiles;
 	}
 	
 	@Override
 	protected void configure()
 	{
-		requestInjection(factory);
-		
 		install(new ServicesModule());
 		
-		bind(Config.class).toInstance(config);
-		bind(SerializerCollection.class).toInstance(collection);
-		
 		bind(Sessions.class).to(SessionsImpl.class);
+	}
+	
+	@Provides
+	@Singleton
+	public SerializerCollection provideSerializerCollection(final Injector injector)
+	{
+		return new DefaultSerializerCollection(new InstanceFactory()
+		{
+			@Override
+			public <T> T create(Class<T> type, Annotation[] annotations)
+			{
+				return injector.getInstance(type);
+			}
+			
+			@Override
+			public <T> T create(Class<T> type)
+			{
+				return injector.getInstance(type);
+			}
+		});
+	}
+	
+	@Provides
+	@Singleton
+	public Config provideConfig(SerializerCollection collection)
+	{
+		ConfigBuilder builder = ConfigBuilder.with(collection);
+		for(File f : configFiles)
+		{
+			builder.addFile(f);
+		}
+		return builder.build();
 	}
 }

@@ -37,6 +37,11 @@ public class MapAsObjectSerializer<V>
 		{
 			in.next(Token.KEY);
 			String key = in.getString();
+			if(key.startsWith("_aurochs_:"))
+			{
+				in.skipValue();
+				continue;
+			}
 			
 			V value = serializer.read(in);
 			

@@ -1,8 +1,13 @@
 package se.l4.aurochs.config.internal;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import org.apache.bval.jsr303.xml.GetterType;
+
+import se.l4.aurochs.config.ConfigKey;
 import se.l4.aurochs.serialization.SerializationException;
 
 /**
@@ -26,7 +31,7 @@ public class ConfigResolver
 	public static Map<String, Object> resolve(Map<String, Object> root)
 	{
 		Map<String, Object> newRoot = new HashMap<String, Object>();
-		resolve(newRoot, root);
+		resolve(newRoot, root, "");
 		return newRoot;
 	}
 
@@ -39,11 +44,11 @@ public class ConfigResolver
 	 */
 	public static Map<String, Object> resolveTo(Map<String, Object> root, Map<String, Object> target)
 	{
-		resolve(target, root);
+		resolve(target, root, "");
 		return target;
 	}
 	
-	private static void resolve(Map<String, Object> newRoot, Map<String, Object> root)
+	private static void resolve(Map<String, Object> newRoot, Map<String, Object> root, String currentKey)
 	{
 		for(Map.Entry<String, Object> e : root.entrySet())
 		{
@@ -53,17 +58,55 @@ public class ConfigResolver
 			if(value instanceof Map)
 			{
 				Map<String, Object> map = new HashMap<String, Object>();
-				resolve(map, (Map) value);
-				store(newRoot, key, map);
+				
+				String newKey = currentKey.isEmpty() ? key : currentKey + '.' + key;
+				map.put(ConfigKey.NAME, newKey);
+				
+				resolve(map, (Map) value, newKey);
+				store(newRoot, key, map, currentKey);
+			}
+			else if(value instanceof List)
+			{
+				List<Object> list = new ArrayList<Object>();
+				
+				String newKey = currentKey.isEmpty() ? key : currentKey + '.' + key;
+				
+				resolve(list, (List) value, newKey);
+				store(newRoot, key, list, currentKey);
 			}
 			else
 			{
-				store(newRoot, key, value);
+				store(newRoot, key, value, currentKey);
 			}
 		}
 	}
+	
+	private static void resolve(List<Object> newList, List<Object> oldList, String currentKey)
+	{
+		for(int i=0, n=oldList.size(); i<n; i++)
+		{
+			String newKey = currentKey + '[' + i + ']';
+			Object value = oldList.get(i);
+			if(value instanceof Map)
+			{
+				Map<String, Object> map = new HashMap<String, Object>();
+				map.put(ConfigKey.NAME, newKey);
+				
+				resolve(map, (Map) value, newKey);
+				value = map;
+			}
+			else if(value instanceof List)
+			{
+				List<Object> list = new ArrayList<Object>();
+				resolve(list, (List) value, newKey);
+				value = list;
+			}
+			
+			newList.add(value);
+		}
+	}
 
-	private static void store(Map<String, Object> root, String key, Object value)
+	private static void store(Map<String, Object> root, String key, Object value, String currentKey)
 	{
 		Map<String, Object> current = root;
 		if(key.startsWith("\""))
@@ -74,6 +117,7 @@ public class ConfigResolver
 		}
 		
 		String[] path = key.split("\\.");
+		StringBuilder resolvedPath = new StringBuilder(currentKey);
 		for(int i=0, n=path.length-1; i<n; i++)
 		{
 			if(current.containsKey(path[i]))
@@ -92,6 +136,10 @@ public class ConfigResolver
 			else
 			{
 				Map<String, Object> newMap = new HashMap<String, Object>();
+				if(resolvedPath.length() > 0) resolvedPath.append('.');
+				resolvedPath.append(path[i]);
+				
+				newMap.put(ConfigKey.NAME, resolvedPath.toString());
 				current.put(path[i], newMap);
 				current = newMap;
 			}

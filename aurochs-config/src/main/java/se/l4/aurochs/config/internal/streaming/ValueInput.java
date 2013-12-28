@@ -9,9 +9,11 @@ public class ValueInput
 {
 	private final Object value;
 	private boolean used;
+	private String key;
 
-	public ValueInput(Object value)
+	public ValueInput(String key, Object value)
 	{
+		this.key = key;
 		this.value = value;
 	}
 
@@ -44,7 +46,7 @@ public class ValueInput
 		Token token = next();
 		if(expected != Token.VALUE)
 		{
-			throw new IOException("Expected "+ expected + " but got " + token);
+			throw new IOException(key + ": Expected "+ expected + " but got " + token);
 		}
 		
 		return token;

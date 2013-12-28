@@ -152,7 +152,7 @@ public class ObjectStreamsTest
 
 	protected StreamingInput createInput(Object in)
 	{
-		return MapInput.resolveInput(in);
+		return MapInput.resolveInput("", in);
 	}
 	
 	protected Map<String, Object> createMap()

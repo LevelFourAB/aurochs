@@ -34,37 +34,46 @@ public class MapInput
 	private Iterator<Map.Entry<String, Object>> iterator;
 	
 	private StreamingInput subInput;
+	private String key;
 
-	public MapInput(Map<String, Object> root)
+	public MapInput(String key, Map<String, Object> root)
 	{
+		this.key = key;
 		state = State.START;
 		
 		iterator = root.entrySet().iterator();
 	}
 	
-	public static StreamingInput resolveInput(Object data)
+	public static StreamingInput resolveInput(String key, Object data)
 	{
 		if(data instanceof Map)
 		{
-			return new MapInput((Map) data);
+			return new MapInput(key, (Map) data);
 		}
 		else if(data instanceof List)
 		{
-			return new ListInput((List) data);
+			return new ListInput(key, (List) data);
 		}
 		else if(data == null)
 		{
-			return new NullInput();
+			return new NullInput(key);
 		}
 		else
 		{
-			return new ValueInput(data);
+			return new ValueInput(key, data);
 		}
 	}
 	
 	private StreamingInput resolveInput()
 	{
-		return resolveInput(entry.getValue());
+		String newKey = key.isEmpty() ? entry.getKey() : key + '.' + entry.getKey();
+		return resolveInput(newKey, entry.getValue());
+	}
+	
+	@Override
+	protected IOException raiseException(String message)
+	{
+		return new IOException(key + ": " + message);
 	}
 
 	@Override

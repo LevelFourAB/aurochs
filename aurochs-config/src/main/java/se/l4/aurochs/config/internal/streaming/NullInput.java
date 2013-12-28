@@ -8,11 +8,13 @@ public class NullInput
 	implements StreamingInput
 {
 	private boolean used;
+	private String key;
 
-	public NullInput()
+	public NullInput(String key)
 	{
+		this.key = key;
 	}
-
+	
 	@Override
 	public Token peek()
 		throws IOException
@@ -42,7 +44,7 @@ public class NullInput
 		Token token = next();
 		if(expected != Token.NULL)
 		{
-			throw new IOException("Expected "+ expected + " but got " + token);
+			throw new IOException(key + ": Expected "+ expected + " but got " + token);
 		}
 		
 		return token;

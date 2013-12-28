@@ -4,9 +4,11 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Path;
@@ -52,6 +54,8 @@ public class DefaultConfig
 		collection.bind(ConfigKey.class, new ConfigKey.ConfigKeySerializer(this));
 	}
 	
+	private static final Pattern LIST_GET = Pattern.compile("(.+)(?:\\[([0-9]+)\\])+");
+	
 	private Object get(String path)
 	{
 		if(path == null || path.equals(""))
@@ -61,10 +65,74 @@ public class DefaultConfig
 		
 		String[] parts = path.split("\\.");
 		Map<String, Object> current = data;
-		for(int i=0, n=parts.length-1; i<n; i++)
+		for(int i=0, n=parts.length; i<n; i++)
 		{
-			if(current.containsKey(parts[i]))
+			Matcher listGetMatcher = LIST_GET.matcher(parts[i]);
+			if(listGetMatcher.matches())
 			{
+				String name = listGetMatcher.group(1);
+				Object o = current.get(name);
+				if(o == null)
+				{
+					return null;
+				}
+				
+				if(! (o instanceof List))
+				{
+					String subPath = Joiner
+						.on('.')
+						.join(Arrays.copyOf(parts, i+1));
+					
+					throw new ConfigException("Expected list at `" + subPath + "` but got: " + o);
+				}
+				
+				List currentList = (List) o;
+				
+				String[] indexes = listGetMatcher.group(2).split(" ");
+				for(int j=0, m=indexes.length; j<m; j++)
+				{
+					int idx = Integer.parseInt(indexes[j]);
+					if(currentList.size() <= idx)
+					{
+						String subPath = Joiner
+							.on('.')
+							.join(Arrays.copyOf(parts, i+1));
+						
+						throw new ConfigException("Expected list at `" + subPath + "` to contain at least " + (idx+1) + " values");
+					}
+					
+					o = currentList.get(idx);
+					if(o instanceof List && j<m-1)
+					{
+						currentList = (List) o;
+					}
+				}
+				
+				if(i == n-1)
+				{
+					return o;
+				}
+				else if(o instanceof Map)
+				{
+					current = (Map) o;
+				}
+				else
+				{
+					String subPath = Joiner
+						.on('.')
+						.join(Arrays.copyOf(parts, i+1));
+					
+					throw new ConfigException("Expected several values at `" + subPath + "` but only got a single value: " + o);
+				}
+			}
+			else if(current.containsKey(parts[i]))
+			{
+				if(i == n-1)
+				{
+					// Last part of path, return the value
+					return current.get(parts[i]);
+				}
+				
 				Object o = current.get(parts[i]);
 				if(o instanceof Map)
 				{
@@ -174,7 +242,6 @@ public class DefaultConfig
 		return builder.toString();
 	}
 	
-	@SuppressWarnings("unchecked")
 	@Override
 	public <T> Value<T> get(String path, Class<T> type)
 	{
@@ -190,12 +257,7 @@ public class DefaultConfig
 			return new ValueImpl<T>(false, null);
 		}
 		
-		if(data instanceof Map)
-		{
-			((Map) data).put(ConfigKey.NAME, path);
-		}
-		
-		StreamingInput input = MapInput.resolveInput(data);
+		StreamingInput input = MapInput.resolveInput(path, data);
 		try
 		{
 			T instance = serializer.read(input);

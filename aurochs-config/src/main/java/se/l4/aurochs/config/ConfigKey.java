@@ -30,7 +30,7 @@ import se.l4.aurochs.serialization.format.StreamingInput.Token;
  */
 public class ConfigKey
 {
-	public static final String NAME = "config:key";
+	public static final String NAME = "_aurochs_:configKey";
 	
 	private final Config config;
 	private final String key;

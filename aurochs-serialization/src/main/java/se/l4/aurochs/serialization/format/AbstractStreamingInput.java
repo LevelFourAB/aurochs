@@ -42,6 +42,11 @@ public abstract class AbstractStreamingInput
 	protected abstract Token next0()
 		throws IOException;
 	
+	protected IOException raiseException(String message)
+	{
+		return new IOException(message);
+	}
+	
 	@Override
 	public Token next(Token expected)
 		throws IOException
@@ -49,7 +54,7 @@ public abstract class AbstractStreamingInput
 		Token t = next();
 		if(t != expected)
 		{
-			throw new IOException("Expected "+ expected + " but got " + t);
+			throw raiseException("Expected "+ expected + " but got " + t);
 		}
 		return t;
 	}
@@ -60,7 +65,7 @@ public abstract class AbstractStreamingInput
 	{
 		if(token != Token.KEY)
 		{
-			throw new IOException("Value skipping can only be used with when token is " + Token.KEY);
+			throw raiseException("Value skipping can only be used with when token is " + Token.KEY);
 		}
 		
 		switch(peek())
@@ -91,7 +96,7 @@ public abstract class AbstractStreamingInput
 				stop = Token.OBJECT_END;
 				break;
 			default:
-				throw new IOException("Can only skip when start of object or list, token is now " + token);
+				throw raiseException("Can only skip when start of object or list, token is now " + token);
 		}
 		
 		int currentLevel = level;
@@ -101,7 +106,7 @@ public abstract class AbstractStreamingInput
 			// Loop until no more tokens or if we stopped and the level has been reset
 			if(next == null)
 			{
-				throw new IOException("No more tokens, but end of skipped value not found");
+				throw raiseException("No more tokens, but end of skipped value not found");
 			}
 			else if(next == stop && level == currentLevel)
 			{

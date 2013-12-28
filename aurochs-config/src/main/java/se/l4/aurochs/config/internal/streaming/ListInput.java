@@ -31,12 +31,20 @@ public class ListInput
 	private Object object;
 	
 	private StreamingInput subInput;
+	private String key;
 
-	public ListInput(List<Object> root)
+	public ListInput(String key, List<Object> root)
 	{
+		this.key = key;
 		state = State.START;
 		
 		iterator = root.iterator();
+	}
+	
+	@Override
+	protected IOException raiseException(String message)
+	{
+		return new IOException(key + ": " + message);
 	}
 	
 	@Override
@@ -108,26 +116,13 @@ public class ListInput
 		if(iterator.hasNext())
 		{
 			object = iterator.next();
-			subInput = MapInput.resolveInput(object);
+			subInput = MapInput.resolveInput(key, object);
 			setState(State.VALUE);
 		}
 		else
 		{
 			setState(State.END);
 		}
-	}
-
-	@Override
-	public Token next(Token expected)
-		throws IOException
-	{
-		Token token = next();
-		if(token != expected)
-		{
-			throw new IOException("Expected "+ expected + " but got " + token);
-		}
-		
-		return token;
 	}
 
 	@Override

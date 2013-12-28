@@ -96,6 +96,49 @@ public class DefaultConfigTest
 		}
 	}
 	
+	@Test
+	public void testListAccessor()
+	{
+		Config config = ConfigBuilder.with(new DefaultSerializerCollection())
+			.addStream(stream("values: [ \n \"one\", \n \"two\" \n ]"))
+			.build();
+		
+		String value = config.asObject("values[0]", String.class);
+		assertThat(value, is("one"));
+		
+		value = config.asObject("values[1]", String.class);
+		assertThat(value, is("two"));
+	}
+	
+	@Test
+	public void testListAccessorWithSizes()
+	{
+		Config config = ConfigBuilder.with(new DefaultSerializerCollection())
+			.addStream(stream("values: [ \n { width: 100, height: 100 }, \n { width: 200, height: 200 } \n ]"))
+			.build();
+		
+		Size value = config.asObject("values[0]", Size.class);
+		assertThat(value, notNullValue());
+		assertThat(value.width, is(100));
+		assertThat(value.height, is(100));
+		
+		value = config.asObject("values[1]", Size.class);
+		assertThat(value, notNullValue());
+		assertThat(value.width, is(200));
+		assertThat(value.height, is(200));
+	}
+	
+	@Test
+	public void testListAccessorWithSubPath()
+	{
+		Config config = ConfigBuilder.with(new DefaultSerializerCollection())
+			.addStream(stream("values: [ \n { width: 100, height: 100 } \n ]"))
+			.build();
+		
+		Integer value = config.asObject("values[0].width", Integer.class);
+		assertThat(value, is(100));
+	}
+	
 	private InputStream stream(String in)
 	{
 		return new ByteArrayInputStream(in.getBytes(Charsets.UTF_8));

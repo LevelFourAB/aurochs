@@ -7,7 +7,6 @@ import se.l4.aurochs.serialization.SerializerFormatDefinition;
 import se.l4.aurochs.serialization.format.StreamingInput;
 import se.l4.aurochs.serialization.format.StreamingOutput;
 import se.l4.aurochs.serialization.format.ValueType;
-import se.l4.aurochs.serialization.internal.SerializerFormatDefinitionBuilderImpl;
 
 /**
  * Serializer for {@link String}.

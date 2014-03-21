@@ -5,7 +5,7 @@ import java.lang.annotation.Annotation;
 import se.l4.aurochs.serialization.SerializerCollection;
 
 /**
- * Encounter with a specific type during serialization resoltuion.
+ * Encounter with a specific type during serialization resolution.
  * 
  * @author Andreas Holstenson
  *

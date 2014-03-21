@@ -1,11 +1,13 @@
 package se.l4.aurochs.serialization.reflection;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.annotation.Annotation;
+import java.util.Collections;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -17,6 +19,7 @@ import se.l4.aurochs.serialization.Serializer;
 import se.l4.aurochs.serialization.SerializerCollection;
 import se.l4.aurochs.serialization.format.JsonInput;
 import se.l4.aurochs.serialization.format.JsonOutput;
+import se.l4.aurochs.serialization.internal.TypeEncounterImpl;
 import se.l4.aurochs.serialization.spi.TypeViaClass;
 
 import com.google.common.base.Throwables;
@@ -34,7 +37,8 @@ public class ReflectionConstructorTest
 	@Test
 	public void testDefaultConstructor()
 	{
-		Serializer<A> serializer = ReflectionSerializer.create(new TypeViaClass(A.class), collection);
+		Serializer<A> serializer = new ReflectionSerializer<A>()
+			.find(new TypeEncounterImpl(collection, new TypeViaClass(A.class), Collections.<Annotation>emptyList()));
 		
 		A instance = new A();
 		instance.field = "test value";
@@ -44,7 +48,8 @@ public class ReflectionConstructorTest
 	@Test
 	public void testNonDefaultConstructor()
 	{
-		Serializer<B> serializer = ReflectionSerializer.create(new TypeViaClass(B.class), collection);
+		Serializer<B> serializer = new ReflectionSerializer<B>()
+			.find(new TypeEncounterImpl(collection, new TypeViaClass(B.class), Collections.<Annotation>emptyList()));
 		
 		B instance = new B("test value");
 		testSymmetry(serializer, instance);

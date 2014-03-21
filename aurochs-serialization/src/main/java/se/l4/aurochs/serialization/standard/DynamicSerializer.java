@@ -8,9 +8,9 @@ import se.l4.aurochs.serialization.Serializer;
 import se.l4.aurochs.serialization.SerializerCollection;
 import se.l4.aurochs.serialization.SerializerFormatDefinition;
 import se.l4.aurochs.serialization.format.StreamingInput;
-import se.l4.aurochs.serialization.format.ValueType;
 import se.l4.aurochs.serialization.format.StreamingInput.Token;
 import se.l4.aurochs.serialization.format.StreamingOutput;
+import se.l4.aurochs.serialization.format.ValueType;
 
 /**
  * Serializer that will attempt to dynamically resolve serializers based on
@@ -107,6 +107,7 @@ public class DynamicSerializer
 	}
 	
 	@Override
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void write(Object object, String name, StreamingOutput stream)
 		throws IOException
 	{

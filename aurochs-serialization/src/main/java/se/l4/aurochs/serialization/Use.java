@@ -22,5 +22,5 @@ public @interface Use
 	 * 
 	 * @return
 	 */
-	Class<? extends Serializer> value();
+	Class<? extends SerializerOrResolver> value();
 }

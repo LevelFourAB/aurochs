@@ -19,6 +19,7 @@ import com.google.common.base.Throwables;
  * @author Andreas Holstenson
  *
  */
+@SuppressWarnings("rawtypes")
 public class FieldDefinition
 {
 	private final Field field;
@@ -107,6 +108,7 @@ public class FieldDefinition
 		
 	}
 	
+	@SuppressWarnings("unchecked")
 	public void write(Object target, StreamingOutput stream)
 		throws IOException
 	{

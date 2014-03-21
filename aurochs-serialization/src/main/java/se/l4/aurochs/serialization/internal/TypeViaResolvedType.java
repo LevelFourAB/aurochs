@@ -54,4 +54,33 @@ public class TypeViaResolvedType
 	{
 		return rt.getBriefDescription();
 	}
+
+	@Override
+	public int hashCode()
+	{
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((rt == null) ? 0 : rt.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj)
+	{
+		if(this == obj)
+			return true;
+		if(obj == null)
+			return false;
+		if(getClass() != obj.getClass())
+			return false;
+		TypeViaResolvedType other = (TypeViaResolvedType) obj;
+		if(rt == null)
+		{
+			if(other.rt != null)
+				return false;
+		}
+		else if(!rt.equals(other.rt))
+			return false;
+		return true;
+	}
 }

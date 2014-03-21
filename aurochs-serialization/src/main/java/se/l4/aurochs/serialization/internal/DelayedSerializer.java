@@ -34,6 +34,7 @@ public class DelayedSerializer<T>
 		this.hints = hints;
 	}
 	
+	@SuppressWarnings("unchecked")
 	private void ensureSerializer()
 	{
 		if(instance == null)

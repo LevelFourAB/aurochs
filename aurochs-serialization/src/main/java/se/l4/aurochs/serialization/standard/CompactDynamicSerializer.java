@@ -65,6 +65,7 @@ public class CompactDynamicSerializer
 	}
 	
 	@Override
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void write(Object object, String name, StreamingOutput stream)
 		throws IOException
 	{

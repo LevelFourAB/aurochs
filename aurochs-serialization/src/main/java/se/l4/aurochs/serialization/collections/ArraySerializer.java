@@ -21,6 +21,7 @@ public class ArraySerializer
 	implements Serializer<Object>
 {
 	private final Class<?> componentType;
+	@SuppressWarnings("rawtypes")
 	private final Serializer itemSerializer;
 	private final SerializerFormatDefinition formatDefinition;
 
@@ -58,6 +59,7 @@ public class ArraySerializer
 	}
 	
 	@Override
+	@SuppressWarnings("unchecked")
 	public void write(Object object, String name, StreamingOutput stream)
 		throws IOException
 	{

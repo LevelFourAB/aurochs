@@ -34,6 +34,7 @@ public abstract class AbstractStreamingInput
 			case LIST_START:
 				level++;
 				break;
+			default: // Do nothing
 		}
 		
 		return this.token = token;

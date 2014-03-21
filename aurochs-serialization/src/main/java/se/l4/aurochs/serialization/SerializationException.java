@@ -9,6 +9,7 @@ package se.l4.aurochs.serialization;
 public class SerializationException
 	extends RuntimeException
 {
+	private static final long serialVersionUID = -7546859789152950837L;
 
 	public SerializationException()
 	{

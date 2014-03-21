@@ -5,10 +5,9 @@ import java.io.IOException;
 import se.l4.aurochs.serialization.Serializer;
 import se.l4.aurochs.serialization.SerializerFormatDefinition;
 import se.l4.aurochs.serialization.format.StreamingInput;
-import se.l4.aurochs.serialization.format.ValueType;
 import se.l4.aurochs.serialization.format.StreamingInput.Token;
 import se.l4.aurochs.serialization.format.StreamingOutput;
-import se.l4.aurochs.serialization.internal.SerializerFormatDefinitionBuilderImpl;
+import se.l4.aurochs.serialization.format.ValueType;
 
 /**
  * Serializer for {@link Integer}.

@@ -101,6 +101,33 @@ public interface SerializerCollection
 	Serializer<?> find(String namespace, String name);
 	
 	/**
+	 * Find a serializer using a specific {@link SerializerResolver}.
+	 * 
+	 * @param sOrR
+	 * @param type
+	 * @return
+	 */
+	<T> Serializer<T> findVia(Class<? extends SerializerResolver<T>> resolver, Class<T> type, Annotation... hints);
+	
+	/**
+	 * Find a serializer using a specific {@link SerializerResolver}.
+	 * 
+	 * @param sOrR
+	 * @param type
+	 * @return
+	 */
+	<T> Serializer<T> findVia(Class<? extends SerializerResolver<T>> resolver, Type type, Annotation... hints);
+	
+	/**
+	 * Get the resolver this collection would use to resolve a serializer
+	 * for the given type.
+	 * 
+	 * @param type
+	 * @return
+	 */
+	SerializerResolver<?> getResolver(Class<?> type);
+	
+	/**
 	 * Get if the given type can be serialized.
 	 * 
 	 * @param type

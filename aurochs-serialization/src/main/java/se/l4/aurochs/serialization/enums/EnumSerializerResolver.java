@@ -1,13 +1,16 @@
 package se.l4.aurochs.serialization.enums;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
+import java.util.Set;
 
 import se.l4.aurochs.serialization.SerializationException;
 import se.l4.aurochs.serialization.Serializer;
-import se.l4.aurochs.serialization.spi.SerializerResolver;
+import se.l4.aurochs.serialization.spi.AbstractSerializerResolver;
 import se.l4.aurochs.serialization.spi.TypeEncounter;
 
 import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * Resolver for {@link Enum enums}, can handle any enum type and supports
@@ -17,10 +20,13 @@ import com.google.common.base.Throwables;
  *
  */
 public class EnumSerializerResolver
-	implements SerializerResolver<Enum<?>>
+	extends AbstractSerializerResolver<Enum<?>>
 {
-
+	private static final Set<Class<? extends Annotation>> HINTS =
+		ImmutableSet.<Class<? extends Annotation>>of(MapEnumVia.class);
+	
 	@Override
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public Serializer<Enum<?>> find(TypeEncounter encounter)
 	{
 		Class<? extends Enum<?>> type = (Class<? extends Enum<?>>) encounter.getType().getErasedType();
@@ -39,6 +45,7 @@ public class EnumSerializerResolver
 		return new EnumSerializer(translator);
 	}
 
+	@SuppressWarnings("rawtypes")
 	private ValueTranslator create(
 			Class<? extends ValueTranslator> translator,
 			Class<? extends Enum<?>> type)
@@ -68,5 +75,11 @@ public class EnumSerializerResolver
 		}
 		
 		throw new SerializationException("Constructor that takes Enum is required (for " + translator + ")");
+	}
+	
+	@Override
+	public Set<Class<? extends Annotation>> getHints()
+	{
+		return HINTS;
 	}
 }

@@ -1,7 +1,7 @@
 package se.l4.aurochs.serialization.collections;
 
 import se.l4.aurochs.serialization.Serializer;
-import se.l4.aurochs.serialization.spi.SerializerResolver;
+import se.l4.aurochs.serialization.spi.AbstractSerializerResolver;
 import se.l4.aurochs.serialization.spi.TypeEncounter;
 import se.l4.aurochs.serialization.spi.TypeViaClass;
 
@@ -11,8 +11,9 @@ import se.l4.aurochs.serialization.spi.TypeViaClass;
  * @author Andreas Holstenson
  *
  */
+@SuppressWarnings("rawtypes")
 public class ArraySerializerResolver
-	implements SerializerResolver
+	extends AbstractSerializerResolver
 {
 
 	@Override

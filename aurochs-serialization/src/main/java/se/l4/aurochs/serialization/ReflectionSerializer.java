@@ -1,20 +1,18 @@
 package se.l4.aurochs.serialization;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
-import java.util.Comparator;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.List;
 
-import se.l4.aurochs.serialization.format.StreamingInput;
-import se.l4.aurochs.serialization.format.StreamingOutput;
 import se.l4.aurochs.serialization.internal.TypeViaResolvedType;
 import se.l4.aurochs.serialization.internal.reflection.FactoryDefinition;
 import se.l4.aurochs.serialization.internal.reflection.FieldDefinition;
 import se.l4.aurochs.serialization.internal.reflection.ReflectionNonStreamingSerializer;
 import se.l4.aurochs.serialization.internal.reflection.ReflectionStreamingSerializer;
 import se.l4.aurochs.serialization.internal.reflection.TypeInfo;
+import se.l4.aurochs.serialization.spi.AbstractSerializerResolver;
+import se.l4.aurochs.serialization.spi.SerializerResolver;
 import se.l4.aurochs.serialization.spi.Type;
+import se.l4.aurochs.serialization.spi.TypeEncounter;
 import se.l4.aurochs.serialization.standard.DynamicSerializer;
 
 import com.fasterxml.classmate.MemberResolver;
@@ -24,6 +22,7 @@ import com.fasterxml.classmate.TypeResolver;
 import com.fasterxml.classmate.members.ResolvedConstructor;
 import com.fasterxml.classmate.members.ResolvedField;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 
 /**
  * Serializer that will use reflection to access fields and methods in a
@@ -42,40 +41,18 @@ import com.google.common.collect.ImmutableMap;
  * @author Andreas Holstenson
  */
 public class ReflectionSerializer<T>
-	implements Serializer<T>
+	extends AbstractSerializerResolver<T>
 {
-	private ReflectionSerializer()
+	public ReflectionSerializer()
 	{
 	}
 	
 	@Override
-	public T read(StreamingInput in)
-		throws IOException
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public Serializer<T> find(TypeEncounter encounter)
 	{
-		return null;
-	}
-	
-	public void write(T object, String name, StreamingOutput stream)
-		throws IOException
-	{
-	}
-	
-	@Override
-	public SerializerFormatDefinition getFormatDefinition()
-	{
-		return null;
-	}
-	
-	/**
-	 * Create a new serializer that will use reflection.
-	 * 
-	 * @param type
-	 * @param collection
-	 * @return
-	 */
-	public static <T> Serializer<T> create(Type type, SerializerCollection collection)
-	{
-		// TODO: Support for constructors
+		Type type = encounter.getType();
+		SerializerCollection collection = encounter.getCollection();
 		
 		ImmutableMap.Builder<String, FieldDefinition> builder = ImmutableMap.builder();
 		
@@ -106,13 +83,24 @@ public class ReflectionSerializer<T>
 			{
 				// Serializer has been set to a specific type
 				Use annotation = reflectiveField.getAnnotation(Use.class);
-				try
+				if(Serializer.class.isAssignableFrom(annotation.value()))
 				{
-					serializer = collection.getInstanceFactory().create(annotation.value());
+					try
+					{
+						serializer = (Serializer) collection.getInstanceFactory().create(annotation.value());
+					}
+					catch(Exception e)
+					{
+						throw new SerializationException("Unable to create " + annotation.value() + " for " + type + "; " + e.getMessage(), e);
+					}
 				}
-				catch(Exception e)
+				else if(SerializerResolver.class.isAssignableFrom(annotation.value()))
 				{
-					throw new SerializationException("Unable to create " + annotation.value() + " for " + type + "; " + e.getMessage(), e);
+					serializer = collection.findVia((Class) annotation.value(), new TypeViaResolvedType(fieldType), reflectiveField.getAnnotations());
+				}
+				else
+				{
+					throw new SerializationException("Unable to create " + annotation.value() + " for " +  type + "; Class either needs to a Serializer or a SerializerResolver");
 				}
 			}
 			else if(reflectiveField.isAnnotationPresent(AllowAny.class))
@@ -152,16 +140,7 @@ public class ReflectionSerializer<T>
 		
 		// Get all of the factories
 		boolean hasSerializerInFactory = false;
-		Set<FactoryDefinition<T>> factories = new TreeSet<FactoryDefinition<T>>(new Comparator<FactoryDefinition<T>>()
-		{
-			@Override
-			public int compare(FactoryDefinition<T> o1, FactoryDefinition<T> o2)
-			{
-				int i1 = o1.getWeight();
-				int i2 = o2.getWeight();
-				return i1 < i2 ? -1 : (i1 == i2 ? 0 : 1);
-			}
-		});
+		List<FactoryDefinition<T>> factories = Lists.newArrayList();
 		
 		for(ResolvedConstructor constructor : typeWithMembers.getConstructors())
 		{

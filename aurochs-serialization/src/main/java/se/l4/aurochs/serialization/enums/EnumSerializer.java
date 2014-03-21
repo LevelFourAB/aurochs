@@ -20,10 +20,11 @@ import se.l4.aurochs.serialization.internal.SerializerFormatDefinitionBuilderImp
 public class EnumSerializer<T extends Enum<T>>
 	implements Serializer<T>
 {
+	@SuppressWarnings("rawtypes")
 	private final ValueTranslator translator;
 	private final SerializerFormatDefinition formatDefinition;
 
-	public EnumSerializer(ValueTranslator translator)
+	public EnumSerializer(@SuppressWarnings("rawtypes") ValueTranslator translator)
 	{
 		this.translator = translator;
 		
@@ -32,6 +33,7 @@ public class EnumSerializer<T extends Enum<T>>
 			.build();
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Override
 	public T read(StreamingInput in)
 		throws IOException
@@ -69,6 +71,7 @@ public class EnumSerializer<T extends Enum<T>>
 		return (T) translator.toEnum(value);
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Override
 	public void write(T object, String name, StreamingOutput stream)
 		throws IOException

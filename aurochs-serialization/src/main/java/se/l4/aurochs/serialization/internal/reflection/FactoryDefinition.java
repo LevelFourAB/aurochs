@@ -118,6 +118,7 @@ public class FactoryDefinition<T>
 	 * @param data
 	 * @return
 	 */
+	@SuppressWarnings("unchecked")
 	public int getScore(Map<String, Object> data)
 	{
 		if(! hasSerializedFields)
@@ -141,11 +142,6 @@ public class FactoryDefinition<T>
 		return score;
 	}
 	
-	public int getWeight()
-	{
-		return arguments.length;
-	}
-	
 	/**
 	 * Create a new instance using the given deserialized data. The data
 	 * is only used if this factory has any serialized fields.
@@ -153,6 +149,7 @@ public class FactoryDefinition<T>
 	 * @param data
 	 * @return
 	 */
+	@SuppressWarnings("unchecked")
 	public T create(Map<String, Object> data)
 	{
 		Object[] args = new Object[arguments.length];

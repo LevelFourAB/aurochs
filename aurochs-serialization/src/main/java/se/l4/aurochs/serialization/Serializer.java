@@ -15,6 +15,7 @@ import se.l4.aurochs.serialization.format.StreamingOutput;
  * @param <T>
  */
 public interface Serializer<T>
+	extends SerializerOrResolver
 {
 	/**
 	 * Read an object from the specified stream.

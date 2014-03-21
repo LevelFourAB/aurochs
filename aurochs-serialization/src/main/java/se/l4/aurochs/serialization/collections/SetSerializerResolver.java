@@ -1,20 +1,26 @@
 package se.l4.aurochs.serialization.collections;
 
+import java.lang.annotation.Annotation;
 import java.util.Set;
 
 import se.l4.aurochs.serialization.SerializationException;
 import se.l4.aurochs.serialization.Serializer;
-import se.l4.aurochs.serialization.spi.SerializerResolver;
+import se.l4.aurochs.serialization.spi.AbstractSerializerResolver;
 import se.l4.aurochs.serialization.spi.Type;
 import se.l4.aurochs.serialization.spi.TypeEncounter;
 import se.l4.aurochs.serialization.spi.TypeViaClass;
 import se.l4.aurochs.serialization.standard.DynamicSerializer;
 
+import com.google.common.collect.ImmutableSet;
+
 public class SetSerializerResolver
-	implements SerializerResolver<Set<?>>
+	extends AbstractSerializerResolver<Set<?>>
 {
+	private static final Set<Class<? extends Annotation>> HINTS =
+		ImmutableSet.<Class<? extends Annotation>>of(AllowAnyItem.class);
 
 	@Override
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public Serializer<Set<?>> find(TypeEncounter encounter)
 	{
 		Type[] params = encounter.getType().getParameters();
@@ -36,4 +42,9 @@ public class SetSerializerResolver
 		return new SetSerializer(itemSerializer);
 	}
 
+	@Override
+	public Set<Class<? extends Annotation>> getHints()
+	{
+		return HINTS;
+	}
 }

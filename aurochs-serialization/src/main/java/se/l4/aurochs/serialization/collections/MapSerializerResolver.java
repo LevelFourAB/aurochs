@@ -1,6 +1,8 @@
 package se.l4.aurochs.serialization.collections;
 
+import java.lang.annotation.Annotation;
 import java.util.Map;
+import java.util.Set;
 
 import se.l4.aurochs.serialization.SerializationException;
 import se.l4.aurochs.serialization.Serializer;
@@ -9,6 +11,8 @@ import se.l4.aurochs.serialization.spi.Type;
 import se.l4.aurochs.serialization.spi.TypeEncounter;
 import se.l4.aurochs.serialization.spi.TypeViaClass;
 import se.l4.aurochs.serialization.standard.DynamicSerializer;
+
+import com.google.common.collect.ImmutableSet;
 
 /**
  * Resolver for serializer of {@link Map}.
@@ -19,8 +23,11 @@ import se.l4.aurochs.serialization.standard.DynamicSerializer;
 public class MapSerializerResolver
 	implements SerializerResolver<Map<?, ?>>
 {
-
+	private static final Set<Class<? extends Annotation>> HINTS =
+		ImmutableSet.of(AllowAnyItem.class, StringKey.class);
+	
 	@Override
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public Serializer<Map<?, ?>> find(TypeEncounter encounter)
 	{
 		Type[] params = encounter.getType().getParameters();
@@ -47,4 +54,9 @@ public class MapSerializerResolver
 		return null;
 	}
 
+	@Override
+	public Set<Class<? extends Annotation>> getHints()
+	{
+		return HINTS;
+	}
 }

@@ -1,6 +1,7 @@
 package se.l4.aurochs.serialization.internal;
 
 import java.lang.annotation.Annotation;
+import java.util.List;
 
 import se.l4.aurochs.serialization.SerializerCollection;
 import se.l4.aurochs.serialization.spi.Type;
@@ -17,11 +18,11 @@ public class TypeEncounterImpl
 {
 	private final SerializerCollection collection;
 	private final Type type;
-	private final Annotation[] annotations;
-
+	private final List<Annotation> annotations;
+	
 	public TypeEncounterImpl(SerializerCollection collection, 
 			Type type, 
-			Annotation[] annotations)
+			List<Annotation> annotations)
 	{
 		this.collection = collection;
 		this.type = type;
@@ -35,6 +36,7 @@ public class TypeEncounterImpl
 	}
 	
 	@Override
+	@SuppressWarnings("unchecked")
 	public <T extends Annotation> T getHint(Class<T> type)
 	{
 		if(annotations == null) return null;

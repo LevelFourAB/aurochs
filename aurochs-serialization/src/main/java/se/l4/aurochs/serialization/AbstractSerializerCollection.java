@@ -157,7 +157,7 @@ public abstract class AbstractSerializerCollection
 		// Only expose the hints that the resolver has declared
 		Set<Class<? extends Annotation>> hintsUsed = resolver.getHints();
 		List<Annotation> hintsActive;
-		if(hintsUsed == null)
+		if(hintsUsed == null || hints == null || hints.length == 0)
 		{
 			hintsActive = Collections.emptyList();
 		}

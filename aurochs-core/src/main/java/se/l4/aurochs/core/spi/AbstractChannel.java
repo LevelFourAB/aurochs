@@ -91,7 +91,7 @@ public abstract class AbstractChannel<T>
 		}
 	}
 	
-	protected void fireMessageReceived(MessageEvent event)
+	protected void fireMessageReceived(MessageEvent<? extends T> event)
 	{
 		ChannelListener[] listeners = this.listeners;
 		for(ChannelListener listener : listeners)

@@ -13,6 +13,7 @@ import se.l4.aurochs.serialization.SerializerCollection;
 
 import com.fasterxml.classmate.ResolvedType;
 import com.fasterxml.classmate.members.ResolvedConstructor;
+import com.google.common.base.Defaults;
 import com.google.common.base.Objects;
 import com.google.common.primitives.Primitives;
 
@@ -75,7 +76,7 @@ public class FactoryDefinition<T>
 						" (for " + raw.getDeclaringClass() + ")");
 				}
 				
-				args.add(new SerializedArgument(expose.value()));
+				args.add(new SerializedArgument(def.getType(), expose.value()));
 				hasSerializedFields = true;
 			}
 			else
@@ -188,17 +189,25 @@ public class FactoryDefinition<T>
 	private class SerializedArgument
 		implements Argument
 	{
+		private final Class<?> type;
 		private final String name;
 
-		public SerializedArgument(String name)
+		public SerializedArgument(Class<?> type, String name)
 		{
+			this.type = type;
 			this.name = name;
 		}
 		
 		@Override
 		public Object getValue(Map<String, Object> data)
 		{
-			return data.get(name);
+			Object value = data.get(name);
+			if(value == null && type.isPrimitive())
+			{
+				return Defaults.defaultValue(type);
+			}
+			
+			return value;
 		}
 	}
 	

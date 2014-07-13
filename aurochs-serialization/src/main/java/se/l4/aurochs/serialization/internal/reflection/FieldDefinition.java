@@ -11,6 +11,7 @@ import se.l4.aurochs.serialization.format.StreamingInput;
 import se.l4.aurochs.serialization.format.StreamingInput.Token;
 import se.l4.aurochs.serialization.format.StreamingOutput;
 
+import com.google.common.base.Defaults;
 import com.google.common.base.Throwables;
 
 /**
@@ -81,6 +82,11 @@ public class FieldDefinition
 	{
 		try
 		{
+			if(value == null && type.isPrimitive())
+			{
+				value = Defaults.defaultValue(type);
+			}
+			
 			field.set(target, value);
 		}
 		catch(Exception e)

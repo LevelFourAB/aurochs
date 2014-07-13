@@ -58,4 +58,10 @@ public class TypeViaClass
 			return false;
 		return true;
 	}
+	
+	@Override
+	public String toString()
+	{
+		return type.toString();
+	}
 }

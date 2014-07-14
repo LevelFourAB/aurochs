@@ -30,6 +30,34 @@
 			<groupId>se.l4.crayon</groupId>
 			<artifactId>crayon-lib-services</artifactId>
 		</dependency>
+
+		<dependency>
+			<groupId>org.reflections</groupId>
+			<artifactId>reflections</artifactId>
+			<version>0.9.8</version>
+			
+			<exclusions>
+				<exclusion>
+					<groupId>javassist</groupId>
+					<artifactId>javassist</artifactId>
+				</exclusion>
+				
+				<exclusion>
+					<groupId>com.google.guava</groupId>
+  					<artifactId>guava</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		
+		<!--
+			Temporary dependency while Reflections uses an older version. This Javassist
+			supports Java 8.
+		-->
+		<dependency>
+			<groupId>org.javassist</groupId>
+			<artifactId>javassist</artifactId>
+			<version>3.18.2-GA</version>
+		</dependency>
 		
 		<dependency>
 			<groupId>junit</groupId>

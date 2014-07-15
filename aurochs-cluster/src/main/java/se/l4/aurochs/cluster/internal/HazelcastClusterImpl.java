@@ -1,5 +1,6 @@
 package se.l4.aurochs.cluster.internal;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.locks.Lock;
@@ -18,6 +19,7 @@ import com.hazelcast.config.Config;
 import com.hazelcast.config.JoinConfig;
 import com.hazelcast.config.MulticastConfig;
 import com.hazelcast.config.NetworkConfig;
+import com.hazelcast.config.SerializationConfig;
 import com.hazelcast.config.ServiceConfig;
 import com.hazelcast.config.ServicesConfig;
 import com.hazelcast.config.TcpIpConfig;
@@ -25,6 +27,7 @@ import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IQueue;
 import com.hazelcast.core.ITopic;
+import com.hazelcast.nio.serialization.PortableHook;
 import com.hazelcast.spi.ManagedService;
 
 /**
@@ -39,7 +42,10 @@ public class HazelcastClusterImpl
 	private final HazelcastInstance hazelcast;
 	private final SerializerCollection serializers;
 	
-	public HazelcastClusterImpl(SerializerCollection serializers, ClusterConfig clusterConfig, Map<String, ManagedService> services)
+	public HazelcastClusterImpl(SerializerCollection serializers,
+			ClusterConfig clusterConfig,
+			Map<String, ManagedService> services,
+			List<PortableHook> factories)
 	{
 		this.serializers = serializers;
 		
@@ -54,6 +60,9 @@ public class HazelcastClusterImpl
 			
 			config.setAddresses(clusterConfig.getStaticNetwork().getHosts());
 			
+			updateFactories(config.getSerializationConfig(), factories);
+
+			// TODO: Partitions?
 			// TODO: Services?
 			
 			hazelcast = HazelcastClient.newHazelcastClient(config);
@@ -61,6 +70,8 @@ public class HazelcastClusterImpl
 		else
 		{
 			Config config = new Config();
+			
+			config.setProperty("hazelcast.partition.count", String.valueOf(clusterConfig.getPartitions()));
 			
 			NetworkConfig nc = new NetworkConfig();
 			nc.setPort(clusterConfig.getPort());
@@ -82,10 +93,21 @@ public class HazelcastClusterImpl
 				scs.addServiceConfig(sc);
 			}
 			
+			updateFactories(config.getSerializationConfig(), factories);
+			
 			hazelcast = Hazelcast.newHazelcastInstance(config);
 		}
 	}
 	
+	private void updateFactories(SerializationConfig serializationConfig,
+			List<PortableHook> factories)
+	{
+		for(PortableHook ph : factories)
+		{
+			serializationConfig.addPortableFactory(ph.getFactoryId(), ph.createFactory());
+		}
+	}
+
 	private TcpIpConfig toTcpIp(StaticNetworkConfig config)
 	{
 		if(config == null)

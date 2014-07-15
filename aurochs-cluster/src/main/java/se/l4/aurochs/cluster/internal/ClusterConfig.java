@@ -29,9 +29,15 @@ public class ClusterConfig
 	@Expose("static")
 	private StaticNetworkConfig staticNetwork;
 	
+	@Expose
+	@Min(1)
+	@Max(8192)
+	private int partitions;
+	
 	public ClusterConfig()
 	{
 		port = 5701;
+		partitions = 271;
 	}
 	
 	public boolean isClient()
@@ -52,6 +58,16 @@ public class ClusterConfig
 	public StaticNetworkConfig getStaticNetwork()
 	{
 		return staticNetwork;
+	}
+	
+	public int getPartitions()
+	{
+		return partitions;
+	}
+	
+	public void setPartitions(int partitions)
+	{
+		this.partitions = partitions;
 	}
 	
 	@Use(ReflectionSerializer.class)

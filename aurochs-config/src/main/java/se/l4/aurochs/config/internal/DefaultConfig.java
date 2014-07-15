@@ -27,6 +27,7 @@ import se.l4.aurochs.serialization.WrappedSerializerCollection;
 import se.l4.aurochs.serialization.format.StreamingInput;
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.Collections2;
 
 /**
  * Default implementation of {@link Config}.
@@ -193,7 +194,7 @@ public class DefaultConfig
 			}
 		}
 			
-		return current.keySet();
+		return Collections2.filter(current.keySet(), (s) -> ! s.startsWith("_aurochs_:"));
 	}
 	
 	private void validateInstance(String path, Object object)

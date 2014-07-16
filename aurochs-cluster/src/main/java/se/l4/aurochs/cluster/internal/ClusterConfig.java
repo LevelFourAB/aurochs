@@ -30,6 +30,9 @@ public class ClusterConfig
 	private StaticNetworkConfig staticNetwork;
 	
 	@Expose
+	private List<String> interfaces;
+	
+	@Expose
 	@Min(1)
 	@Max(8192)
 	private int partitions;
@@ -58,6 +61,11 @@ public class ClusterConfig
 	public StaticNetworkConfig getStaticNetwork()
 	{
 		return staticNetwork;
+	}
+	
+	public List<String> getInterfaces()
+	{
+		return interfaces;
 	}
 	
 	public int getPartitions()

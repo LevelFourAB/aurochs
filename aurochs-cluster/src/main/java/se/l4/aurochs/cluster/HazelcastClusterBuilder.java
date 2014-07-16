@@ -17,6 +17,7 @@ import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.client.config.ClientConfig;
+import com.hazelcast.config.InterfacesConfig;
 import com.hazelcast.config.JoinConfig;
 import com.hazelcast.config.MulticastConfig;
 import com.hazelcast.config.NetworkConfig;
@@ -135,6 +136,16 @@ public class HazelcastClusterBuilder
 			j.setMulticastConfig(toMulticast(clusterConfig.getMulticast()));
 			j.setTcpIpConfig(toTcpIp(clusterConfig.getStaticNetwork()));
 			nc.setJoin(j);
+			
+			if(clusterConfig.getInterfaces() != null)
+			{
+				InterfacesConfig ic = nc.getInterfaces();
+				ic.clear();
+				for(String c : clusterConfig.getInterfaces())
+				{
+					ic.addInterface(c);
+				}
+			}
 			
 			ServicesConfig scs = config.getServicesConfig();
 			for(Map.Entry<String, ManagedService> e : services.entrySet())

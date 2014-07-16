@@ -4,14 +4,28 @@ import java.util.List;
 import java.util.Map;
 
 import se.l4.aurochs.cluster.internal.ClusterConfig;
+import se.l4.aurochs.cluster.internal.ClusterConfig.MulticastNetworkConfig;
+import se.l4.aurochs.cluster.internal.ClusterConfig.StaticNetworkConfig;
 import se.l4.aurochs.cluster.internal.HazelcastClusterImpl;
 import se.l4.aurochs.config.Config;
+import se.l4.aurochs.config.ConfigException;
 import se.l4.aurochs.serialization.SerializerCollection;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
+import com.hazelcast.client.HazelcastClient;
+import com.hazelcast.client.config.ClientConfig;
+import com.hazelcast.config.JoinConfig;
+import com.hazelcast.config.MulticastConfig;
+import com.hazelcast.config.NetworkConfig;
+import com.hazelcast.config.SerializationConfig;
+import com.hazelcast.config.ServiceConfig;
+import com.hazelcast.config.ServicesConfig;
+import com.hazelcast.config.TcpIpConfig;
+import com.hazelcast.core.Hazelcast;
+import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.nio.serialization.PortableHook;
 import com.hazelcast.spi.ManagedService;
 
@@ -78,7 +92,7 @@ public class HazelcastClusterBuilder
 		return this;
 	}
 	
-	public HazelcastCluster build()
+	public HazelcastInstance buildInstance()
 	{
 		List<PortableHook> factories = Lists.newArrayList();
 		injector.getBindings().forEach((key, value) -> {
@@ -88,6 +102,99 @@ public class HazelcastClusterBuilder
 			}
 		});
 		
-		return new HazelcastClusterImpl(serializers, clusterConfig, services, factories);
+		if(clusterConfig.isClient())
+		{
+			ClientConfig config = new ClientConfig();
+			
+			if(clusterConfig.getStaticNetwork() == null)
+			{
+				throw new ConfigException("Need to use static addresses if joining cluster as a client");
+			}
+			
+			config.setAddresses(clusterConfig.getStaticNetwork().getHosts());
+			
+			updateFactories(config.getSerializationConfig(), factories);
+
+			// TODO: Partitions?
+			// TODO: Services?
+			
+			return HazelcastClient.newHazelcastClient(config);
+		}
+		else
+		{
+			com.hazelcast.config.Config config = new com.hazelcast.config.Config();
+			
+			config.setProperty("hazelcast.partition.count", String.valueOf(clusterConfig.getPartitions()));
+			
+			NetworkConfig nc = new NetworkConfig();
+			nc.setPort(clusterConfig.getPort());
+			nc.setPortAutoIncrement(true);
+			config.setNetworkConfig(nc);
+			
+			JoinConfig j = new JoinConfig();
+			j.setMulticastConfig(toMulticast(clusterConfig.getMulticast()));
+			j.setTcpIpConfig(toTcpIp(clusterConfig.getStaticNetwork()));
+			nc.setJoin(j);
+			
+			ServicesConfig scs = config.getServicesConfig();
+			for(Map.Entry<String, ManagedService> e : services.entrySet())
+			{
+				ServiceConfig sc = new ServiceConfig();
+				sc.setEnabled(true);
+				sc.setName(e.getKey());
+				sc.setServiceImpl(e.getValue());
+				scs.addServiceConfig(sc);
+			}
+			
+			updateFactories(config.getSerializationConfig(), factories);
+			
+			return Hazelcast.newHazelcastInstance(config);
+		}
+	}
+	
+	private void updateFactories(SerializationConfig serializationConfig,
+			List<PortableHook> factories)
+	{
+		for(PortableHook ph : factories)
+		{
+			serializationConfig.addPortableFactory(ph.getFactoryId(), ph.createFactory());
+		}
+	}
+	
+	private TcpIpConfig toTcpIp(StaticNetworkConfig config)
+	{
+		if(config == null)
+		{
+			return new TcpIpConfig();
+		}
+		
+		TcpIpConfig tc = new TcpIpConfig();
+		tc.setEnabled(true);
+		for(String s : config.getHosts())
+		{
+			tc.addMember(s);
+		}
+		return tc;
+	}
+
+	private MulticastConfig toMulticast(MulticastNetworkConfig config)
+	{
+		if(config == null)
+		{
+			MulticastConfig mc = new MulticastConfig();
+			mc.setEnabled(false);
+			return mc;
+		}
+		
+		MulticastConfig mc = new MulticastConfig();
+		mc.setMulticastGroup(config.getGroup());
+		mc.setMulticastPort(config.getPort());
+		
+		return mc;
+	}
+	
+	public HazelcastCluster build()
+	{
+		return new HazelcastClusterImpl(serializers, buildInstance());
 	}
 }

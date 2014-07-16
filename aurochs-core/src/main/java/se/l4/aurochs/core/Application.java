@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.LogManager;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -12,6 +13,7 @@ import javax.naming.NamingException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.bridge.SLF4JBridgeHandler;
 import org.slf4j.helpers.NOPLogger;
 
 import se.l4.aurochs.config.ConfigException;
@@ -19,6 +21,9 @@ import se.l4.aurochs.core.internal.AutoLoaderModule;
 import se.l4.aurochs.core.internal.InternalModule;
 import se.l4.aurochs.core.internal.SystemSessionImpl;
 import se.l4.crayon.Configurator;
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.joran.JoranConfigurator;
+import ch.qos.logback.core.joran.spi.JoranException;
 
 import com.google.common.base.Joiner;
 import com.google.inject.Injector;
@@ -246,6 +251,8 @@ public class Application
 			logger.warn("Unhandled exception in thread " + thread.getName() + ": " + t.getMessage(), t)
 		);
 		
+		configureLogging();
+		
 		InternalModule internalModule = new InternalModule(configFiles);
 		Injector injector = configurator
 			.setLogger(NOPLogger.NOP_LOGGER)
@@ -255,5 +262,30 @@ public class Application
 			.configure();
 		
 		return new SystemSessionImpl(injector);
+	}
+	
+	private void configureLogging()
+	{
+		// Setup that SLF4J should handle Java Logging
+		LogManager.getLogManager().reset();
+		SLF4JBridgeHandler.install();
+				
+		// Try to locate logging config
+		File file = findConfigFile("logback.xml", false);
+		if(file != null)
+		{
+			LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
+
+			try
+			{
+				JoranConfigurator configurator = new JoranConfigurator();
+				configurator.setContext(context);
+				context.reset();
+				configurator.doConfigure(file);
+			}
+			catch(JoranException je)
+			{
+			}
+		}
 	}
 }

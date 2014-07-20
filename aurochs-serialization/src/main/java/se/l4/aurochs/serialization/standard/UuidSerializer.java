@@ -30,14 +30,14 @@ public class UuidSerializer
 	public UUID read(StreamingInput in) throws IOException
 	{
 		in.next(Token.VALUE);
-		return fromBytes(in.getByteArray());
+		return fromBytes0(in.getByteArray());
 	}
 	
 	@Override
 	public void write(UUID object, String name, StreamingOutput stream)
 		throws IOException
 	{
-		stream.write(name, toBytes(object));
+		stream.write(name, toBytes0(object));
 	}
 	
 	@Override
@@ -46,7 +46,7 @@ public class UuidSerializer
 		return formatDefinition;
 	}
 
-	public static UUID fromBytes(byte[] bytes)
+	private static UUID fromBytes0(byte[] bytes)
 	{
 		if(bytes == null) return null;
 		
@@ -61,7 +61,7 @@ public class UuidSerializer
 		return new UUID(msb, lsb);
 	}
 	
-	public static byte[] toBytes(UUID uuid)
+	private static byte[] toBytes0(UUID uuid)
 	{
 		long msb = uuid.getMostSignificantBits();
 		long lsb = uuid.getLeastSignificantBits();

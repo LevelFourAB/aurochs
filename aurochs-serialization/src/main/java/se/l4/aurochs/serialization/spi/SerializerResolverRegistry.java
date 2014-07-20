@@ -1,6 +1,8 @@
 package se.l4.aurochs.serialization.spi;
 
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 
@@ -11,11 +13,11 @@ import se.l4.aurochs.serialization.SerializerOrResolver;
 import se.l4.aurochs.serialization.Use;
 import se.l4.aurochs.serialization.collections.ArraySerializerResolver;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.common.collect.Sets;
 import com.google.common.primitives.Primitives;
 
 /**
@@ -49,7 +51,7 @@ public class SerializerResolverRegistry
 					throws Exception
 				{
 					SerializerResolver<?> result = findOrCreateSerializerResolver(key);
-					return Optional.<SerializerResolver<?>>fromNullable(result);
+					return Optional.ofNullable(result);
 				}
 			});
 	}
@@ -83,7 +85,7 @@ public class SerializerResolverRegistry
 		{
 			Optional<SerializerResolver<?>> optional = typeToResolverCache.get(Primitives.wrap(type));
 			
-			return optional.orNull();
+			return optional.isPresent() ? optional.get() : null;
 		}
 		catch (ExecutionException e)
 		{
@@ -93,6 +95,7 @@ public class SerializerResolverRegistry
 		}
 	}
 	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	protected SerializerResolver<?> findOrCreateSerializerResolver(Class<?> from)
 	{
 		SerializerResolver<?> resolver = createViaUse(from);
@@ -107,25 +110,49 @@ public class SerializerResolverRegistry
 			return ARRAY_RESOLVER;
 		}
 		
-		return findSerializerResolver(from);
+		Set<SerializerResolver<?>> resolvers = Sets.newLinkedHashSet();
+		findSerializerResolver(from, resolvers);
+		if(resolvers.isEmpty())
+		{
+			return null;
+		}
+		
+		if(resolvers.size() == 1)
+		{
+			return resolvers.iterator().next();
+		}
+		
+		return new SerializerResolverChain(resolvers);
 	}
 	
-	protected SerializerResolver<?> findSerializerResolver(Class<?> type)
+	protected void findSerializerResolver(Class<?> type, Set<SerializerResolver<?>> resolvers)
 	{
 		Class<?> parent = type;
 		while(parent != null)
 		{
 			SerializerResolver<?> resolver = boundTypeToResolver.get(parent);
-			if(resolver != null)
-			{
-				return resolver;
-			}
+			if(resolver != null) resolvers.add(resolver);
+			
+			findSerializerResolverViaInterfaces(parent, resolvers);
 			
 			parent = parent.getSuperclass();
 		}
-		
-		return null;
 	}
+	
+	protected void findSerializerResolverViaInterfaces(Class<?> type, Set<SerializerResolver<?>> resolvers)
+	{
+		Class<?>[] interfaces = type.getInterfaces();
+		for(Class<?> intf : interfaces)
+		{
+			SerializerResolver<?> resolver = boundTypeToResolver.get(intf);
+			if(resolver != null) resolvers.add(resolver);
+		}
+		
+		for(Class<?> intf : interfaces)
+		{
+			findSerializerResolverViaInterfaces(intf, resolvers);
+		}
+	}		
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	protected SerializerResolver<?> createViaUse(Class<?> from)

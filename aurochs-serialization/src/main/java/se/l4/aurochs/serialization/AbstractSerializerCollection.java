@@ -11,8 +11,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import se.l4.aurochs.serialization.internal.DelayedSerializer;
 import se.l4.aurochs.serialization.internal.TypeEncounterImpl;
-import se.l4.aurochs.serialization.spi.DefaultInstanceFactory;
-import se.l4.aurochs.serialization.spi.InstanceFactory;
 import se.l4.aurochs.serialization.spi.SerializerResolver;
 import se.l4.aurochs.serialization.spi.StaticSerializerResolver;
 import se.l4.aurochs.serialization.spi.Type;
@@ -36,11 +34,6 @@ public abstract class AbstractSerializerCollection
 	private final Map<CacheKey, Serializer<?>> serializers;
 	
 	public AbstractSerializerCollection()
-	{
-		this(new DefaultInstanceFactory());
-	}
-	
-	public AbstractSerializerCollection(InstanceFactory instanceFactory)
 	{
 		nameToSerializer = new ConcurrentHashMap<QualifiedName, Serializer<?>>();
 		serializerToName = new ConcurrentHashMap<Serializer<?>, QualifiedName>();

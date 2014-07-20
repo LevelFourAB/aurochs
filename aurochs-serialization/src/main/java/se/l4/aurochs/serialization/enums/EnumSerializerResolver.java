@@ -37,6 +37,10 @@ public class EnumSerializerResolver
 		{
 			translator = create(hint.value(), type);
 		}
+		else if((hint = type.getAnnotation(MapEnumVia.class)) != null)
+		{
+			translator = create(hint.value(), type);
+		}
 		else
 		{
 			translator = new NameTranslator(type);

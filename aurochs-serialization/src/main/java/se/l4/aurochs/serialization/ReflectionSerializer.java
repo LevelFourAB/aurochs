@@ -13,6 +13,7 @@ import se.l4.aurochs.serialization.spi.AbstractSerializerResolver;
 import se.l4.aurochs.serialization.spi.SerializerResolver;
 import se.l4.aurochs.serialization.spi.Type;
 import se.l4.aurochs.serialization.spi.TypeEncounter;
+import se.l4.aurochs.serialization.standard.CompactDynamicSerializer;
 import se.l4.aurochs.serialization.standard.DynamicSerializer;
 
 import com.fasterxml.classmate.MemberResolver;
@@ -105,7 +106,10 @@ public class ReflectionSerializer<T>
 			}
 			else if(reflectiveField.isAnnotationPresent(AllowAny.class))
 			{
-				serializer = new DynamicSerializer(collection);
+				AllowAny allowAny = reflectiveField.getAnnotation(AllowAny.class);
+				serializer = allowAny.compact()
+					? new CompactDynamicSerializer(collection)
+					: new DynamicSerializer(collection);
 			}
 			else
 			{

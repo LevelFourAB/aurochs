@@ -19,5 +19,12 @@ import java.lang.annotation.Target;
 @Documented
 public @interface AllowAny
 {
-
+	/**
+	 * Set if this should use the compact format or not. The compact format
+	 * will write the container as a list, while the non-compact format is
+	 * an object with the keys {@code namespace}, {@code name}, {@code value}.
+	 * 
+	 * @return
+	 */
+	boolean compact() default false;
 }

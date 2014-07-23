@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import se.l4.aurochs.serialization.Expose;
+import se.l4.aurochs.serialization.Factory;
 import se.l4.aurochs.serialization.SerializationException;
 import se.l4.aurochs.serialization.SerializerCollection;
 
@@ -28,6 +29,7 @@ public class FactoryDefinition<T>
 	private final SerializerCollection collection;
 	private final Argument[] arguments;
 	private final boolean hasSerializedFields;
+	private final boolean isInjectable;
 	private final Constructor<?> raw;
 
 	public FactoryDefinition(SerializerCollection collection,
@@ -85,8 +87,22 @@ public class FactoryDefinition<T>
 			}
 		}
 		
+		boolean isInjectable = args.isEmpty();
+		for(Annotation a : constructor.getRawMember().getAnnotations())
+		{
+			if(a.annotationType() == Factory.class)
+			{
+				isInjectable = true;
+			}
+			else if(a.annotationType().getSimpleName().equals("Inject"))
+			{
+				isInjectable = true;
+			}
+		}
+		
 		arguments = args.toArray(new Argument[args.size()]);
 		this.hasSerializedFields = hasSerializedFields;
+		this.isInjectable = isInjectable;
 	}
 	
 	private static Expose findExpose(Annotation[] annotations)
@@ -110,6 +126,16 @@ public class FactoryDefinition<T>
 	public boolean hasSerializedFields()
 	{
 		return hasSerializedFields;
+	}
+	
+	/**
+	 * Get if this factory is marked as injectable.
+	 * 
+	 * @return
+	 */
+	public boolean isInjectable()
+	{
+		return isInjectable;
 	}
 	
 	/**

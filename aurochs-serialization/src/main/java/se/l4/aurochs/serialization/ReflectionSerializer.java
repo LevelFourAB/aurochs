@@ -151,7 +151,10 @@ public class ReflectionSerializer<T>
 			FactoryDefinition<T> def = new FactoryDefinition<T>(collection, fields, constructor);
 			hasSerializerInFactory |= def.hasSerializedFields();
 			
-			factories.add(def);
+			if(def.hasSerializedFields() || def.isInjectable())
+			{
+				factories.add(def);
+			}
 		}
 		
 		if(factories.isEmpty())

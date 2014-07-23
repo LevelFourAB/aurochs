@@ -140,6 +140,7 @@ public class HazelcastClusterBuilder
 			if(clusterConfig.getInterfaces() != null)
 			{
 				InterfacesConfig ic = nc.getInterfaces();
+				ic.setEnabled(true);
 				ic.clear();
 				for(String c : clusterConfig.getInterfaces())
 				{

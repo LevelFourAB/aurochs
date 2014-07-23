@@ -33,7 +33,9 @@
 		<module>aurochs-config</module>
 		<module>aurochs-core</module>
 		<module>aurochs-net</module>
+
 		<module>aurochs-cluster</module>
+		<module>aurochs-cluster-default</module>
 	</modules>
 	
 	<!-- License -->

@@ -11,9 +11,16 @@ import se.l4.aurochs.serialization.internal.SerializerFormatDefinitionBuilderImp
 
 import com.google.common.collect.ImmutableMap;
 
+/**
+ * Definition of the output of a {@link Serializer}.
+ * 
+ * @author Andreas Holstenson
+ *
+ */
 public class SerializerFormatDefinition
 {
 	private static final SerializerFormatDefinition ANY = new SerializerFormatDefinition(3, null, Collections.<FieldDefinition>emptyList());
+	private static final SerializerFormatDefinition UNKNOWN = new SerializerFormatDefinition(4, null, Collections.<FieldDefinition>emptyList());
 	private static final Map<ValueType, SerializerFormatDefinition> VALUES;
 	
 	static
@@ -80,6 +87,11 @@ public class SerializerFormatDefinition
 		return type == 3;
 	}
 	
+	public boolean isUnknown()
+	{
+		return type == 4;
+	}
+	
 	public static Builder builder()
 	{
 		return new SerializerFormatDefinitionBuilderImpl();
@@ -88,6 +100,11 @@ public class SerializerFormatDefinition
 	public static SerializerFormatDefinition any()
 	{
 		return ANY;
+	}
+	
+	public static SerializerFormatDefinition unknown()
+	{
+		return UNKNOWN;
 	}
 	
 	public static SerializerFormatDefinition forValue(ValueType value)

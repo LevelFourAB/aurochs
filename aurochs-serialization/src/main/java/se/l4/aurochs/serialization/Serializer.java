@@ -54,7 +54,34 @@ public interface Serializer<T>
 	 * 
 	 * @return
 	 */
-	SerializerFormatDefinition getFormatDefinition();
+	default SerializerFormatDefinition getFormatDefinition()
+	{
+		return SerializerFormatDefinition.unknown();
+	}
+	
+	/**
+	 * Turn an object into a byte array.
+	 * 
+	 * @param instance
+	 * @return
+	 */
+	default byte[] toBytes(T instance)
+	{
+		if(instance == null) return null;
+		
+		try
+		{
+			ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
+			BinaryOutput out = new BinaryOutput(baos);
+			this.write(instance, "root", out);
+			out.flush();
+			return baos.toByteArray();
+		}
+		catch(IOException e)
+		{
+			throw Throwables.propagate(e);
+		}
+	}
 	
 	/**
 	 * Create a new function that turns objects into byte arrays.
@@ -63,22 +90,29 @@ public interface Serializer<T>
 	 */
 	default Function<T, byte[]> toBytes()
 	{
-		return (data) -> {
-			if(data == null) return null;
-			
-			try
-			{
-				ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
-				BinaryOutput out = new BinaryOutput(baos);
-				this.write(data, "root", out);
-				out.flush();
-				return baos.toByteArray();
-			}
-			catch(IOException e)
-			{
-				throw Throwables.propagate(e);
-			}
-		};
+		return this::toBytes;
+	}
+	
+	/**
+	 * Read an instance from the given byte data.
+	 * 
+	 * @param data
+	 * @return
+	 */
+	default T fromBytes(byte[] data)
+	{
+		if(data == null) return null;
+		
+		try
+		{
+			ByteArrayInputStream in = new ByteArrayInputStream(data);
+			BinaryInput bin = new BinaryInput(in);
+			return this.read(bin);
+		}
+		catch(IOException e)
+		{
+			throw Throwables.propagate(e);
+		}
 	}
 	
 	/**
@@ -88,19 +122,6 @@ public interface Serializer<T>
 	 */
 	default Function<byte[], T> fromBytes()
 	{
-		return (data) -> {
-			if(data == null) return null;
-			
-			try
-			{
-				ByteArrayInputStream in = new ByteArrayInputStream(data);
-				BinaryInput bin = new BinaryInput(in);
-				return this.read(bin);
-			}
-			catch(IOException e)
-			{
-				throw Throwables.propagate(e);
-			}
-		};
+		return this::fromBytes;
 	}
 }

@@ -8,10 +8,12 @@ import java.util.List;
 
 import se.l4.aurochs.serialization.Serializer;
 import se.l4.aurochs.serialization.SerializerFormatDefinition;
-import se.l4.aurochs.serialization.SerializerFormatDefinition.FieldDefinition;
 import se.l4.aurochs.serialization.SerializerFormatDefinition.Builder;
 import se.l4.aurochs.serialization.SerializerFormatDefinition.FieldBuilder;
+import se.l4.aurochs.serialization.SerializerFormatDefinition.FieldDefinition;
 import se.l4.aurochs.serialization.format.ValueType;
+import se.l4.aurochs.serialization.spi.Type;
+import se.l4.aurochs.serialization.spi.TypeViaClass;
 
 /**
  * Implementation of {@link SerializerDefinition.Builder}.
@@ -86,6 +88,7 @@ public class SerializerFormatDefinitionBuilderImpl
 	{
 		private final Collection<Annotation> hints;
 		private String name;
+		private Type type;
 		
 		public FieldBuilderImpl(String name)
 		{
@@ -109,6 +112,19 @@ public class SerializerFormatDefinitionBuilderImpl
 			}
 			return this;
 		}
+		
+		@Override
+		public FieldBuilder withType(Class<?> type)
+		{
+			return withType(new TypeViaClass(type));
+		}
+		
+		@Override
+		public FieldBuilder withType(Type type)
+		{
+			this.type = type;
+			return this;
+		}
 
 		@Override
 		public Builder using(Serializer<?> serializer)
@@ -128,6 +144,7 @@ public class SerializerFormatDefinitionBuilderImpl
 			fields.add(new SerializerFormatDefinition.FieldDefinition(
 				name,
 				def,
+				type,
 				hints.isEmpty() ? EMPTY_ANNOTATIONS : hints.toArray(EMPTY_ANNOTATIONS)
 			));
 			return SerializerFormatDefinitionBuilderImpl.this;

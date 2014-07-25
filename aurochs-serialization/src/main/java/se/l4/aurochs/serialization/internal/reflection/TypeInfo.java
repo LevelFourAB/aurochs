@@ -32,7 +32,10 @@ public class TypeInfo<T>
 		SerializerFormatDefinition.Builder builder = SerializerFormatDefinition.builder();
 		for(FieldDefinition fdef : fields)
 		{
-			builder.field(fdef.getName()).withHints(fdef.getHints()).using(fdef.getSerializer());
+			builder.field(fdef.getName())
+				.withType(fdef.getType())
+				.withHints(fdef.getHints())
+				.using(fdef.getSerializer());
 		}
 		formatDefinition = builder.build();
 	}

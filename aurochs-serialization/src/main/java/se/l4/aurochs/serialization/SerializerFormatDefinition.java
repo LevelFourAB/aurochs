@@ -8,6 +8,7 @@ import java.util.Map;
 
 import se.l4.aurochs.serialization.format.ValueType;
 import se.l4.aurochs.serialization.internal.SerializerFormatDefinitionBuilderImpl;
+import se.l4.aurochs.serialization.spi.Type;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -116,12 +117,14 @@ public class SerializerFormatDefinition
 	{
 		private final String name;
 		private final SerializerFormatDefinition definition;
+		private final Type type;
 		private final Annotation[] hints;
 
-		public FieldDefinition(String name, SerializerFormatDefinition definition, Annotation[] hints)
+		public FieldDefinition(String name, SerializerFormatDefinition definition, Type type, Annotation[] hints)
 		{
 			this.name = name;
 			this.definition = definition;
+			this.type = type;
 			this.hints = hints;
 		}
 
@@ -133,6 +136,11 @@ public class SerializerFormatDefinition
 		public SerializerFormatDefinition getDefinition()
 		{
 			return definition;
+		}
+		
+		public Type getType()
+		{
+			return type;
 		}
 
 		public Annotation[] getHints()
@@ -212,6 +220,22 @@ public class SerializerFormatDefinition
 		 * @return
 		 */
 		FieldBuilder withHints(Annotation... hints);
+		
+		/**
+		 * Set information about the Java-type.
+		 * 
+		 * @param type
+		 * @return
+		 */
+		FieldBuilder withType(Class<?> type);
+		
+		/**
+		 * Set information about the Java-type.
+		 * 
+		 * @param type
+		 * @return
+		 */
+		FieldBuilder withType(Type type);
 		
 		/**
 		 * Define that this field uses the specified serializer.

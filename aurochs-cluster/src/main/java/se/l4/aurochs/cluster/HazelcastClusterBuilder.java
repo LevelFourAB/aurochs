@@ -67,6 +67,10 @@ public class HazelcastClusterBuilder
 	public HazelcastClusterBuilder fromConfig(String key)
 	{
 		ClusterConfig cc = config.asObject(key, ClusterConfig.class);
+		if(cc == null)
+		{
+			throw new ConfigException("No cluster config found for " + key);
+		}
 		this.clusterConfig = cc;
 		return this;
 	}

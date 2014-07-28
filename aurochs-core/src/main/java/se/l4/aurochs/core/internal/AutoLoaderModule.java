@@ -10,6 +10,7 @@ import se.l4.aurochs.core.SerializerRegistration;
 import se.l4.aurochs.serialization.SerializerCollection;
 import se.l4.aurochs.serialization.Use;
 import se.l4.crayon.CrayonModule;
+import se.l4.crayon.annotation.Order;
 
 import com.google.inject.Module;
 
@@ -52,7 +53,8 @@ public class AutoLoaderModule
 		}
 	}
 
-	@SerializerRegistration
+	@SerializerRegistration(name="internal-serializers")
+	@Order("last")
 	public void autoRegisterSerializer(AutoLoader plugins, SerializerCollection collection)
 	{
 		Set<Class<?>> types = plugins.getClassesAnnotatedWith(Use.class);
@@ -61,13 +63,7 @@ public class AutoLoaderModule
 			if(c.getTypeParameters().length == 0)
 			{
 				// Only register those classes that do not have any type params
-				try
-				{
-					collection.bind(c);
-				}
-				catch(Exception e)
-				{
-				}
+				collection.bind(c);
 			}
 		}
 	}

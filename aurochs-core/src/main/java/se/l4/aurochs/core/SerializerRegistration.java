@@ -11,4 +11,5 @@ import com.google.inject.BindingAnnotation;
 @Documented
 public @interface SerializerRegistration
 {
+	String name() default "";
 }

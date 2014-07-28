@@ -194,6 +194,8 @@ public abstract class AbstractSerializerCollection
 				throw new SerializationException("Unable to find serializer for " + type + " using " + resolver.getClass());
 			}
 			
+			registerIfNamed(type.getErasedType(), serializer);
+			
 			// Store the found serializer in the cache
 			serializers.put(key, serializer);
 			return serializer;

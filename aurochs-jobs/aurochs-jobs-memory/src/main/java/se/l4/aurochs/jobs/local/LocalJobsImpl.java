@@ -221,6 +221,7 @@ public class LocalJobsImpl
 			this.failed = true;
 			if(submitted.future != null)
 			{
+				logger.error("Job " + submitted.data + " failed; " + t.getMessage(), t);
 				submitted.future.completeExceptionally(t);
 			}
 		}
@@ -240,7 +241,7 @@ public class LocalJobsImpl
 
 			if(submitted.attempt >= MAX_ATTEMPTS)
 			{
-				logger.warn("Giving up, too many failures for {}", submitted.data);
+				logger.warn("Giving up, too many failures for " + submitted.data + "; " + t.getMessage(), t);
 				if(submitted.future != null)
 				{
 					submitted.future.completeExceptionally(new RuntimeException("Job did not complete in " + MAX_ATTEMPTS + " retries"));
@@ -248,6 +249,7 @@ public class LocalJobsImpl
 			}
 			else
 			{
+				logger.warn("Job " + submitted.data + " failed, retrying in " + retryDelay + " ms; " + t.getMessage(), t);
 				long time = System.currentTimeMillis() + retryDelay;
 				queue.put(new SubmittedJobImpl(submitted.data, time, submitted.attempt + 1, submitted.future));
 			}

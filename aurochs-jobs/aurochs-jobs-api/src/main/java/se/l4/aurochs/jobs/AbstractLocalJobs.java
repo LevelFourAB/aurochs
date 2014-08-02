@@ -1,5 +1,7 @@
 package se.l4.aurochs.jobs;
 
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.Map;
 
 import com.google.common.collect.Maps;
@@ -23,8 +25,40 @@ public abstract class AbstractLocalJobs
 	@Override
 	public void registerRunner(JobRunner<?> runner)
 	{
-		// TODO Auto-generated method stub
+		registerRunner((Class) getDataType(runner.getClass()), runner);
+	}
+	
+	private Class<?> getDataType(Class<?> type)
+	{
+		Type[] genericInterfaces = type.getGenericInterfaces();
+		for(Type t : genericInterfaces)
+		{
+			if(t instanceof ParameterizedType)
+			{
+				ParameterizedType pt = (ParameterizedType) t;
+				if(pt.getRawType() == JobRunner.class)
+				{
+					Type[] arguments = pt.getActualTypeArguments();
+					return findClass(arguments[0]);
+				}
+			}
+		}
 		
+		throw new RuntimeException("Could not find data type for " + type);
+	}
+	
+	private Class<?> findClass(Type type)
+	{
+		if(type instanceof Class)
+		{
+			return (Class) type;
+		}
+		else if(type instanceof ParameterizedType)
+		{
+			return (Class) ((ParameterizedType) type).getRawType();
+		}
+		
+		throw new RuntimeException("Could not determine type for " + type);
 	}
 	
 	@Override

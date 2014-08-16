@@ -129,7 +129,7 @@ public class BinaryInput
 		while(shift < 32)
 		{
 			final byte b = (byte) in.read();
-			result |= (int) (b & 0x7F) << shift;
+			result |= (b & 0x7F) << shift;
 			if((b & 0x80) == 0) return result;
 			
 			shift += 7;
@@ -219,10 +219,22 @@ public class BinaryInput
 				i = (i >>> 1) ^ -(i & 1);
 				setValue(i);
 				break;
+			case BinaryOutput.TAG_POSITIVE_INT:
+				setValue(readInteger());
+				break;
+			case BinaryOutput.TAG_NEGATIVE_INT:
+				setValue(-readInteger());
+				break;
 			case BinaryOutput.TAG_LONG:
 				long l = readLong();
 				l = (l >>> 1) ^ -(l & 1);
 				setValue(l);
+				break;
+			case BinaryOutput.TAG_POSITIVE_LONG:
+				setValue(readLong());
+				break;
+			case BinaryOutput.TAG_NEGATIVE_LONG:
+				setValue(-readLong());
 				break;
 			case BinaryOutput.TAG_NULL:
 				setValue(null);

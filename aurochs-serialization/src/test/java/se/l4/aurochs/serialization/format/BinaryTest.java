@@ -1,8 +1,15 @@
 package se.l4.aurochs.serialization.format;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
-import static se.l4.aurochs.serialization.format.StreamingInput.Token.*;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
+import static se.l4.aurochs.serialization.format.StreamingInput.Token.KEY;
+import static se.l4.aurochs.serialization.format.StreamingInput.Token.LIST_END;
+import static se.l4.aurochs.serialization.format.StreamingInput.Token.LIST_START;
+import static se.l4.aurochs.serialization.format.StreamingInput.Token.NULL;
+import static se.l4.aurochs.serialization.format.StreamingInput.Token.OBJECT_END;
+import static se.l4.aurochs.serialization.format.StreamingInput.Token.OBJECT_START;
+import static se.l4.aurochs.serialization.format.StreamingInput.Token.VALUE;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -67,6 +74,18 @@ public class BinaryTest
 		
 		assertStream(OBJECT_START, KEY, VALUE, OBJECT_END);
 		assertStreamValues("name", 12);
+	}
+	
+	@Test
+	public void singleNegativeInt()
+		throws IOException
+	{
+		output.writeObjectStart("");
+		output.write("name", -12);
+		output.writeObjectEnd("");
+		
+		assertStream(OBJECT_START, KEY, VALUE, OBJECT_END);
+		assertStreamValues("name", -12);
 	}
 	
 	@Test

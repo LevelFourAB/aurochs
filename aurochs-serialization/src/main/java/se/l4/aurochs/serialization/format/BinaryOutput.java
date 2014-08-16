@@ -30,6 +30,10 @@ public class BinaryOutput
 	public static final int TAG_DOUBLE = 15;
 	public static final int TAG_BOOLEAN = 16;
 	public static final int TAG_BYTE_ARRAY = 17;
+	public static final int TAG_POSITIVE_INT = 18;
+	public static final int TAG_POSITIVE_LONG = 19;
+	public static final int TAG_NEGATIVE_INT = 20;
+	public static final int TAG_NEGATIVE_LONG = 21;
 	
 	private final OutputStream out;
 	
@@ -148,8 +152,16 @@ public class BinaryOutput
 	private void writeInteger(int value)
 		throws IOException
 	{
-		out.write(TAG_INT);
-		writeIntegerNoTag(value);
+		if(value < 0)
+		{
+			out.write(TAG_NEGATIVE_INT);
+			writeIntegerNoTag(-value);
+		}
+		else
+		{
+			out.write(TAG_POSITIVE_INT);
+			writeIntegerNoTag(value);
+		}
 	}
 	
 	/**
@@ -185,8 +197,16 @@ public class BinaryOutput
 	private void writeLong(long value)
 		throws IOException
 	{
-		out.write(TAG_LONG);
-		writeLongNoTag(value);
+		if(value < 0)
+		{
+			out.write(TAG_NEGATIVE_LONG);
+			writeLongNoTag(- value);
+		}
+		else
+		{
+			out.write(TAG_POSITIVE_LONG);
+			writeLongNoTag(value);
+		}
 	}
 	
 	/**
@@ -345,8 +365,7 @@ public class BinaryOutput
 		startWrite();
 		
 		writeName(name);
-		// Always write with Protobufs ZigZag  
-		writeInteger((number << 1) ^ (number >> 31));
+		writeInteger(number);
 	}
 	
 	@Override
@@ -356,8 +375,7 @@ public class BinaryOutput
 		startWrite();
 		
 		writeName(name);
-		// Always write with Protobufs ZigZag
-		writeLong((number << 1) ^ (number >> 63));	
+		writeLong(number);	
 	}
 	
 	@Override

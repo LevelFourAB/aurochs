@@ -1,5 +1,6 @@
 package se.l4.aurochs.serialization.internal.reflection;
 
+import java.beans.ConstructorProperties;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -34,6 +35,7 @@ public class FactoryDefinition<T>
 
 	public FactoryDefinition(SerializerCollection collection,
 			Map<String, FieldDefinition> fields,
+			Map<String, FieldDefinition> nonRenamed,
 			ResolvedConstructor constructor)
 	{
 		this.collection = collection;
@@ -41,6 +43,10 @@ public class FactoryDefinition<T>
 		List<Argument> args = new ArrayList<FactoryDefinition.Argument>();
 		
 		raw = constructor.getRawMember();
+		
+		ConstructorProperties cp = raw.getAnnotation(ConstructorProperties.class);
+		String[] names = cp == null ? null : cp.value();
+		
 		Annotation[][] annotations = raw.getParameterAnnotations();
 		
 		boolean hasSerializedFields = false;
@@ -83,6 +89,18 @@ public class FactoryDefinition<T>
 			}
 			else
 			{
+				if(names != null && i < names.length)
+				{
+					String name = names[i];
+					FieldDefinition def = nonRenamed.get(name);
+					if(def != null)
+					{
+						args.add(new SerializedArgument(def.getType(), def.getName()));
+						hasSerializedFields = true;
+						continue;
+					}
+				}
+				
 				args.add(new InjectedArgument(type.getErasedType(), annotations[i]));
 			}
 		}

@@ -56,6 +56,7 @@ public class ReflectionSerializer<T>
 		SerializerCollection collection = encounter.getCollection();
 		
 		ImmutableMap.Builder<String, FieldDefinition> builder = ImmutableMap.builder();
+		ImmutableMap.Builder<String, FieldDefinition> nonRenamedFields = ImmutableMap.builder();
 		
 		TypeResolver typeResolver = new TypeResolver();
 		MemberResolver memberResolver = new MemberResolver(typeResolver);
@@ -136,10 +137,12 @@ public class ReflectionSerializer<T>
 			String name = getName(reflectiveField);
 			FieldDefinition def = new FieldDefinition(reflectiveField, name, serializer, fieldType.getErasedType());
 			builder.put(name, def);
+			nonRenamedFields.put(reflectiveField.getName(), def);
 		}
 		
 		// Create field map and cache
 		ImmutableMap<String, FieldDefinition> fields = builder.build();
+		ImmutableMap<String, FieldDefinition> nonRenamed = builder.build();
 		FieldDefinition[] fieldsCache = fields.values().toArray(new FieldDefinition[0]);
 		
 		// Get all of the factories
@@ -148,7 +151,7 @@ public class ReflectionSerializer<T>
 		
 		for(ResolvedConstructor constructor : typeWithMembers.getConstructors())
 		{
-			FactoryDefinition<T> def = new FactoryDefinition<T>(collection, fields, constructor);
+			FactoryDefinition<T> def = new FactoryDefinition<T>(collection, fields, nonRenamed, constructor);
 			hasSerializerInFactory |= def.hasSerializedFields();
 			
 			if(def.hasSerializedFields() || def.isInjectable())

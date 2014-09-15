@@ -38,6 +38,12 @@ public class AutoLoaderImpl
 	}
 	
 	@Override
+	public <T> Set<Class<? extends T>> getSubTypesOf(Class<T> type)
+	{
+		return reflections.getSubTypesOf(type);
+	}
+	
+	@Override
 	public Set<Class<?>> getClassesAnnotatedWith(Class<? extends Annotation> annotationType)
 	{
 		return reflections.getTypesAnnotatedWith(annotationType);

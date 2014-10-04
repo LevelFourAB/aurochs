@@ -42,7 +42,7 @@ public class SetSerializer<T>
 		Set<T> list = new HashSet<T>();
 		while(in.peek() != Token.LIST_END)
 		{
-			T value = itemSerializer.read(in);
+			T value = in.peek() == Token.NULL ? null : itemSerializer.read(in);
 			list.add(value);
 		}
 		
@@ -59,7 +59,14 @@ public class SetSerializer<T>
 		
 		for(T value : object)
 		{
-			itemSerializer.write(value, "item", stream);
+			if(value == null)
+			{
+				stream.writeNull("item");
+			}
+			else
+			{
+				itemSerializer.write(value, "item", stream);
+			}
 		}
 		
 		stream.writeListEnd(name);

@@ -42,7 +42,7 @@ public class ListSerializer<T>
 		List<T> list = new ArrayList<T>();
 		while(in.peek() != Token.LIST_END)
 		{
-			T value = itemSerializer.read(in);
+			T value = in.peek() == Token.NULL ? null : itemSerializer.read(in);
 			list.add(value);
 		}
 		
@@ -61,14 +61,29 @@ public class ListSerializer<T>
 		{
 			for(int i=0, n=object.size(); i<n; i++)
 			{
-				itemSerializer.write(object.get(i), "item", stream);
+				T value = object.get(i);
+				if(value == null)
+				{
+					stream.writeNull("item");
+				}
+				else
+				{
+					itemSerializer.write(value, "item", stream);
+				}
 			}
 		}
 		else
 		{
 			for(T value : object)
 			{
-				itemSerializer.write(value, "item", stream);
+				if(value == null)
+				{
+					stream.writeNull("item");
+				}
+				else
+				{
+					itemSerializer.write(value, "item", stream);
+				}
 			}
 		}
 		

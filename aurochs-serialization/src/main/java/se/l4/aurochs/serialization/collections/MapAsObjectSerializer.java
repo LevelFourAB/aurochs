@@ -43,7 +43,7 @@ public class MapAsObjectSerializer<V>
 				continue;
 			}
 			
-			V value = serializer.read(in);
+			V value = in.peek() == Token.NULL ? null : serializer.read(in);
 			
 			result.put(key, value);
 		}
@@ -61,7 +61,15 @@ public class MapAsObjectSerializer<V>
 		
 		for(Entry<String, V> e : object.entrySet())
 		{
-			serializer.write(e.getValue(), e.getKey(), stream);
+			V value = e.getValue();
+			if(value == null)
+			{
+				stream.writeNull(name);
+			}
+			else
+			{
+				serializer.write(value, e.getKey(), stream);
+			}
 		}
 		
 		stream.writeObjectEnd(name);

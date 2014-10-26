@@ -2,9 +2,11 @@ package se.l4.aurochs.core.internal;
 
 import java.util.Set;
 
+import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import se.l4.aurochs.core.AutoLoad;
 import se.l4.aurochs.core.AutoLoader;
 import se.l4.aurochs.core.SerializerRegistration;
 import se.l4.aurochs.serialization.SerializerCollection;
@@ -34,25 +36,30 @@ public class AutoLoaderModule
 	protected void configure()
 	{
 		Logger logger = LoggerFactory.getLogger(AutoLoaderModule.class);
+
+		bind(AutoLoader.class).to(AutoLoaderImpl.class);
 		
-		AutoLoaderImpl autoLoader = new AutoLoaderImpl(packageNames);
-		bind(AutoLoader.class).toInstance(autoLoader);
+		Reflections reflections = new Reflections(packageNames.toArray());
+		bind(Reflections.class).toInstance(reflections);
 		
-		for(Class<? extends Module> m : autoLoader.getPluginsOfType(Module.class))
+		for(Class<?> c : reflections.getTypesAnnotatedWith(AutoLoad.class))
 		{
-			try
+			if(Module.class.isAssignableFrom(c))
 			{
-				logger.info("Installing " + m);
-				Module instance = m.newInstance();
-				install(instance);
-			}
-			catch(Exception e)
-			{
-				throw new Error("Unable to create module " + m + "; " + e.getMessage(), e);
+				try
+				{
+					logger.info("Installing " + c);
+					Object instance = c.newInstance();
+					install((Module) instance);
+				}
+				catch(Exception e)
+				{
+					throw new Error("Unable to create module " + c + "; " + e.getMessage(), e);
+				}
 			}
 		}
 	}
-
+	
 	@SerializerRegistration(name="internal-serializers")
 	@Order("last")
 	public void autoRegisterSerializer(AutoLoader plugins, SerializerCollection collection)

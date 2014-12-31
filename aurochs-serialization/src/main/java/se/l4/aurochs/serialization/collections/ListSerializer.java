@@ -42,7 +42,17 @@ public class ListSerializer<T>
 		List<T> list = new ArrayList<T>();
 		while(in.peek() != Token.LIST_END)
 		{
-			T value = in.peek() == Token.NULL ? null : itemSerializer.read(in);
+			T value;
+			if(in.peek() == Token.NULL)
+			{
+				in.next();
+				value = null;
+			}
+			else
+			{
+				value = itemSerializer.read(in);
+			}
+			
 			list.add(value);
 		}
 		

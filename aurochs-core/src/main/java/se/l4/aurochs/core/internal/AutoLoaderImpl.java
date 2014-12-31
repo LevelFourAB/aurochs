@@ -1,6 +1,7 @@
 package se.l4.aurochs.core.internal;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Modifier;
 import java.util.Set;
 
 import org.reflections.Reflections;
@@ -55,7 +56,11 @@ public class AutoLoaderImpl
 		ImmutableSet.Builder<T> builder = ImmutableSet.builder();
 		for(Class<? extends T> t : getAutoLoadedClassesOfType(type))
 		{
-			builder.add(injector.getInstance(t));
+			if(! Modifier.isAbstract(t.getModifiers()) &&
+				! t.isInterface())
+			{
+				builder.add(injector.getInstance(t));
+			}
 		}
 		return builder.build();
 	}
@@ -78,7 +83,11 @@ public class AutoLoaderImpl
 		ImmutableSet.Builder<T> builder = ImmutableSet.builder();
 		for(Class<? extends T> t : getSubTypesOf(type))
 		{
-			builder.add(injector.getInstance(t));
+			if(! Modifier.isAbstract(t.getModifiers()) &&
+				! t.isInterface())
+			{
+				builder.add(injector.getInstance(t));
+			}
 		}
 		return builder.build();
 	}

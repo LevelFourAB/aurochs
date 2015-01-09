@@ -1,8 +1,8 @@
 package se.l4.aurochs.net.internal;
 
-import java.io.IOException;
+import io.netty.channel.Channel;
 
-import org.jboss.netty.channel.Channel;
+import java.io.IOException;
 
 import se.l4.aurochs.core.channel.MessageEvent;
 import se.l4.aurochs.core.io.ByteMessage;
@@ -60,7 +60,7 @@ public class TransportSession
 	public String toString()
 	{
 		return Objects.toStringHelper(this)
-			.add("connection", nettyChannel.getRemoteAddress())
+			.add("connection", nettyChannel.remoteAddress())
 			.toString();
 	}
 	
@@ -88,7 +88,7 @@ public class TransportSession
 		@Override
 		public void send(ByteMessage message)
 		{
-			nettyChannel.write(message);
+			nettyChannel.writeAndFlush(message);
 		}
 		
 		@Override

@@ -1,8 +1,8 @@
 package se.l4.aurochs.net.internal;
 
-import java.util.concurrent.Executor;
+import io.netty.channel.Channel;
 
-import org.jboss.netty.channel.Channel;
+import java.util.concurrent.Executor;
 
 import se.l4.aurochs.core.spi.Sessions;
 import se.l4.aurochs.serialization.SerializerCollection;

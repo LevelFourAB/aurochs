@@ -1,10 +1,9 @@
 package se.l4.aurochs.net.internal.handlers;
 
-import java.util.concurrent.Executor;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundHandlerAdapter;
 
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.MessageEvent;
-import org.jboss.netty.channel.SimpleChannelHandler;
+import java.util.concurrent.Executor;
 
 import se.l4.aurochs.core.io.ByteMessage;
 import se.l4.aurochs.net.internal.TransportSession;
@@ -16,7 +15,7 @@ import se.l4.aurochs.net.internal.TransportSession;
  *
  */
 public class MessagingHandler
-	extends SimpleChannelHandler
+	extends ChannelInboundHandlerAdapter
 {
 	private final TransportSession session;
 	private final Executor executor;
@@ -28,10 +27,9 @@ public class MessagingHandler
 	}
 	
 	@Override
-	public void messageReceived(ChannelHandlerContext ctx, MessageEvent e)
+	public void channelRead(ChannelHandlerContext ctx, Object msg)
 		throws Exception
 	{
-		Object msg = e.getMessage();
 		executor.execute(new Runnable()
 		{
 			@Override

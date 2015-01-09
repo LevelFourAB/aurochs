@@ -1,18 +1,16 @@
 package se.l4.aurochs.net.internal.handlers;
 
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.handler.ssl.SslHandler;
+
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
 
 import javax.net.ssl.TrustManager;
-
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.ExceptionEvent;
-import org.jboss.netty.channel.MessageEvent;
-import org.jboss.netty.channel.SimpleChannelHandler;
-import org.jboss.netty.handler.ssl.SslHandler;
 
 import se.l4.aurochs.net.ConnectionException;
 import se.l4.aurochs.net.ServerConnection.TLSMode;
@@ -30,7 +28,7 @@ import se.l4.aurochs.net.internal.handshake.SessionStatus;
 import com.google.common.base.Throwables;
 
 public class ClientHandshakeHandler
-	extends SimpleChannelHandler
+	extends ChannelInboundHandlerAdapter
 {
 	private enum State
 	{
@@ -66,11 +64,10 @@ public class ClientHandshakeHandler
 	}
 	
 	@Override
-	public void messageReceived(ChannelHandlerContext ctx, MessageEvent e)
+	public void channelRead(ChannelHandlerContext ctx, Object msg)
 		throws Exception
 	{
-		Object msg = e.getMessage();
-		Channel channel = e.getChannel();
+		Channel channel = ctx.channel();
 		
 		switch(state)
 		{
@@ -94,7 +91,7 @@ public class ClientHandshakeHandler
 					{
 						// TLS was selected, add the handler
 						SslHandler handler = new SslHandler(SslHelper.createClientEngine(trustManager), false);
-						channel.getPipeline().addFirst("ssl", handler);
+						channel.pipeline().addFirst("ssl", handler);
 					}
 					
 					state = State.WAITING_FOR_AUTH_REJECT;
@@ -148,6 +145,8 @@ public class ClientHandshakeHandler
 				}
 				break;
 		}
+		
+		ctx.flush();
 	}
 	
 	private void raiseError(ChannelHandlerContext ctx)
@@ -156,10 +155,9 @@ public class ClientHandshakeHandler
 	}
 	
 	@Override
-	public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e)
+	public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
 		throws Exception
 	{
-		Throwable cause = e.getCause();
 		Throwable root = Throwables.getRootCause(cause);
 		
 		if(root instanceof CertificateException)
@@ -168,7 +166,7 @@ public class ClientHandshakeHandler
 		}
 		else
 		{
-			functions.raiseConnectionError(new ConnectionException("Connection to server did not succeed", e.getCause()));
+			functions.raiseConnectionError(new ConnectionException("Connection to server did not succeed", cause.getCause()));
 		}
 	}
 

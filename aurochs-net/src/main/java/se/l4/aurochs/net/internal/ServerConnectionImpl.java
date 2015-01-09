@@ -1,5 +1,15 @@
 package se.l4.aurochs.net.internal;
 
+import io.netty.bootstrap.Bootstrap;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.ChannelPipeline;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.nio.NioSocketChannel;
+
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.util.Set;
@@ -11,15 +21,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import javax.net.ssl.TrustManager;
-
-import org.jboss.netty.bootstrap.ClientBootstrap;
-import org.jboss.netty.channel.ChannelFuture;
-import org.jboss.netty.channel.ChannelPipeline;
-import org.jboss.netty.channel.ChannelPipelineFactory;
-import org.jboss.netty.channel.Channels;
-import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
-import org.jboss.netty.handler.codec.frame.DelimiterBasedFrameDecoder;
-import org.jboss.netty.handler.codec.frame.Delimiters;
 
 import se.l4.aurochs.core.Session;
 import se.l4.aurochs.net.ConnectionException;
@@ -121,39 +122,32 @@ public class ServerConnectionImpl
 			throw new IllegalArgumentException("No hosts specified in set");
 		}
 		
-		ClientBootstrap bootstrap = new ClientBootstrap(
-			new NioClientSocketChannelFactory(
-				Executors.newCachedThreadPool(),
-				Executors.newCachedThreadPool()
-			)
-		);
-		
 		final ExecutorService executor = Executors.newCachedThreadPool(new ThreadFactoryBuilder()
 			.setNameFormat("aurochs-client-%s " + this.hosts)
 			.setDaemon(true)
 			.build()
 		);
 		
-		// Set up the event pipeline factory.
-		bootstrap.setPipelineFactory(new ChannelPipelineFactory()
-		{
-			@Override
-			public ChannelPipeline getPipeline() throws Exception
+		EventLoopGroup group = new NioEventLoopGroup();
+		Bootstrap bootstrap = new Bootstrap()
+			.group(group)
+			.channel(NioSocketChannel.class)
+			.option(ChannelOption.TCP_NODELAY, true)
+			.option(ChannelOption.SO_KEEPALIVE, true)
+			.handler(new ChannelInitializer<Channel>()
 			{
-				ChannelPipeline pipeline = Channels.pipeline();
-				
-				pipeline.addLast("handshakeDecoderByLine", new DelimiterBasedFrameDecoder(4096, Delimiters.lineDelimiter()));
-				pipeline.addLast("handshakeDecoder", new HandshakeDecoder());
-				pipeline.addLast("handshakeEncoder", new HandshakeEncoder());
-				
-				pipeline.addLast("handshake", new ClientHandshakeHandler(functions, executor, tlsMode, trustManager));
-				
-				return pipeline;
-			}
-		});
-		
-		bootstrap.setOption("tcpNoDelay", true);
-		bootstrap.setOption("keepAlive", true);
+				@Override
+				protected void initChannel(Channel ch)
+					throws Exception
+				{
+					ChannelPipeline pipeline = ch.pipeline();
+					
+					pipeline.addLast("handshakeDecoder", new HandshakeDecoder());
+					pipeline.addLast("handshakeEncoder", new HandshakeEncoder());
+					
+					pipeline.addLast("handshake", new ClientHandshakeHandler(functions, executor, tlsMode, trustManager));
+				}
+			});
 		
 		URI uri = hosts.iterator().next();
 		InetSocketAddress address = new InetSocketAddress(
@@ -168,13 +162,13 @@ public class ServerConnectionImpl
 		}
 		catch(InterruptedException e)
 		{
-			bootstrap.releaseExternalResources();
+			group.shutdownGracefully();
 			throw new RuntimeException("Unable to connect to server");
 		}
 		
 		if(! cf.isSuccess())
 		{
-			bootstrap.releaseExternalResources();
+			group.shutdownGracefully();
 			throw new RuntimeException("Unable to connect to server");
 		}
 		
@@ -213,74 +207,6 @@ public class ServerConnectionImpl
 	
 	public Future<ConnectionResult> connectInternal()
 	{
-		if(hosts == null)
-		{
-			throw new IllegalArgumentException("No hosts specified");
-		}
-		
-		Set<URI> hosts = this.hosts.list();
-		if(hosts.isEmpty())
-		{
-			throw new IllegalArgumentException("No hosts specified in set");
-		}
-		
-		ClientBootstrap bootstrap = new ClientBootstrap(
-			new NioClientSocketChannelFactory(
-				Executors.newCachedThreadPool(),
-				Executors.newCachedThreadPool()
-			)
-		);
-		
-		final ExecutorService executor = Executors.newCachedThreadPool(new ThreadFactoryBuilder()
-			.setNameFormat("aurochs-client-%s " + this.hosts)
-			.setDaemon(true)
-			.build()
-		);
-		
-		// Set up the event pipeline factory.
-		bootstrap.setPipelineFactory(new ChannelPipelineFactory()
-		{
-			@Override
-			public ChannelPipeline getPipeline() throws Exception
-			{
-				ChannelPipeline pipeline = Channels.pipeline();
-				
-				pipeline.addLast("handshakeDecoderByLine", new DelimiterBasedFrameDecoder(4096, Delimiters.lineDelimiter()));
-				pipeline.addLast("handshakeDecoder", new HandshakeDecoder());
-				pipeline.addLast("handshakeEncoder", new HandshakeEncoder());
-				
-				pipeline.addLast("handshake", new ClientHandshakeHandler(functions, executor, tlsMode, trustManager));
-				
-				return pipeline;
-			}
-		});
-		
-		bootstrap.setOption("tcpNoDelay", true);
-		bootstrap.setOption("keepAlive", true);
-		
-		URI uri = hosts.iterator().next();
-		InetSocketAddress address = new InetSocketAddress(
-			uri.getHost(), 
-			uri.getPort() > 0 ? uri.getPort() : 7400
-		);
-		ChannelFuture cf = bootstrap.connect(address);
-		
-		try
-		{
-			cf.await(60, TimeUnit.SECONDS);
-		}
-		catch(InterruptedException e)
-		{
-			bootstrap.releaseExternalResources();
-			throw new RuntimeException("Unable to connect to server");
-		}
-		
-		if(! cf.isSuccess())
-		{
-			bootstrap.releaseExternalResources();
-			throw new RuntimeException("Unable to connect to server");
-		}
-		
-		return functions.getFuture();
+		return null;
 	}
 }

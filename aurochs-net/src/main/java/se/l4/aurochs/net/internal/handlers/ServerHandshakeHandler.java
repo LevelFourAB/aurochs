@@ -1,16 +1,14 @@
 package se.l4.aurochs.net.internal.handlers;
 
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.handler.ssl.SslHandler;
+
 import java.util.UUID;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import javax.net.ssl.SSLEngine;
-
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.ChannelStateEvent;
-import org.jboss.netty.channel.MessageEvent;
-import org.jboss.netty.channel.SimpleChannelHandler;
-import org.jboss.netty.handler.ssl.SslHandler;
 
 import se.l4.aurochs.net.internal.TransportFunctions;
 import se.l4.aurochs.net.internal.TransportSession;
@@ -31,7 +29,7 @@ import com.google.inject.Provider;
  *
  */
 public class ServerHandshakeHandler
-	extends SimpleChannelHandler
+	extends ChannelInboundHandlerAdapter
 {
 	private enum State
 	{
@@ -58,20 +56,27 @@ public class ServerHandshakeHandler
 	}
 	
 	@Override
-	public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e)
+	public void channelRegistered(ChannelHandlerContext ctx)
 		throws Exception
 	{
-		Channel channel = e.getChannel();
+		super.channelRegistered(ctx);
 		
-		channel.write(new Capabilities(engines == null ? "NONE" : "TLS"));
+		ctx.channel().write(new Capabilities(engines == null ? "NONE" : "TLS"));
+		ctx.flush();
 	}
 	
 	@Override
-	public void messageReceived(ChannelHandlerContext ctx, MessageEvent e)
+	public void channelReadComplete(ChannelHandlerContext ctx)
 		throws Exception
 	{
-		Object msg = e.getMessage();
-		Channel channel = e.getChannel();
+		super.channelReadComplete(ctx);
+	}
+	
+	@Override
+	public void channelRead(ChannelHandlerContext ctx, Object msg)
+		throws Exception
+	{
+		Channel channel = ctx.channel();
 		
 		switch(state)
 		{
@@ -82,7 +87,7 @@ public class ServerHandshakeHandler
 					if(caps.isSelected("TLS"))
 					{
 						SslHandler handler = new SslHandler(engines.get(), true);
-						channel.getPipeline().addFirst("ssl", handler);
+						channel.pipeline().addFirst("ssl", handler);
 					}
 					
 					state = State.WAITING_FOR_AUTH;
@@ -134,7 +139,8 @@ public class ServerHandshakeHandler
 					
 					functions.setupPipeline(executor, session, channel);
 				}
-					
 		}
+		
+		ctx.flush();
 	}
 }

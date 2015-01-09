@@ -1,9 +1,8 @@
 package se.l4.aurochs.net.internal.handlers;
 
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.ChannelStateEvent;
-import org.jboss.netty.channel.SimpleChannelHandler;
-import org.jboss.netty.channel.group.ChannelGroup;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.channel.group.ChannelGroup;
 
 /**
  * Handler for server side functions.
@@ -12,7 +11,7 @@ import org.jboss.netty.channel.group.ChannelGroup;
  *
  */
 public class ServerHandler
-	extends SimpleChannelHandler
+	extends ChannelInboundHandlerAdapter
 {
 	private final ChannelGroup group;
 
@@ -22,11 +21,20 @@ public class ServerHandler
 	}
 	
 	@Override
-	public void channelOpen(ChannelHandlerContext ctx, ChannelStateEvent e)
+	public void channelRegistered(ChannelHandlerContext ctx)
 		throws Exception
 	{
-		super.channelOpen(ctx, e);
+		super.channelRegistered(ctx);
 		
-		group.add(e.getChannel());
+		group.add(ctx.channel());
+	}
+	
+	@Override
+	public void channelUnregistered(ChannelHandlerContext ctx)
+		throws Exception
+	{
+		super.channelUnregistered(ctx);
+		
+		group.remove(ctx.channel());
 	}
 }

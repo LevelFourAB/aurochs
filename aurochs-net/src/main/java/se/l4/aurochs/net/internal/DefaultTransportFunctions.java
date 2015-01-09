@@ -1,9 +1,9 @@
 package se.l4.aurochs.net.internal;
 
-import java.util.concurrent.Executor;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelPipeline;
 
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelPipeline;
+import java.util.concurrent.Executor;
 
 import se.l4.aurochs.core.spi.Sessions;
 import se.l4.aurochs.net.internal.handlers.ByteMessageDecoder;
@@ -50,13 +50,12 @@ public class DefaultTransportFunctions
 	@Override
 	public void setupPipeline(Executor messageExecutor, TransportSession session, Channel channel)
 	{
-		ChannelPipeline pipeline = channel.getPipeline();
+		ChannelPipeline pipeline = channel.pipeline();
 		
 		// Remove handshake
 		pipeline.remove("handshake");
-		pipeline.remove("handshakeDecoderByLine");
 		pipeline.remove("handshakeDecoder");
-		
+		pipeline.remove("handshakeEncoder");
 		
 		// Decoders
 		pipeline.addLast("frameDecoder", new VarintFrameDecoder());
@@ -68,7 +67,7 @@ public class DefaultTransportFunctions
 		
 		// Actual handler
 		pipeline.addLast("messaging", new MessagingHandler(messageExecutor, session));
-		
+				
 		// "Create" the session
 		sessions.create(session);
 	}

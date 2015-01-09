@@ -1,11 +1,11 @@
 package se.l4.aurochs.net.internal.handlers;
 
-import org.jboss.netty.buffer.ChannelBuffer;
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelHandler.Sharable;
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.handler.codec.frame.CorruptedFrameException;
-import org.jboss.netty.handler.codec.frame.FrameDecoder;
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.ByteToMessageDecoder;
+import io.netty.handler.codec.CorruptedFrameException;
+
+import java.util.List;
 
 import se.l4.aurochs.serialization.format.BinaryInput;
 
@@ -16,42 +16,41 @@ import se.l4.aurochs.serialization.format.BinaryInput;
  * @author Andreas Holstenson
  *
  */
-@Sharable
 public class VarintFrameDecoder
-	extends FrameDecoder
+	extends ByteToMessageDecoder
 {
 
 	@Override
-	protected Object decode(ChannelHandlerContext ctx, Channel channel,
-			ChannelBuffer buffer)
+	protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out)
 		throws Exception
 	{
-		buffer.markReaderIndex();
+		in.markReaderIndex();
 		
 		int shift = 0;
 		int length = 0;
 		while(shift < 32)
 		{
-			if(! buffer.readable())
+			if(! in.isReadable())
 			{
 				// Can't read the entire length
-				buffer.resetReaderIndex();
-				return null;
+				in.resetReaderIndex();
+				return;
 			}
 			
-			final byte b = buffer.readByte();
-			length |= (int) (b & 0x7F) << shift;
+			final byte b = in.readByte();
+			length |= (b & 0x7F) << shift;
 			if((b & 0x80) == 0)
 			{
-				if(buffer.readableBytes() < length)
+				if(in.readableBytes() < length)
 				{
 					// Not enough bytes to read the entire message
-					buffer.resetReaderIndex();
-					return null;
+					in.resetReaderIndex();
+					return;
 				}
 				else
 				{
-					return buffer.readBytes(length);
+					out.add(in.readBytes(length));
+					return;
 				}
 			}
 			

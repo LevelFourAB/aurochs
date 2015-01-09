@@ -1,45 +1,39 @@
 package se.l4.aurochs.net.internal.handlers;
 
-import org.jboss.netty.buffer.ChannelBuffer;
-import org.jboss.netty.buffer.ChannelBuffers;
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.handler.codec.oneone.OneToOneEncoder;
-
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.MessageToByteEncoder;
 import se.l4.aurochs.core.io.ByteMessage;
 
 public class ByteMessageEncoder
-	extends OneToOneEncoder
+	extends MessageToByteEncoder<ByteMessage>
 {
 	public ByteMessageEncoder()
 	{
 	}
-
+	
 	@Override
-	protected Object encode(ChannelHandlerContext ctx, Channel channel, Object msg)
+	protected void encode(ChannelHandlerContext ctx, ByteMessage msg, ByteBuf out)
 		throws Exception
 	{
-		ChannelBuffer buffer = ChannelBuffers.dynamicBuffer(4096);
-		
-		ByteMessage bm = (ByteMessage) msg;
+		ByteMessage bm = msg;
 		int tag = bm.getTag();
 		while(true)
 		{
 			if((tag & ~0x7F) == 0)
 			{
-				buffer.writeByte(tag);
+				out.writeByte(tag);
 				break;
 			}
 			else
 			{
-				buffer.writeByte((tag & 0x7f) | 0x80);
+				out.writeByte((tag & 0x7f) | 0x80);
 				tag >>>= 7;
 			}
 		}
 		
-		bm.getData().asChunks(buffer::writeBytes);
-		
-		return buffer;
+		bm.getData().asChunks(out::writeBytes);
+		System.out.println("r " + out.writerIndex());
 	}
 
 }

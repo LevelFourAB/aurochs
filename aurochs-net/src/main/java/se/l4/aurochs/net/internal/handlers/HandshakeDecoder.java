@@ -1,12 +1,12 @@
 package se.l4.aurochs.net.internal.handlers;
 
-import javax.xml.bind.DatatypeConverter;
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.ByteToMessageDecoder;
 
-import org.jboss.netty.buffer.ChannelBuffer;
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelHandler.Sharable;
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.handler.codec.oneone.OneToOneDecoder;
+import java.util.List;
+
+import javax.xml.bind.DatatypeConverter;
 
 import se.l4.aurochs.net.internal.handshake.Authenticate;
 import se.l4.aurochs.net.internal.handshake.BeginSession;
@@ -18,9 +18,8 @@ import se.l4.aurochs.net.internal.handshake.SessionStatus;
 
 import com.google.common.base.Charsets;
 
-@Sharable
 public class HandshakeDecoder
-	extends OneToOneDecoder
+	extends ByteToMessageDecoder
 {
 	private static final String BEGIN = "BEGIN";
 	private static final String CAPS = "CAPS";
@@ -31,16 +30,37 @@ public class HandshakeDecoder
 	private static final String SESSION = "SESSION";
 
 	@Override
-	protected Object decode(ChannelHandlerContext ctx, Channel channel, Object msg)
+	protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out)
 		throws Exception
 	{
-		if(! (msg instanceof ChannelBuffer))
+		Object object = decode(in);
+		if(object != null)
 		{
-			return msg;
+			out.add(object);
+		}
+	}
+	
+	private int findLineEnding(ByteBuf buffer)
+	{
+		for(int i=buffer.readerIndex(), n=buffer.writerIndex(); i<n; i++)
+		{
+			if(buffer.getByte(i) == '\n') return i;
 		}
 		
-		ChannelBuffer buffer = (ChannelBuffer) msg;
-		String chars = buffer.toString(Charsets.UTF_8);
+		return -1;
+	}
+	
+	protected Object decode(ByteBuf buffer)
+		throws Exception
+	{
+		int eol = findLineEnding(buffer);
+		if(eol == -1) return null;
+		
+		ByteBuf sliced = buffer.readSlice(eol - buffer.readerIndex());
+		buffer.skipBytes(1); // Skip \n
+		
+		String chars = sliced.toString(Charsets.UTF_8);
+		
 		if(chars.startsWith(CAPS))
 		{
 			String rest = chars.substring(CAPS.length()).trim();

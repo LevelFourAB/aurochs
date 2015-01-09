@@ -12,7 +12,6 @@ import com.google.inject.Key;
  *
  */
 public abstract class AbstractSession
-	extends AbstractChannel<Object>
 	implements Session
 {
 	protected final Injector injector;

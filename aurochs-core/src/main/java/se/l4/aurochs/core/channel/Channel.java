@@ -1,8 +1,8 @@
 package se.l4.aurochs.core.channel;
 
 import java.util.concurrent.Executor;
-
-import com.google.common.base.Predicate;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 /**
  * Channel where messages can be sent and received.
@@ -60,6 +60,15 @@ public interface Channel<T>
 	 * @return
 	 */
 	Channel<T> on(Executor executor);
+	
+	/**
+	 * Create a channel that transforms incoming and outgoing messages.
+	 * 
+	 * @param to
+	 * @param from
+	 * @return
+	 */
+	<N> Channel<N> transform(Function<T, N> to, Function<N, T> from);
 	
 	/**
 	 * Close this channel.

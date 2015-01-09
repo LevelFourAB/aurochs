@@ -1,10 +1,10 @@
 package se.l4.aurochs.core.spi;
 
+import java.util.function.Predicate;
+
 import se.l4.aurochs.core.channel.Channel;
 import se.l4.aurochs.core.channel.ChannelListener;
 import se.l4.aurochs.core.channel.MessageEvent;
-
-import com.google.common.base.Predicate;
 
 /**
  * Implementation of {@link Channel} that filters another channel.
@@ -13,7 +13,7 @@ import com.google.common.base.Predicate;
  *
  * @param <T>
  */
-@SuppressWarnings("rawtypes") 
+@SuppressWarnings({ "rawtypes", "unchecked" }) 
 public class FilteredChannel<T>
 	extends AbstractChannel<T>
 {
@@ -37,7 +37,7 @@ public class FilteredChannel<T>
 
 	protected void handleMessageReceived(MessageEvent event)
 	{
-		if(predicate.apply(event.getMessage()))
+		if(predicate.test(event.getMessage()))
 		{
 			fireMessageReceived(event);
 		}

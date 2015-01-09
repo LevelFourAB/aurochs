@@ -41,7 +41,7 @@ public class CompactDynamicSerializer
 		// Read start of object
 		in.next(Token.LIST_START);
 		
-		in.next(Token.VALUE);
+		in.next(in.peek() == Token.NULL ? Token.NULL : Token.VALUE);
 		String namespace = in.getString();
 		if(namespace == null) namespace = "";
 		

@@ -2,23 +2,16 @@ package se.l4.aurochs.net.internal;
 
 import java.util.concurrent.Executor;
 
-import org.jboss.netty.buffer.ChannelBuffer;
-import org.jboss.netty.buffer.ChannelBufferInputStream;
-import org.jboss.netty.buffer.ChannelBufferOutputStream;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelPipeline;
 
 import se.l4.aurochs.core.spi.Sessions;
+import se.l4.aurochs.net.internal.handlers.ByteMessageDecoder;
+import se.l4.aurochs.net.internal.handlers.ByteMessageEncoder;
 import se.l4.aurochs.net.internal.handlers.MessagingHandler;
-import se.l4.aurochs.net.internal.handlers.SerializationDecoder;
-import se.l4.aurochs.net.internal.handlers.SerializationEncoder;
 import se.l4.aurochs.net.internal.handlers.VarintFrameDecoder;
 import se.l4.aurochs.net.internal.handlers.VarintLengthPrepender;
 import se.l4.aurochs.serialization.SerializerCollection;
-import se.l4.aurochs.serialization.format.BinaryInput;
-import se.l4.aurochs.serialization.format.BinaryOutput;
-import se.l4.aurochs.serialization.format.StreamingInput;
-import se.l4.aurochs.serialization.format.StreamingOutput;
 import se.l4.aurochs.serialization.standard.CompactDynamicSerializer;
 
 import com.google.inject.Inject;
@@ -35,8 +28,6 @@ public class DefaultTransportFunctions
 {
 	private final Injector injector;
 	private final Sessions sessions;
-	private final StreamFactory streamFactory;
-	
 	private final CompactDynamicSerializer serializer;
 
 	@Inject
@@ -48,27 +39,12 @@ public class DefaultTransportFunctions
 		this.sessions = sessions;
 		
 		serializer = new CompactDynamicSerializer(collection);
-		
-		this.streamFactory = new StreamFactory()
-		{
-			@Override
-			public StreamingOutput createOutput(ChannelBuffer buffer)
-			{
-				return new BinaryOutput(new ChannelBufferOutputStream(buffer));
-			}
-			
-			@Override
-			public StreamingInput createInput(ChannelBuffer buffer)
-			{
-				return new BinaryInput(new ChannelBufferInputStream(buffer));
-			}
-		};
 	}
 
 	@Override
 	public TransportSession createSession(Channel channel, String id)
 	{
-		return new TransportSession(injector, channel);
+		return new TransportSession(injector, channel, serializer);
 	}
 
 	@Override
@@ -84,11 +60,11 @@ public class DefaultTransportFunctions
 		
 		// Decoders
 		pipeline.addLast("frameDecoder", new VarintFrameDecoder());
-		pipeline.addLast("decoder", new SerializationDecoder(serializer, streamFactory));
+		pipeline.addLast("decoder", new ByteMessageDecoder());
 		
 		// Encoders
 		pipeline.addLast("frameEncoder", new VarintLengthPrepender());
-		pipeline.addLast("encoder", new SerializationEncoder(serializer, streamFactory));
+		pipeline.addLast("encoder", new ByteMessageEncoder());
 		
 		// Actual handler
 		pipeline.addLast("messaging", new MessagingHandler(messageExecutor, session));

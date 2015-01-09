@@ -1,5 +1,6 @@
 package se.l4.aurochs.net;
 
+import se.l4.aurochs.core.AutoLoad;
 import se.l4.aurochs.net.internal.ServerConnectionImpl;
 import se.l4.crayon.CrayonModule;
 
@@ -10,6 +11,7 @@ import se.l4.crayon.CrayonModule;
  * @author Andreas Holstenson
  *
  */
+@AutoLoad
 public class TransportModule
 	extends CrayonModule
 {

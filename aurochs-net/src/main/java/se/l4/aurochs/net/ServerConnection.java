@@ -83,4 +83,11 @@ public interface ServerConnection
 	 */
 	Session connect()
 		throws ConnectionException;
+	
+	/**
+	 * Establish a connection, but create the communication channel lazily.
+	 * 
+	 * @return
+	 */
+	Session connectAsync();
 }

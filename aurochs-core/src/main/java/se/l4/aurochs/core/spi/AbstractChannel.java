@@ -3,13 +3,12 @@ package se.l4.aurochs.core.spi;
 import java.util.concurrent.Executor;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 import se.l4.aurochs.core.channel.Channel;
 import se.l4.aurochs.core.channel.ChannelListener;
 import se.l4.aurochs.core.channel.MessageEvent;
-
-import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
 
 /**
  * Abstract session implementation.
@@ -103,18 +102,24 @@ public abstract class AbstractChannel<T>
 	@Override
 	public <O> Channel<O> filter(Class<O> type)
 	{
-		return new FilteredChannel(this, Predicates.instanceOf(type));
+		return new FilteredChannel<>(this, o -> type.isAssignableFrom(o.getClass()));
 	}
 	
 	@Override
 	public Channel<T> filter(Predicate<T> predicate)
 	{
-		return new FilteredChannel(this, predicate);
+		return new FilteredChannel<>(this, predicate);
 	}
 	
 	@Override
 	public Channel<T> on(Executor executor)
 	{
 		return new ExecutorChannel<T>(this, executor);
+	}
+	
+	@Override
+	public <N> Channel<N> transform(Function<T, N> to, Function<N, T> from)
+	{
+		return new TransformingChannel<>(this, to, from);
 	}
 }

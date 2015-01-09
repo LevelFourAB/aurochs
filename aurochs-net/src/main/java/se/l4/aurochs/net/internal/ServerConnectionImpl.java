@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -105,6 +106,7 @@ public class ServerConnectionImpl
 		return this;
 	}
 	
+	@Override
 	public Session connect()
 		throws ConnectionException
 	{
@@ -135,6 +137,7 @@ public class ServerConnectionImpl
 		// Set up the event pipeline factory.
 		bootstrap.setPipelineFactory(new ChannelPipelineFactory()
 		{
+			@Override
 			public ChannelPipeline getPipeline() throws Exception
 			{
 				ChannelPipeline pipeline = Channels.pipeline();
@@ -199,5 +202,85 @@ public class ServerConnectionImpl
 		{
 			throw new ConnectionException("Connection to server timed out");
 		}
+	}
+	
+	@Override
+	public Session connectAsync()
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	public Future<ConnectionResult> connectInternal()
+	{
+		if(hosts == null)
+		{
+			throw new IllegalArgumentException("No hosts specified");
+		}
+		
+		Set<URI> hosts = this.hosts.list();
+		if(hosts.isEmpty())
+		{
+			throw new IllegalArgumentException("No hosts specified in set");
+		}
+		
+		ClientBootstrap bootstrap = new ClientBootstrap(
+			new NioClientSocketChannelFactory(
+				Executors.newCachedThreadPool(),
+				Executors.newCachedThreadPool()
+			)
+		);
+		
+		final ExecutorService executor = Executors.newCachedThreadPool(new ThreadFactoryBuilder()
+			.setNameFormat("aurochs-client-%s " + this.hosts)
+			.setDaemon(true)
+			.build()
+		);
+		
+		// Set up the event pipeline factory.
+		bootstrap.setPipelineFactory(new ChannelPipelineFactory()
+		{
+			@Override
+			public ChannelPipeline getPipeline() throws Exception
+			{
+				ChannelPipeline pipeline = Channels.pipeline();
+				
+				pipeline.addLast("handshakeDecoderByLine", new DelimiterBasedFrameDecoder(4096, Delimiters.lineDelimiter()));
+				pipeline.addLast("handshakeDecoder", new HandshakeDecoder());
+				pipeline.addLast("handshakeEncoder", new HandshakeEncoder());
+				
+				pipeline.addLast("handshake", new ClientHandshakeHandler(functions, executor, tlsMode, trustManager));
+				
+				return pipeline;
+			}
+		});
+		
+		bootstrap.setOption("tcpNoDelay", true);
+		bootstrap.setOption("keepAlive", true);
+		
+		URI uri = hosts.iterator().next();
+		InetSocketAddress address = new InetSocketAddress(
+			uri.getHost(), 
+			uri.getPort() > 0 ? uri.getPort() : 7400
+		);
+		ChannelFuture cf = bootstrap.connect(address);
+		
+		try
+		{
+			cf.await(60, TimeUnit.SECONDS);
+		}
+		catch(InterruptedException e)
+		{
+			bootstrap.releaseExternalResources();
+			throw new RuntimeException("Unable to connect to server");
+		}
+		
+		if(! cf.isSuccess())
+		{
+			bootstrap.releaseExternalResources();
+			throw new RuntimeException("Unable to connect to server");
+		}
+		
+		return functions.getFuture();
 	}
 }

@@ -1,7 +1,8 @@
 package se.l4.aurochs.core.internal;
 
 import se.l4.aurochs.core.SystemSession;
-import se.l4.aurochs.core.channel.MessageEvent;
+import se.l4.aurochs.core.channel.Channel;
+import se.l4.aurochs.core.io.ByteMessage;
 import se.l4.aurochs.core.spi.AbstractSession;
 
 import com.google.inject.Injector;
@@ -28,13 +29,14 @@ public class SystemSessionImpl
 	}
 	
 	@Override
-	public void send(Object message)
+	public Channel<Object> getObjectChannel()
 	{
-		fireMessageReceived(new MessageEvent<Object>(this, this, message));
+		throw new UnsupportedOperationException();
 	}
 	
 	@Override
-	public void close()
+	public Channel<ByteMessage> getRawChannel()
 	{
+		throw new UnsupportedOperationException();
 	}
 }

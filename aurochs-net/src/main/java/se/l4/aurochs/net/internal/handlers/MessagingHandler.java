@@ -6,6 +6,7 @@ import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelHandler;
 
+import se.l4.aurochs.core.io.ByteMessage;
 import se.l4.aurochs.net.internal.TransportSession;
 
 /**
@@ -31,16 +32,12 @@ public class MessagingHandler
 		throws Exception
 	{
 		Object msg = e.getMessage();
-		
-		final se.l4.aurochs.core.channel.MessageEvent<Object> event = 
-			new se.l4.aurochs.core.channel.MessageEvent<Object>(session, session, msg);
-		
 		executor.execute(new Runnable()
 		{
 			@Override
 			public void run()
 			{
-				session.fireMessageReceived(event);
+				session.receive((ByteMessage) msg);
 			}
 		});
 	}

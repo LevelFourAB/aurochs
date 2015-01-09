@@ -6,6 +6,7 @@ import java.util.List;
 
 import se.l4.aurochs.config.Config;
 import se.l4.aurochs.config.ConfigBuilder;
+import se.l4.aurochs.config.internal.FileSerializer;
 import se.l4.aurochs.core.SerializerRegistration;
 import se.l4.aurochs.core.spi.Sessions;
 import se.l4.aurochs.serialization.DefaultSerializerCollection;
@@ -49,7 +50,7 @@ public class InternalModule
 	@Singleton
 	public SerializerCollection provideSerializerCollection(final Injector injector)
 	{
-		return new DefaultSerializerCollection(new InstanceFactory()
+		DefaultSerializerCollection result = new DefaultSerializerCollection(new InstanceFactory()
 		{
 			@Override
 			public <T> T create(Class<T> type, Annotation[] annotations)
@@ -63,6 +64,10 @@ public class InternalModule
 				return injector.getInstance(type);
 			}
 		});
+		
+		result.bind(File.class, new FileSerializer(new File("").getAbsoluteFile()));
+		
+		return result;
 	}
 	
 	@Provides

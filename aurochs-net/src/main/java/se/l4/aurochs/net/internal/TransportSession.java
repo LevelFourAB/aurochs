@@ -31,6 +31,12 @@ public class TransportSession
 	}
 	
 	@Override
+	public void close()
+	{
+		nettyChannel.close();
+	}
+	
+	@Override
 	public String toString()
 	{
 		return Objects.toStringHelper(this)

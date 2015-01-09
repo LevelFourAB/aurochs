@@ -12,6 +12,7 @@ import com.google.common.base.Predicate;
  * @param <T>
  */
 public interface Channel<T>
+	extends AutoCloseable
 {
 	/**
 	 * Add a listener to this channel. The listener will be notified when
@@ -59,4 +60,11 @@ public interface Channel<T>
 	 * @return
 	 */
 	Channel<T> on(Executor executor);
+	
+	/**
+	 * Close this channel.
+	 * 
+	 */
+	@Override
+	void close();
 }

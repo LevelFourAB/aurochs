@@ -49,4 +49,9 @@ public class FilteredChannel<T>
 		channel.send(message);
 	}
 
+	@Override
+	public void close()
+	{
+		channel.close();
+	}
 }

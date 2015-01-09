@@ -66,4 +66,9 @@ public class TopicAsChannel<T>
 	{
 		topic.publish(toBytes.apply(message));
 	}
+	
+	@Override
+	public void close()
+	{
+	}
 }

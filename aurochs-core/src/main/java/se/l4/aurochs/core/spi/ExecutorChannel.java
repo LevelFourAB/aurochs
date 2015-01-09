@@ -51,4 +51,10 @@ public class ExecutorChannel<T>
 	{
 		channel.send(message);
 	}
+	
+	@Override
+	public void close()
+	{
+		channel.close();
+	}
 }

@@ -32,4 +32,9 @@ public class SystemSessionImpl
 	{
 		fireMessageReceived(new MessageEvent<Object>(this, this, message));
 	}
+	
+	@Override
+	public void close()
+	{
+	}
 }

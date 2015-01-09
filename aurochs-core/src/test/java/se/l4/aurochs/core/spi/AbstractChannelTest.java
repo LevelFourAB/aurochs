@@ -1,6 +1,8 @@
 package se.l4.aurochs.core.spi;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 import org.junit.Test;
 
@@ -88,9 +90,15 @@ public class AbstractChannelTest
 	private static class TestChannel<T>
 		extends AbstractChannel<T>
 	{
+		@Override
 		public void send(T message)
 		{
 			fireMessageReceived(new MessageEvent<T>(this, this, message));
+		}
+		
+		@Override
+		public void close()
+		{
 		}
 	}
 }

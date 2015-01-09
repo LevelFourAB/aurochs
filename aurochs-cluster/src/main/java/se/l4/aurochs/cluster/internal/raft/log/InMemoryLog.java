@@ -37,15 +37,25 @@ public class InMemoryLog
 	}
 	
 	@Override
-	public LogEntry get(long id)
+	public LogEntry get(long index)
 		throws IOException
 	{
-		if(id > entries.size() || id < 1)
+		if(index > entries.size() || index < 1)
 		{
-			throw new IOException("The given entry " + id + " is not in this log");
+			throw new IOException("The given entry " + index + " is not in this log");
 		}
 		
-		return entries.get((int) id - 1);
+		return entries.get((int) index - 1);
+	}
+	
+	@Override
+	public void resetTo(long index)
+		throws IOException
+	{
+		if(entries.size() > index)
+		{
+			entries.subList((int) index, entries.size()).clear();
+		}
 	}
 	
 	@Override

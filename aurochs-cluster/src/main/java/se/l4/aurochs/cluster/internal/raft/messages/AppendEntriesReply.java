@@ -5,12 +5,18 @@ public class AppendEntriesReply
 {
 	private final String sender;
 	private final long term;
+	
+	private final long prevLogIndex;
+	private final int entries;
+	
 	private final boolean success;
 	
-	public AppendEntriesReply(String sender, long term, boolean success)
+	public AppendEntriesReply(String sender, long term, long prevLogIndex, int entries, boolean success)
 	{
 		this.sender = sender;
 		this.term = term;
+		this.prevLogIndex = prevLogIndex;
+		this.entries = entries;
 		this.success = success;
 	}
 	
@@ -24,6 +30,16 @@ public class AppendEntriesReply
 	public long getTerm()
 	{
 		return term;
+	}
+	
+	public long getPrevLogIndex()
+	{
+		return prevLogIndex;
+	}
+	
+	public int getEntries()
+	{
+		return entries;
 	}
 	
 	public boolean isSuccess()

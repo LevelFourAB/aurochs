@@ -19,14 +19,14 @@ public interface Log
 	extends Closeable
 {
 	/**
-	 * Get the first id stored in the log, or {@code 0} if no entries.
+	 * Get the first index stored in the log, or {@code 0} if no entries.
 	 * 
 	 * @return
 	 */
 	long first();
 	
 	/**
-	 * Get the last id stored in the log, or {@code 0} if no entries.
+	 * Get the last index stored in the log, or {@code 0} if no entries.
 	 * 
 	 * @return
 	 */
@@ -38,7 +38,7 @@ public interface Log
 	 * @param id
 	 * @return
 	 */
-	LogEntry get(long id)
+	LogEntry get(long index)
 		throws IOException;
 	
 	/**
@@ -48,6 +48,15 @@ public interface Log
 	 * @return
 	 */
 	long store(long term, Bytes data)
+		throws IOException;
+	
+	/**
+	 * Reset the log to the given index.
+	 * 
+	 * @param index
+	 * @throws IOException
+	 */
+	void resetTo(long index)
 		throws IOException;
 	
 //	/**

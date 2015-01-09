@@ -5,7 +5,6 @@ import java.net.URI;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
-import se.l4.aurochs.core.Session;
 import se.l4.aurochs.net.hosts.HostSet;
 
 /**
@@ -76,18 +75,12 @@ public interface ServerConnection
 	ServerConnection setTrustManager(TrustManager trustManager);
 	
 	/**
-	 * Establish the connection, blocking until it is established.
+	 * Start the connection, returning a new session. This method will not block and wait for
+	 * the connection to be established. Use {@link RemoteSession#connectionFuture()} to wait for
+	 * the connection.
 	 * 
 	 * @return
 	 * @throws ConnectionException
 	 */
-	Session connect()
-		throws ConnectionException;
-	
-	/**
-	 * Establish a connection, but create the communication channel lazily.
-	 * 
-	 * @return
-	 */
-	Session connectAsync();
+	RemoteSession connect();
 }

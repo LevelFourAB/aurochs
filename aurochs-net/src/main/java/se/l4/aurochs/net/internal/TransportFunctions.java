@@ -1,8 +1,9 @@
 package se.l4.aurochs.net.internal;
 
-import io.netty.channel.Channel;
-
 import java.util.concurrent.Executor;
+
+import se.l4.aurochs.core.channel.Channel;
+import se.l4.aurochs.core.io.ByteMessage;
 
 /**
  * Functions used internally by the transport library.
@@ -12,7 +13,9 @@ import java.util.concurrent.Executor;
  */
 public interface TransportFunctions
 {
-	TransportSession createSession(Channel channel, String id);
+	TransportSession createSession(io.netty.channel.Channel channel, String id);
 	
-	void setupPipeline(Executor messageExecutor, TransportSession session, Channel channel);
+	void setupPipeline(Executor messageExecutor, TransportSession session, io.netty.channel.Channel channel);
+	
+	Channel<Object> createObjectChannel(Channel<ByteMessage> raw);
 }

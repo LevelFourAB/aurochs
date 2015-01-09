@@ -11,7 +11,6 @@ public class VarintLengthPrepender
 	protected void encode(ChannelHandlerContext ctx, ByteBuf msg, ByteBuf out)
 		throws Exception
 	{
-		System.out.println("v1 " + out.writerIndex());
 		int l = msg.readableBytes();
 		int length = msg.readableBytes();
 		while(true)
@@ -28,11 +27,7 @@ public class VarintLengthPrepender
 			}
 		}
 		
-		System.out.println("v2 " + out.writerIndex());
-		
 		out.writeBytes(msg, msg.readerIndex(), l);
-		
-		System.out.println("v3 " + out.writerIndex());
 	}
 
 }

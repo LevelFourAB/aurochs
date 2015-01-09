@@ -33,7 +33,6 @@ public class ByteMessageEncoder
 		}
 		
 		bm.getData().asChunks(out::writeBytes);
-		System.out.println("r " + out.writerIndex());
 	}
 
 }

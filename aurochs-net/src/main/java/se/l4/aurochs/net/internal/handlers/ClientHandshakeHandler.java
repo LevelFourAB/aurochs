@@ -15,6 +15,7 @@ import javax.net.ssl.TrustManager;
 import se.l4.aurochs.net.ConnectionException;
 import se.l4.aurochs.net.ServerConnection.TLSMode;
 import se.l4.aurochs.net.internal.ClientTransportFunctions;
+import se.l4.aurochs.net.internal.NettyClientChannel;
 import se.l4.aurochs.net.internal.SslHelper;
 import se.l4.aurochs.net.internal.TransportSession;
 import se.l4.aurochs.net.internal.handshake.Authenticate;
@@ -45,20 +46,23 @@ public class ClientHandshakeHandler
 	private final TLSMode tlsMode;
 	private final TrustManager trustManager;
 	
+	private final NettyClientChannel target;
+	
 	private State state;
 	private boolean tls;
-
 	
 	public ClientHandshakeHandler(ClientTransportFunctions functions,
 			Executor executor,
 			TLSMode tlsMode, 
-			TrustManager trustManager)
+			TrustManager trustManager,
+			NettyClientChannel target)
 	{
 		this.functions = functions;
 		this.executor = executor;
 		
 		this.tlsMode = tlsMode;
 		this.trustManager = trustManager;
+		this.target = target;
 		
 		state = State.WAITING_FOR_CAPS;
 	}
@@ -138,6 +142,8 @@ public class ClientHandshakeHandler
 					// TODO: Send back the session
 					TransportSession session = functions.createSession(channel, ((SessionStatus) msg).getId());
 					functions.setupPipeline(executor, session, channel);
+					
+					target.addChannel(channel);
 				}
 				else
 				{

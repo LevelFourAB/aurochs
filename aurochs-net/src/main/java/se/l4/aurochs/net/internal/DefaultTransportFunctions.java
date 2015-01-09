@@ -3,8 +3,12 @@ package se.l4.aurochs.net.internal;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelPipeline;
 
+import java.io.IOException;
 import java.util.concurrent.Executor;
 
+import se.l4.aurochs.core.io.ByteMessage;
+import se.l4.aurochs.core.io.Bytes;
+import se.l4.aurochs.core.io.DefaultByteMessage;
 import se.l4.aurochs.core.spi.Sessions;
 import se.l4.aurochs.net.internal.handlers.ByteMessageDecoder;
 import se.l4.aurochs.net.internal.handlers.ByteMessageEncoder;
@@ -14,6 +18,7 @@ import se.l4.aurochs.net.internal.handlers.VarintLengthPrepender;
 import se.l4.aurochs.serialization.SerializerCollection;
 import se.l4.aurochs.serialization.standard.CompactDynamicSerializer;
 
+import com.google.common.base.Throwables;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 
@@ -45,6 +50,23 @@ public class DefaultTransportFunctions
 	public TransportSession createSession(Channel channel, String id)
 	{
 		return new TransportSession(injector, channel, serializer);
+	}
+	
+	@Override
+	public se.l4.aurochs.core.channel.Channel<Object> createObjectChannel(se.l4.aurochs.core.channel.Channel<ByteMessage> raw)
+	{
+		return raw
+			.filter(ByteMessage.tag(1))
+			.transform(
+				o -> {
+					try {
+						return serializer.fromBytes(o.getData().toByteArray());
+					} catch(IOException e) {
+						throw Throwables.propagate(e);
+					}
+				},
+				o -> new DefaultByteMessage(1, Bytes.create(serializer.toBytes(o)))
+			);
 	}
 
 	@Override

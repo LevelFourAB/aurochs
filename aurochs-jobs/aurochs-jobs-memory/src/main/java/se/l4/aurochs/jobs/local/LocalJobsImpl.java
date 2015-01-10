@@ -50,7 +50,7 @@ public class LocalJobsImpl
 	public void start()
 		throws Exception
 	{
-		executor = new ThreadPoolExecutor(1, 4, 5l, TimeUnit.MINUTES, new LinkedBlockingQueue<Runnable>());
+		executor = new ThreadPoolExecutor(8, 8, 5l, TimeUnit.MINUTES, new LinkedBlockingQueue<Runnable>());
 		queueThread = new Thread(this::queueJobs, "Job Queuer");
 		queueThread.start();
 	}
@@ -253,6 +253,12 @@ public class LocalJobsImpl
 				long time = System.currentTimeMillis() + retryDelay;
 				queue.put(new SubmittedJobImpl(submitted.data, time, submitted.attempt + 1, submitted.future));
 			}
+		}
+		
+		@Override
+		public boolean isLastTry()
+		{
+			return submitted.attempt >= MAX_ATTEMPTS;
 		}
 	}
 }

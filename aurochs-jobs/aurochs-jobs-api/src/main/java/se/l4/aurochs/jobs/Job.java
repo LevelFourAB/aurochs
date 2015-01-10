@@ -50,4 +50,11 @@ public interface Job<T>
 	 * @param waitTimeInMs
 	 */
 	void fail(Throwable t, long waitTimeInMs);
+	
+	/**
+	 * Get if this job will not be retried if it fails this time.
+	 * 
+	 * @return
+	 */
+	boolean isLastTry();
 }

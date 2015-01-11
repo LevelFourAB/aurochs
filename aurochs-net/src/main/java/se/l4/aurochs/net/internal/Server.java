@@ -51,7 +51,8 @@ public class Server
 	{
 		this.functions = functions;
 		
-		this.config = config.asObject("net.server", ServerConfig.class);
+		this.config = config.get("net.server", ServerConfig.class)
+			.getOrDefault(new ServerConfig());
 //		group = new DefaultChannelGroup("aurochs-server-" + this.config.getPort());
 	}
 	

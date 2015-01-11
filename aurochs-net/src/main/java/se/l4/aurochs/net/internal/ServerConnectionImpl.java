@@ -4,17 +4,16 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 
 import java.net.URI;
-import java.util.Set;
+import java.util.Collection;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import javax.net.ssl.TrustManager;
 
+import se.l4.aurochs.core.hosts.Hosts;
 import se.l4.aurochs.net.RemoteSession;
 import se.l4.aurochs.net.ServerConnection;
-import se.l4.aurochs.net.hosts.HostSet;
-import se.l4.aurochs.net.hosts.Hosts;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.Inject;
@@ -32,7 +31,7 @@ public class ServerConnectionImpl
 	private final ClientTransportFunctions functions;
 	private final Injector injector;
 	
-	private HostSet hosts;
+	private Hosts hosts;
 	
 	private TLSMode tlsMode;
 	private TrustManager trustManager;
@@ -60,7 +59,7 @@ public class ServerConnectionImpl
 	}
 	
 	@Override
-	public ServerConnection setHosts(HostSet hosts)
+	public ServerConnection setHosts(Hosts hosts)
 	{
 		this.hosts = hosts;
 		
@@ -101,7 +100,7 @@ public class ServerConnectionImpl
 			throw new IllegalArgumentException("No hosts specified");
 		}
 		
-		Set<URI> hosts = this.hosts.list();
+		Collection<URI> hosts = this.hosts.list();
 		if(hosts.isEmpty())
 		{
 			throw new IllegalArgumentException("No hosts specified in set");

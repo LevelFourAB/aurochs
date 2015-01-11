@@ -15,7 +15,7 @@ import io.netty.util.concurrent.GlobalEventExecutor;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.util.Arrays;
-import java.util.Set;
+import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 
@@ -37,7 +37,7 @@ public class NettyClientChannel
 	private final ExecutorService executor;
 	private final TLSMode tlsMode;
 	private final TrustManager trustManager;
-	private final Set<URI> hosts;
+	private final Collection<URI> hosts;
 	
 	private final int connections;
 	private final CompletableFuture<Void> connectionFuture;
@@ -50,7 +50,7 @@ public class NettyClientChannel
 			ExecutorService executor,
 			TLSMode tlsMode,
 			TrustManager trustManager,
-			Set<URI> hosts)
+			Collection<URI> hosts)
 	{
 		this.group = group;
 		this.functions = functions;

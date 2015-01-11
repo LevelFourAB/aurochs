@@ -1,8 +1,11 @@
-package se.l4.aurochs.net.hosts;
+package se.l4.aurochs.core.hosts;
 
 import java.net.URI;
 import java.util.Collection;
 import java.util.Set;
+import java.util.function.Consumer;
+
+import se.l4.aurochs.core.events.EventHandle;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableSet;
@@ -13,34 +16,36 @@ import com.google.common.collect.ImmutableSet;
  * @author Andreas Holstenson
  *
  */
-public class StaticHostSet
-	implements HostSet
+public class ImmutableHosts
+	implements Hosts
 {
 	private final Set<URI> value;
 
-	public StaticHostSet(URI... hosts)
+	public ImmutableHosts(URI... hosts)
 	{
 		value = ImmutableSet.copyOf(hosts);
 	}
 	
-	public StaticHostSet(Collection<URI> hosts)
+	public ImmutableHosts(Collection<URI> hosts)
 	{
 		value = ImmutableSet.copyOf(hosts);
 	}
 	
 	@Override
-	public Set<URI> list()
+	public Collection<URI> list()
 	{
 		return value;
 	}
 	
 	@Override
-	public void addListener(Listener listener)
+	public EventHandle listen(Consumer<HostEvent> consumer)
 	{
-	}
-	
-	public void removeListener(Listener listener)
-	{
+		for(URI uri : value)
+		{
+			consumer.accept(new HostEvent(HostEvent.Type.INITIAL, uri));
+		}
+		
+		return EventHandle.noop();
 	}
 	
 	@Override

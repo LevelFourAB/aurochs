@@ -30,13 +30,6 @@ public class MessagingHandler
 	public void channelRead(ChannelHandlerContext ctx, Object msg)
 		throws Exception
 	{
-		executor.execute(new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				session.receive((ByteMessage) msg);
-			}
-		});
+		executor.execute(() -> session.receive((ByteMessage) msg));
 	}
 }

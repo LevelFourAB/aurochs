@@ -5,7 +5,7 @@ import java.net.URI;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
-import se.l4.aurochs.net.hosts.HostSet;
+import se.l4.aurochs.core.hosts.Hosts;
 
 /**
  * Creator of a connection to a server.
@@ -53,7 +53,7 @@ public interface ServerConnection
 	 * @param hosts
 	 * @return
 	 */
-	ServerConnection setHosts(HostSet hosts);
+	ServerConnection setHosts(Hosts hosts);
 	
 	/**
 	 * Set how to use TLS. By default this is set to {@link TLSMode#AUTOMATIC automatic}

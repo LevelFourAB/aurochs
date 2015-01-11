@@ -7,6 +7,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import se.l4.aurochs.core.channel.Channel;
+import se.l4.aurochs.core.channel.ChannelCodec;
 import se.l4.aurochs.core.channel.ChannelListener;
 import se.l4.aurochs.core.channel.MessageEvent;
 
@@ -118,8 +119,14 @@ public abstract class AbstractChannel<T>
 	}
 	
 	@Override
-	public <N> Channel<N> transform(Function<T, N> to, Function<N, T> from)
+	public <N> Channel<N> transform(Function<N, T> fromSource, Function<T, N> toSource)
 	{
-		return new TransformingChannel<>(this, to, from);
+		return transform(ChannelCodec.create(toSource, fromSource));
+	}
+	
+	@Override
+	public <N> Channel<N> transform(ChannelCodec<T, N> codec)
+	{
+		return new CodecChannel<>(this, codec);
 	}
 }

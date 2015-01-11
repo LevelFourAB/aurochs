@@ -68,7 +68,15 @@ public interface Channel<T>
 	 * @param from
 	 * @return
 	 */
-	<N> Channel<N> transform(Function<T, N> to, Function<N, T> from);
+	<N> Channel<N> transform(Function<N, T> fromSource, Function<T, N> toSource);
+	
+	/**
+	 * Create a channel that transforms incoming and outgoing messages.
+	 * 
+	 * @param codec
+	 * @return
+	 */
+	<N> Channel<N> transform(ChannelCodec<T, N> codec);
 	
 	/**
 	 * Close this channel.

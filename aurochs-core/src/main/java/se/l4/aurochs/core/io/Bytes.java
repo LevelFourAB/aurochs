@@ -11,15 +11,18 @@ public interface Bytes
 	byte[] toByteArray()
 		throws IOException;
 	
-	byte[] toByteArray(int offset, int length)
-		throws IOException;
-	
 	default void asChunks(ByteArrayConsumer consumer)
+		throws IOException
+	{
+		asChunks(4096, consumer);
+	}
+	
+	default void asChunks(int size, ByteArrayConsumer consumer)
 		throws IOException
 	{
 		try(InputStream in = asInputStream())
 		{
-			byte[] buf = new byte[4096];
+			byte[] buf = new byte[size];
 			int len;
 			while((len = in.read(buf)) != -1)
 			{
@@ -27,10 +30,25 @@ public interface Bytes
 			}
 		}
 	}
+	
+	default ExtendedDataInput asDataInput()
+		throws IOException
+	{
+		return new ExtendedDataInputStream(asInputStream());
+	}
 
 	static Bytes create(byte[] byteArray)
 	{
 		return new BytesOverByteArray(byteArray);
 	}
+	
+	static Bytes create(IoConsumer<ExtendedDataOutput> creator)
+	{
+		return BytesBuilder.createViaDataOutput(creator);
+	}
 
+	static BytesBuilder create()
+	{
+		return new BytesBuilder();
+	}
 }

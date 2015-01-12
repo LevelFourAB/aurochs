@@ -1,7 +1,6 @@
 package se.l4.aurochs.core.channel;
 
 import java.util.function.Function;
-import java.util.function.Predicate;
 
 /**
  * Codec for {@link Channel channels}, combines transformation with filtering
@@ -19,10 +18,7 @@ public interface ChannelCodec<From, To>
 	 * 
 	 * @return
 	 */
-	default Predicate<From> filter()
-	{
-		return msg -> true;
-	}
+	boolean accepts(From in);
 	
 	/**
 	 * Convert from the source to the target.
@@ -52,6 +48,12 @@ public interface ChannelCodec<From, To>
 	{
 		return new ChannelCodec<O, T>()
 		{
+			@Override
+			public boolean accepts(O in)
+			{
+				return true;
+			}
+			
 			@Override
 			public T fromSource(O object)
 			{

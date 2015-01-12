@@ -25,7 +25,7 @@ public class CodecChannel<O, T>
 		
 		channel.addListener((event) -> {
 			O msg = event.getMessage();
-			if(codec.filter().test(msg))
+			if(codec.accepts(msg))
 			{
 				fireMessageReceived(
 					new MessageEvent<T>(this, event.getReturnPath(), codec.fromSource(msg))

@@ -33,14 +33,14 @@ public class TransportSession
 		objectChannel = rawChannel
 			.filter(ByteMessage.tag(1))
 			.transform(
+				o -> new DefaultByteMessage(1, Bytes.create(serializer.toBytes(o))),
 				o -> {
 					try {
 						return serializer.fromBytes(o.getData().toByteArray());
 					} catch(IOException e) {
 						throw Throwables.propagate(e);
 					}
-				},
-				o -> new DefaultByteMessage(1, Bytes.create(serializer.toBytes(o)))
+				}
 			);
 	}
 	

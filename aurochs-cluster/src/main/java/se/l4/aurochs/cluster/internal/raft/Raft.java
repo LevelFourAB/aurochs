@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -20,6 +19,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import se.l4.aurochs.cluster.StateLog;
 import se.l4.aurochs.cluster.internal.raft.log.DefaultLogEntry;
 import se.l4.aurochs.cluster.internal.raft.log.Log;
 import se.l4.aurochs.cluster.internal.raft.log.LogEntry;
@@ -28,11 +28,13 @@ import se.l4.aurochs.cluster.internal.raft.messages.AppendEntriesReply;
 import se.l4.aurochs.cluster.internal.raft.messages.RaftMessage;
 import se.l4.aurochs.cluster.internal.raft.messages.RequestVote;
 import se.l4.aurochs.cluster.internal.raft.messages.RequestVoteReply;
+import se.l4.aurochs.cluster.nodes.Node;
+import se.l4.aurochs.cluster.nodes.NodeEvent;
+import se.l4.aurochs.cluster.nodes.Nodes;
 import se.l4.aurochs.core.channel.Channel;
 import se.l4.aurochs.core.channel.ChannelListener;
 import se.l4.aurochs.core.channel.MessageEvent;
 import se.l4.aurochs.core.io.Bytes;
-import se.l4.aurochs.core.spi.AbstractChannel;
 import se.l4.crayon.services.ManagedService;
 
 import com.carrotsearch.hppc.LongObjectMap;
@@ -42,7 +44,7 @@ import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 public class Raft
-	implements ManagedService
+	implements ManagedService, StateLog<Bytes>
 {
 	private static final long LOG_CACHE_SIZE = 10;
 
@@ -83,7 +85,7 @@ public class Raft
 	
 	private final LongObjectMap<CompletableFuture<Void>> futures;
 	
-	public Raft(StateStorage stateStorage, Log log, Nodes nodes, String id)
+	public Raft(StateStorage stateStorage, Log log, Nodes<RaftMessage> nodes, String id)
 	{
 		this.logger = LoggerFactory.getLogger(Raft.class.getName() + "[" + id + "]");
 		
@@ -161,9 +163,9 @@ public class Raft
 		};
 	}
 	
-	private void handleNodeEvent(NodeEvent<Object> event)
+	private void handleNodeEvent(NodeEvent<RaftMessage> event)
 	{
-		Node<Object> node = event.getNode();
+		Node<RaftMessage> node = event.getNode();
 		
 		// TODO: Support transforming data in the channel
 		Channel<RaftMessage> channel = node.getChannel()
@@ -192,55 +194,25 @@ public class Raft
 		
 	}
 	
-	public Channel<Bytes> asChannel()
+	@Override
+	public CompletableFuture<Void> submit(Bytes entry)
 	{
-		return new AbstractChannel<Bytes>()
+		stateLock.lock();
+		try
 		{
-			private CompletableFuture<Void> sendAsync(Bytes message)
+			if(leader == self)
 			{
-				stateLock.lock();
-				try
-				{
-					if(leader == self)
-					{
-						return requestAppendEntry(message);
-					}
-					else
-					{
-						return forwardAppendEntryToLeader(message);
-					}
-				}
-				finally
-				{
-					stateLock.unlock();
-				}
+				return requestAppendEntry(entry);
 			}
-			
-			@Override
-			public void send(Bytes message)
+			else
 			{
-				try
-				{
-					sendAsync(message).get();
-				}
-				catch(InterruptedException | ExecutionException e)
-				{
-				}
+				return forwardAppendEntryToLeader(entry);
 			}
-
-			@Override
-			public void close()
-			{
-				try
-				{
-					stop();
-				}
-				catch(Exception e)
-				{
-					throw new RaftException("Unable to close channel; " + e.getMessage(), e);
-				}
-			}
-		};
+		}
+		finally
+		{
+			stateLock.unlock();
+		}
 	}
 	
 	private CompletableFuture<Void> requestAppendEntry(Bytes data)

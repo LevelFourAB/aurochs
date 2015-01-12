@@ -1,4 +1,4 @@
-package se.l4.aurochs.cluster.internal.raft;
+package se.l4.aurochs.cluster.nodes;
 
 public class NodeEvent<T>
 {

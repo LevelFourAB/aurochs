@@ -3,7 +3,9 @@ package se.l4.aurochs.cluster.internal.raft;
 import java.util.List;
 import java.util.Map;
 
+import se.l4.aurochs.cluster.internal.StaticNodes;
 import se.l4.aurochs.cluster.internal.raft.log.InMemoryLog;
+import se.l4.aurochs.cluster.nodes.Node;
 import se.l4.aurochs.core.channel.LocalChannel;
 
 import com.google.common.collect.ImmutableMap;

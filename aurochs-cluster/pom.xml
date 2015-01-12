@@ -17,7 +17,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>aurochs-core</artifactId>
+			<artifactId>aurochs-net</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		
@@ -25,18 +25,6 @@
 			<groupId>com.carrotsearch</groupId>
 			<artifactId>hppc</artifactId>
 			<version>0.6.1</version>
-		</dependency>
-		
-		<dependency>
-			<groupId>com.hazelcast</groupId>
-			<artifactId>hazelcast</artifactId>
-			<version>3.1</version>
-		</dependency>
-		
-		<dependency>
-			<groupId>com.hazelcast</groupId>
-			<artifactId>hazelcast-client</artifactId>
-			<version>3.1</version>
 		</dependency>
 	</dependencies>
 </project>

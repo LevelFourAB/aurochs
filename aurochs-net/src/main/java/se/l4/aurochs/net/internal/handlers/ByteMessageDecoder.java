@@ -22,13 +22,13 @@ public class ByteMessageDecoder
 	{
 		// First read the tag
 		int shift = 0;
-		int tag = 0;
-		while(shift < 32)
+		long tag = 0;
+		while(shift < 64)
 		{
 			if(! in.isReadable()) return;
 			
 			byte b = in.readByte();
-			tag |= (b & 0x7F) << shift;
+			tag |= (long) (b & 0x7F) << shift;
 			if((b & 0x80) == 0)
 			{
 				break;

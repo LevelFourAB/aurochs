@@ -3,17 +3,17 @@ package se.l4.aurochs.core.io;
 public class DefaultByteMessage
 	implements ByteMessage
 {
-	private final int tag;
+	private final long tag;
 	private final Bytes data;
 	
-	public DefaultByteMessage(int tag, Bytes data)
+	public DefaultByteMessage(long tag, Bytes data)
 	{
 		this.tag = tag;
 		this.data = data;
 	}
 	
 	@Override
-	public int getTag()
+	public long getTag()
 	{
 		return tag;
 	}

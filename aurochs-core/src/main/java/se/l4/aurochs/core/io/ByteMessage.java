@@ -4,7 +4,7 @@ import java.util.function.Predicate;
 
 public interface ByteMessage
 {
-	int getTag();
+	long getTag();
 	
 	Bytes getData();
 	

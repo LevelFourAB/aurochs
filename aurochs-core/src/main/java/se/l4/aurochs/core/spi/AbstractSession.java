@@ -1,6 +1,9 @@
 package se.l4.aurochs.core.spi;
 
 import se.l4.aurochs.core.Session;
+import se.l4.aurochs.core.channel.Channel;
+import se.l4.aurochs.core.internal.NamedChannelCodec;
+import se.l4.aurochs.core.io.Bytes;
 
 import com.google.inject.Injector;
 import com.google.inject.Key;
@@ -22,6 +25,12 @@ public abstract class AbstractSession
 		this.injector = injector;
 		
 		sessions = injector.getInstance(Sessions.class);
+	}
+	
+	@Override
+	public Channel<Bytes> getNamedChannel(String name)
+	{
+		return getRawChannel().transform(new NamedChannelCodec(name));
 	}
 	
 	@Override

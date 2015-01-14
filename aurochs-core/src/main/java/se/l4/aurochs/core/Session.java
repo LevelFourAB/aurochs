@@ -2,6 +2,7 @@ package se.l4.aurochs.core;
 
 import se.l4.aurochs.core.channel.Channel;
 import se.l4.aurochs.core.io.ByteMessage;
+import se.l4.aurochs.core.io.Bytes;
 import se.l4.aurochs.serialization.Named;
 import se.l4.aurochs.serialization.SerializerCollection;
 
@@ -30,6 +31,14 @@ public interface Session
 	 * @return
 	 */
 	Channel<Object> getObjectChannel();
+	
+	/**
+	 * Get a channel with a specific name.
+	 * 
+	 * @param name
+	 * @return
+	 */
+	Channel<Bytes> getNamedChannel(String name);
 	
 	/**
 	 * Use injection to retrieve an instance of an object. Use this method

@@ -17,17 +17,17 @@ public class ByteMessageEncoder
 		throws Exception
 	{
 		ByteMessage bm = msg;
-		int tag = bm.getTag();
+		long tag = bm.getTag();
 		while(true)
 		{
-			if((tag & ~0x7F) == 0)
+			if((tag & ~0x7FL) == 0)
 			{
-				out.writeByte(tag);
+				out.writeByte((int) tag);
 				break;
 			}
 			else
 			{
-				out.writeByte((tag & 0x7f) | 0x80);
+				out.writeByte(((int) tag & 0x7f) | 0x80);
 				tag >>>= 7;
 			}
 		}

@@ -36,6 +36,11 @@ public interface Bytes
 	{
 		return new ExtendedDataInputStream(asInputStream());
 	}
+	
+	static Bytes empty()
+	{
+		return BytesOverByteArray.EMPTY;
+	}
 
 	static Bytes create(byte[] byteArray)
 	{

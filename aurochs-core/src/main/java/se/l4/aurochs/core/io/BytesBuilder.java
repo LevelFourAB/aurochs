@@ -53,7 +53,10 @@ public class BytesBuilder
 			throws IOException
 		{
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
-			creator.accept(new ExtendedDataOutputStream(out));
+			try(ExtendedDataOutput dataOut = new ExtendedDataOutputStream(out))
+			{
+				creator.accept(dataOut);
+			}
 			return out.toByteArray();
 		}
 		
@@ -61,9 +64,10 @@ public class BytesBuilder
 		public void asChunks(ByteArrayConsumer consumer)
 			throws IOException
 		{
-			creator.accept(
-				new ExtendedDataOutputStream(new ChunkOutputStream(4096, consumer))
-			);
+			try(ExtendedDataOutput dataOut = new ExtendedDataOutputStream(new ChunkOutputStream(4096, consumer)))
+			{
+				creator.accept(dataOut);
+			}
 		}
 	}
 	

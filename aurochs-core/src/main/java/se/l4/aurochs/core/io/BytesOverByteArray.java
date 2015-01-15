@@ -7,6 +7,8 @@ import java.io.InputStream;
 public class BytesOverByteArray
 	implements Bytes
 {
+	public static final Bytes EMPTY = new BytesOverByteArray(new byte[0]);
+	
 	private final byte[] data;
 
 	public BytesOverByteArray(byte[] data)

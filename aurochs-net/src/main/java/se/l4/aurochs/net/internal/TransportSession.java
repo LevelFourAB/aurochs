@@ -44,6 +44,11 @@ public class TransportSession
 			);
 	}
 	
+	public Channel getNettyChannel()
+	{
+		return nettyChannel;
+	}
+	
 	@Override
 	public se.l4.aurochs.core.channel.Channel<ByteMessage> getRawChannel()
 	{

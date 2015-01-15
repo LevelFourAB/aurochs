@@ -7,6 +7,7 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
+import se.l4.aurochs.net.ServerConnection;
 import se.l4.aurochs.serialization.Expose;
 import se.l4.aurochs.serialization.ReflectionSerializer;
 import se.l4.aurochs.serialization.Use;
@@ -42,7 +43,7 @@ public class ServerConfig
 	
 	public ServerConfig()
 	{
-		port = 7400;
+		port = ServerConnection.DEFAULT_PORT;
 		
 		minThreads = 16;
 		maxThreads = 256;
@@ -55,9 +56,21 @@ public class ServerConfig
 		return port;
 	}
 	
+	public ServerConfig withPort(int port)
+	{
+		this.port = port;
+		return this;
+	}
+	
 	public int getMinThreads()
 	{
 		return minThreads;
+	}
+	
+	public ServerConfig withMinThreads(int minThreads)
+	{
+		this.minThreads = minThreads;
+		return this;
 	}
 	
 	public int getMaxThreads()
@@ -65,14 +78,32 @@ public class ServerConfig
 		return maxThreads;
 	}
 	
+	public ServerConfig withMaxThreads(int maxThreads)
+	{
+		this.maxThreads = maxThreads;
+		return this;
+	}
+	
 	public int getQueueSize()
 	{
 		return queueSize;
 	}
 	
+	public ServerConfig withQueueSize(int queueSize)
+	{
+		this.queueSize = queueSize;
+		return this;
+	}
+	
 	public TLS getTls()
 	{
 		return tls;
+	}
+	
+	public ServerConfig withTLS(TLS tls)
+	{
+		this.tls = tls;
+		return this;
 	}
 	
 	@Use(ReflectionSerializer.class)
@@ -100,14 +131,32 @@ public class ServerConfig
 			return certificate;
 		}
 		
+		public TLS withCertificate(File file)
+		{
+			this.certificate = file;
+			return this;
+		}
+		
 		public File getPrivateKey()
 		{
 			return privateKey;
 		}
 		
+		public TLS withPrivateKey(File file)
+		{
+			this.privateKey = file;
+			return this;
+		}
+		
 		public String getPassword()
 		{
 			return password;
+		}
+		
+		public TLS withPassword(String password)
+		{
+			this.password = password;
+			return this;
 		}
 	}
 }

@@ -8,16 +8,17 @@ import io.netty.handler.ssl.SslHandler;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.function.Consumer;
 
 import javax.net.ssl.TrustManager;
 
+import se.l4.aurochs.core.io.ByteMessage;
 import se.l4.aurochs.net.ConnectionException;
 import se.l4.aurochs.net.ServerConnection.TLSMode;
-import se.l4.aurochs.net.internal.ClientTransportFunctions;
-import se.l4.aurochs.net.internal.NettyClientChannel;
 import se.l4.aurochs.net.internal.SslHelper;
-import se.l4.aurochs.net.internal.TransportSession;
+import se.l4.aurochs.net.internal.TransportFunctions;
 import se.l4.aurochs.net.internal.handshake.Authenticate;
 import se.l4.aurochs.net.internal.handshake.BeginSession;
 import se.l4.aurochs.net.internal.handshake.Capabilities;
@@ -40,29 +41,32 @@ public class ClientHandshakeHandler
 		WAITING_FOR_SESSION
 	}
 
-	private final ClientTransportFunctions functions;
+	private final TransportFunctions functions;
 	private final Executor executor;
 	
 	private final TLSMode tlsMode;
 	private final TrustManager trustManager;
 	
-	private final NettyClientChannel target;
+	private final CompletableFuture<Channel> future;
+	private final Consumer<ByteMessage> messageReceiver;
 	
 	private State state;
 	private boolean tls;
 	
-	public ClientHandshakeHandler(ClientTransportFunctions functions,
+	public ClientHandshakeHandler(TransportFunctions functions,
 			Executor executor,
 			TLSMode tlsMode, 
 			TrustManager trustManager,
-			NettyClientChannel target)
+			Consumer<ByteMessage> messageReceiver,
+			CompletableFuture<Channel> future)
 	{
 		this.functions = functions;
 		this.executor = executor;
 		
 		this.tlsMode = tlsMode;
 		this.trustManager = trustManager;
-		this.target = target;
+		this.messageReceiver = messageReceiver;
+		this.future = future;
 		
 		state = State.WAITING_FOR_CAPS;
 	}
@@ -133,17 +137,17 @@ public class ClientHandshakeHandler
 				}
 				else
 				{
-					functions.raiseConnectionError(new ConnectionException("Authentication failed"));
+					ConnectionException ex = new ConnectionException("Authentication failed");
+					future.completeExceptionally(ex);
 				}
 				break;
 			case WAITING_FOR_SESSION:
 				if(msg instanceof SessionStatus)
 				{
-					// TODO: Send back the session
-					TransportSession session = functions.createSession(channel, ((SessionStatus) msg).getId());
-					functions.setupPipeline(executor, session, channel);
-					
-					target.addChannel(channel);
+					// TODO: Send back the session id
+					functions.setupPipeline(executor, messageReceiver, channel);
+
+					future.complete(channel);
 				}
 				else
 				{
@@ -157,7 +161,8 @@ public class ClientHandshakeHandler
 	
 	private void raiseError(ChannelHandlerContext ctx)
 	{
-		functions.raiseConnectionError(new ConnectionException("Connection to server did not succeed"));
+		ConnectionException ex = new ConnectionException("Connection to server did not succeed");
+		future.completeExceptionally(ex);
 	}
 	
 	@Override
@@ -168,11 +173,11 @@ public class ClientHandshakeHandler
 		
 		if(root instanceof CertificateException)
 		{
-			functions.raiseConnectionError(new ConnectionException("Connection to server did not succeed; Certificate was not trusted", root));
+			future.completeExceptionally(new ConnectionException("Connection to server did not succeed; Certificate was not trusted", root));
 		}
 		else
 		{
-			functions.raiseConnectionError(new ConnectionException("Connection to server did not succeed", cause.getCause()));
+			future.completeExceptionally(new ConnectionException("Connection to server did not succeed", cause.getCause()));
 		}
 	}
 
@@ -196,7 +201,7 @@ public class ClientHandshakeHandler
 				}
 				else
 				{
-					functions.raiseConnectionError(new ConnectionException("Server does not support TLS"));
+					future.completeExceptionally(new ConnectionException("Server does not support TLS"));
 				}
 				break;
 			case NEVER:

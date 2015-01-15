@@ -1,12 +1,16 @@
 package se.l4.aurochs.net.internal.handlers;
 
+import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.handler.timeout.IdleState;
+import io.netty.handler.timeout.IdleStateEvent;
 
 import java.util.concurrent.Executor;
+import java.util.function.Consumer;
 
 import se.l4.aurochs.core.io.ByteMessage;
-import se.l4.aurochs.net.internal.TransportSession;
+import se.l4.aurochs.core.io.Bytes;
+import se.l4.aurochs.core.io.DefaultByteMessage;
 
 /**
  * Handler that receives messages and queues them on the specified executor.
@@ -15,21 +19,42 @@ import se.l4.aurochs.net.internal.TransportSession;
  *
  */
 public class MessagingHandler
-	extends ChannelInboundHandlerAdapter
+	extends ChannelDuplexHandler
 {
-	private final TransportSession session;
 	private final Executor executor;
+	private final Consumer<ByteMessage> messageReceiver;
 
-	public MessagingHandler(Executor executor, TransportSession session)
+	public MessagingHandler(Executor executor, Consumer<ByteMessage> messageReceiver)
 	{
 		this.executor = executor;
-		this.session = session;
+		this.messageReceiver = messageReceiver;
 	}
 	
 	@Override
 	public void channelRead(ChannelHandlerContext ctx, Object msg)
 		throws Exception
 	{
-		executor.execute(() -> session.receive((ByteMessage) msg));
+		executor.execute(() -> messageReceiver.accept((ByteMessage) msg));
+	}
+	
+	@Override
+	public void userEventTriggered(ChannelHandlerContext ctx, Object evt)
+		throws Exception
+	{
+		if(evt instanceof IdleStateEvent)
+		{
+			IdleStateEvent event = (IdleStateEvent) evt;
+			
+			if(event.state() == IdleState.READER_IDLE)
+			{
+				ctx.close();
+			}
+			else if(event.state() == IdleState.WRITER_IDLE)
+			{
+				ctx.writeAndFlush(new DefaultByteMessage(0, Bytes.empty()));
+			}
+		}
+			
+		super.userEventTriggered(ctx, evt);
 	}
 }

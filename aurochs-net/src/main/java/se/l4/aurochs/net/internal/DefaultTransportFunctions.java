@@ -5,7 +5,9 @@ import io.netty.channel.ChannelPipeline;
 
 import java.io.IOException;
 import java.util.concurrent.Executor;
+import java.util.function.Consumer;
 
+import se.l4.aurochs.core.Session;
 import se.l4.aurochs.core.io.ByteMessage;
 import se.l4.aurochs.core.io.Bytes;
 import se.l4.aurochs.core.io.DefaultByteMessage;
@@ -70,7 +72,7 @@ public class DefaultTransportFunctions
 	}
 
 	@Override
-	public void setupPipeline(Executor messageExecutor, TransportSession session, Channel channel)
+	public void setupPipeline(Executor messageExecutor, Consumer<ByteMessage> messageReceiver, Channel channel)
 	{
 		ChannelPipeline pipeline = channel.pipeline();
 		
@@ -87,9 +89,16 @@ public class DefaultTransportFunctions
 		pipeline.addLast("frameEncoder", new VarintLengthPrepender());
 		pipeline.addLast("encoder", new ByteMessageEncoder());
 		
+		// Idle state
+//		pipeline.addLast("idleStateHandler", new IdleStateHandler(15, 5, 0));
+		
 		// Actual handler
-		pipeline.addLast("messaging", new MessagingHandler(messageExecutor, session));
-				
+		pipeline.addLast("messaging", new MessagingHandler(messageExecutor, messageReceiver));
+	}
+	
+	@Override
+	public void markSessionReady(Session session)
+	{
 		// "Create" the session
 		sessions.create(session);
 	}

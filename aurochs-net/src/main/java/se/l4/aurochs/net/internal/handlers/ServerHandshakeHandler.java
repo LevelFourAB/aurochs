@@ -7,6 +7,7 @@ import io.netty.handler.ssl.SslHandler;
 
 import java.util.UUID;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.function.Consumer;
 
 import javax.net.ssl.SSLEngine;
 
@@ -41,16 +42,19 @@ public class ServerHandshakeHandler
 	private final TransportFunctions functions;
 	private final ThreadPoolExecutor executor;
 	private final Provider<SSLEngine> engines;
+	private final Consumer<TransportSession> sessionCreated;
 	
 	private State state;
 	
 	public ServerHandshakeHandler(TransportFunctions functions, 
 			ThreadPoolExecutor executor, 
-			Provider<SSLEngine> engines)
+			Provider<SSLEngine> engines,
+			Consumer<TransportSession> sessionCreated)
 	{
 		this.functions = functions;
 		this.executor = executor;
 		this.engines = engines;
+		this.sessionCreated = sessionCreated;
 		
 		state = State.WAITING_FOR_CAPS;
 	}
@@ -137,7 +141,10 @@ public class ServerHandshakeHandler
 					// Send the final handshake message
 					channel.write(new SessionStatus(id));
 					
-					functions.setupPipeline(executor, session, channel);
+					functions.setupPipeline(executor, session::receive, channel);
+					
+					sessionCreated.accept(session);
+					functions.markSessionReady(session);
 				}
 		}
 		

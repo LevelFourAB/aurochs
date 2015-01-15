@@ -1,6 +1,5 @@
 package se.l4.aurochs.net;
 
-import se.l4.aurochs.net.internal.Server;
 import se.l4.crayon.CrayonModule;
 import se.l4.crayon.annotation.Contribution;
 import se.l4.crayon.services.ServiceManager;
@@ -21,8 +20,8 @@ public class ServerModule
 	}
 
 	@Contribution(name="aurochs-server")
-	public void contributeServer(ServiceManager manager, Server server)
+	public void contributeServer(ServiceManager services, ServerBuilder builder)
 	{
-		manager.addService(server);
+		services.addService(builder.withConfig("net.config").build());
 	}
 }

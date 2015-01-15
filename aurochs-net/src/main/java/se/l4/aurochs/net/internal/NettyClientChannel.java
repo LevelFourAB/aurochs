@@ -18,11 +18,22 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 import javax.net.ssl.TrustManager;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import se.l4.aurochs.core.channel.MessageEvent;
 import se.l4.aurochs.core.io.ByteMessage;
 import se.l4.aurochs.core.spi.AbstractChannel;
+import se.l4.aurochs.net.ServerConnection;
 import se.l4.aurochs.net.ServerConnection.TLSMode;
 import se.l4.aurochs.net.internal.handlers.ClientHandshakeHandler;
 import se.l4.aurochs.net.internal.handlers.HandshakeDecoder;
@@ -31,9 +42,11 @@ import se.l4.aurochs.net.internal.handlers.HandshakeEncoder;
 public class NettyClientChannel
 	extends AbstractChannel<ByteMessage>
 {
+	private static final Logger log = LoggerFactory.getLogger(NettyClientChannel.class);
+	
 	private final EventLoopGroup group;
 	
-	private final ClientTransportFunctions functions;
+	private final TransportFunctions functions;
 	private final ExecutorService executor;
 	private final TLSMode tlsMode;
 	private final TrustManager trustManager;
@@ -44,13 +57,18 @@ public class NettyClientChannel
 	
 	private volatile Channel[] channels;
 	private final ChannelGroup channelGroup;
+
+	private final ScheduledExecutorService scheduler;
+
+	private final Consumer<se.l4.aurochs.core.channel.Channel<ByteMessage>> initializer;
 	
 	public NettyClientChannel(EventLoopGroup group, 
-			ClientTransportFunctions functions,
+			TransportFunctions functions,
 			ExecutorService executor,
 			TLSMode tlsMode,
 			TrustManager trustManager,
-			Collection<URI> hosts)
+			Collection<URI> hosts,
+			Consumer<se.l4.aurochs.core.channel.Channel<ByteMessage>> initializer)
 	{
 		this.group = group;
 		this.functions = functions;
@@ -58,7 +76,9 @@ public class NettyClientChannel
 		this.tlsMode = tlsMode;
 		this.trustManager = trustManager;
 		this.hosts = hosts;
+		this.initializer = initializer;
 		
+		scheduler = Executors.newScheduledThreadPool(1); // TODO: Should we share this between all connections?
 		connections = 1;
 		
 		this.channelGroup = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
@@ -77,6 +97,20 @@ public class NettyClientChannel
 	
 	private void startConnectionToServer()
 	{
+		connectToServer(1);
+	}
+	
+	private void connectToServer(int attempt)
+	{
+		URI uri = hosts.iterator().next();
+		InetSocketAddress address = new InetSocketAddress(
+			uri.getHost(), 
+			uri.getPort() > 0 ? uri.getPort() : ServerConnection.DEFAULT_PORT
+		);
+		
+		log.debug("Trying to establish new connection to server {}, attempt {}", uri, attempt);
+		
+		CompletableFuture<Channel> channelFuture = new CompletableFuture<>();
 		Bootstrap bootstrap = new Bootstrap()
 			.group(group)
 			.channel(NioSocketChannel.class)
@@ -93,23 +127,43 @@ public class NettyClientChannel
 					pipeline.addLast("handshakeDecoder", new HandshakeDecoder());
 					pipeline.addLast("handshakeEncoder", new HandshakeEncoder());
 					
-					pipeline.addLast("handshake", new ClientHandshakeHandler(functions, executor, tlsMode, trustManager, NettyClientChannel.this));
+					pipeline.addLast("handshake", new ClientHandshakeHandler(
+						functions,
+						executor,
+						tlsMode,
+						trustManager,
+						in -> fireMessageReceived(new MessageEvent<ByteMessage>(NettyClientChannel.this, NettyClientChannel.this, in)),
+						channelFuture
+					));
+					
 				}
 			});
 		
-		URI uri = hosts.iterator().next();
-		InetSocketAddress address = new InetSocketAddress(
-			uri.getHost(), 
-			uri.getPort() > 0 ? uri.getPort() : 7400
-		);
-		
 		ChannelFuture future = bootstrap.connect(address);
+		ScheduledFuture<?> retry = scheduler.schedule(() -> {
+			future.cancel(false);
+			scheduleConnectToServer(attempt + 1);
+		}, 15, TimeUnit.SECONDS);
+		
 		future.addListener(f -> {
 			if(! f.isSuccess())
 			{
+				retry.cancel(false);
 				connectionFuture.completeExceptionally(f.cause());
+				scheduleConnectToServer(attempt + 1);
 			}
 		});
+		
+		channelFuture.thenAccept(ch -> {
+			retry.cancel(true);
+			addChannel(ch);
+		});
+	}
+	
+	private void scheduleConnectToServer(int attempt)
+	{
+		long delay = attempt > 5 ? 15000 : Math.min(3000, 1000 * Math.max(1, ThreadLocalRandom.current().nextInt(1 << attempt)));
+		scheduler.schedule(() -> connectToServer(attempt), delay, TimeUnit.MILLISECONDS);
 	}
 	
 	public boolean isConnected()
@@ -126,6 +180,7 @@ public class NettyClientChannel
 	{
 		if(channelGroup.add(channel))
 		{
+			log.debug("Connection to {} established", channel.remoteAddress());
 			synchronized(channelGroup)
 			{
 				Channel[] channels = Arrays.copyOf(this.channels, this.channels.length + 1);
@@ -137,47 +192,60 @@ public class NettyClientChannel
 			channel.closeFuture().addListener(r -> this.removeChannel(channel));
 			
 			connectionFuture.complete(null);
+			
+			initializer.accept(new AbstractChannel<ByteMessage>()
+			{
+				@Override
+				public void close()
+				{
+				}
+				
+				@Override
+				public void send(ByteMessage message)
+				{
+					channel.writeAndFlush(message);
+				}
+			});
 		}
 	}
 	
-	public void removeChannel(Channel channel)
+	private void removeChannel(Channel channel)
 	{
-		if(channelGroup.remove(channel))
+		log.debug("Connection to {} lost", channel.remoteAddress());
+		
+		synchronized(channelGroup)
 		{
-			synchronized(channelGroup)
+			Channel[] channels = this.channels;
+			int index = -1;
+			for(int i=0, n=channels.length; i<n; i++)
 			{
-				Channel[] channels = this.channels;
-				int index = -1;
-				for(int i=0, n=channels.length; i<n; i++)
+				if(channels[i] == channel)
 				{
-					if(channels[i] == channel)
-					{
-						index = i;
-						break;
-					}
+					index = i;
+					break;
 				}
-				
-				if(index == -1)
-				{
-					// Nothing to do, no such listener
-					return;
-				}
-				
-				int length = channels.length;
-				Channel[] result = new Channel[length - 1];
-				System.arraycopy(channels, 0, result, 0, index);
-				
-				if(index < length - 1)
-				{
-					System.arraycopy(channels, index + 1, result, index, length - index - 1);
-				}
-				
-				this.channels = channels;
-				
-				if(channels.length < connections)
-				{
-					startConnectionToServer();
-				}
+			}
+			
+			if(index == -1)
+			{
+				// Nothing to do, no such listener
+				return;
+			}
+			
+			int length = channels.length;
+			Channel[] result = new Channel[length - 1];
+			System.arraycopy(channels, 0, result, 0, index);
+			
+			if(index < length - 1)
+			{
+				System.arraycopy(channels, index + 1, result, index, length - index - 1);
+			}
+			
+			this.channels = result;
+			
+			if(result.length < connections)
+			{
+				scheduler.execute(this::startConnectionToServer);
 			}
 		}
 	}
@@ -197,6 +265,12 @@ public class NettyClientChannel
 	}
 	
 	@Override
+	protected void fireMessageReceived(MessageEvent<? extends ByteMessage> event)
+	{
+		super.fireMessageReceived(event);
+	}
+	
+	@Override
 	public void send(ByteMessage message)
 	{
 		Channel[] current = this.channels;
@@ -207,5 +281,11 @@ public class NettyClientChannel
 		}
 		
 		current[0].writeAndFlush(message);
+	}
+	
+	@Override
+	public String toString()
+	{
+		return getClass().getSimpleName() + "{" + Arrays.toString(channels) + "}";
 	}
 }

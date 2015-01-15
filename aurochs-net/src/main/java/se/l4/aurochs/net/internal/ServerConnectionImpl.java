@@ -8,10 +8,16 @@ import java.util.Collection;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.function.Consumer;
 
 import javax.net.ssl.TrustManager;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import se.l4.aurochs.core.channel.Channel;
 import se.l4.aurochs.core.hosts.Hosts;
+import se.l4.aurochs.core.io.ByteMessage;
 import se.l4.aurochs.net.RemoteSession;
 import se.l4.aurochs.net.ServerConnection;
 
@@ -28,7 +34,9 @@ import com.google.inject.Injector;
 public class ServerConnectionImpl
 	implements ServerConnection
 {
-	private final ClientTransportFunctions functions;
+	private static final Logger log = LoggerFactory.getLogger(ServerConnection.class);
+	
+	private final TransportFunctions functions;
 	private final Injector injector;
 	
 	private Hosts hosts;
@@ -36,14 +44,18 @@ public class ServerConnectionImpl
 	private TLSMode tlsMode;
 	private TrustManager trustManager;
 
+	private Consumer<Channel<ByteMessage>> initializer;
+
 	@Inject
-	public ServerConnectionImpl(Injector injector, ClientTransportFunctions functions)
+	public ServerConnectionImpl(Injector injector, TransportFunctions functions)
 	{
 		this.injector = injector;
 		this.functions = functions;
 		
 		tlsMode = TLSMode.AUTOMATIC;
 		trustManager = SslHelper.TRUSTING;
+		
+		initializer = (c) -> {};
 	}
 	
 	@Override
@@ -93,6 +105,13 @@ public class ServerConnectionImpl
 	}
 	
 	@Override
+	public ServerConnection setChannelInitializer(Consumer<Channel<ByteMessage>> initializer)
+	{
+		this.initializer = initializer;
+		return this;
+	}
+	
+	@Override
 	public RemoteSession connect()
 	{
 		if(hosts == null)
@@ -108,12 +127,13 @@ public class ServerConnectionImpl
 		
 		ExecutorService executor = Executors.newCachedThreadPool(new ThreadFactoryBuilder()
 			.setNameFormat("aurochs-client-%s " + this.hosts)
+			.setUncaughtExceptionHandler((t, e) -> log.warn("Uncaught exception; " + e.getMessage(), e))
 			.setDaemon(true)
 			.build()
 		);
 		
 		EventLoopGroup group = new NioEventLoopGroup();
-		NettyClientChannel channel = new NettyClientChannel(group, functions, executor, tlsMode, trustManager, hosts);
+		NettyClientChannel channel = new NettyClientChannel(group, functions, executor, tlsMode, trustManager, hosts, initializer);
 		
 		channel.start();
 		

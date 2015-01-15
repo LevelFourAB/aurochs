@@ -1,11 +1,14 @@
 package se.l4.aurochs.net;
 
 import java.net.URI;
+import java.util.function.Consumer;
 
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
+import se.l4.aurochs.core.channel.Channel;
 import se.l4.aurochs.core.hosts.Hosts;
+import se.l4.aurochs.core.io.ByteMessage;
 
 /**
  * Creator of a connection to a server.
@@ -15,6 +18,8 @@ import se.l4.aurochs.core.hosts.Hosts;
  */
 public interface ServerConnection
 {
+	static final int DEFAULT_PORT = 7400;
+	
 	/**
 	 * Set how to handle TLS.
 	 * 
@@ -73,6 +78,15 @@ public interface ServerConnection
 	 * @return
 	 */
 	ServerConnection setTrustManager(TrustManager trustManager);
+	
+	/**
+	 * Set an initializer that will run everytime a new channel is created for the remote
+	 * connection.
+	 * 
+	 * @param initializer
+	 * @return
+	 */
+	ServerConnection setChannelInitializer(Consumer<Channel<ByteMessage>> initializer);
 	
 	/**
 	 * Start the connection, returning a new session. This method will not block and wait for

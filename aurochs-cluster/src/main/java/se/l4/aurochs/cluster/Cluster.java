@@ -1,5 +1,7 @@
 package se.l4.aurochs.cluster;
 
+import se.l4.aurochs.core.io.Bytes;
+
 
 /**
  * Interface for accessing the cluster and its distributed data structures.
@@ -24,4 +26,6 @@ public interface Cluster
 	 * @return
 	 */
 	MemberType getLocalType();
+	
+	ServiceBuilder<Bytes> newService(String name);
 }

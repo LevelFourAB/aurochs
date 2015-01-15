@@ -35,6 +35,7 @@ import se.l4.aurochs.core.channel.Channel;
 import se.l4.aurochs.core.channel.ChannelListener;
 import se.l4.aurochs.core.channel.MessageEvent;
 import se.l4.aurochs.core.io.Bytes;
+import se.l4.aurochs.core.io.IoConsumer;
 import se.l4.crayon.services.ManagedService;
 
 import com.carrotsearch.hppc.LongObjectMap;
@@ -84,9 +85,14 @@ public class Raft
 	private long lastApplied;
 	
 	private final LongObjectMap<CompletableFuture<Void>> futures;
+
+	private final IoConsumer<Bytes> applier;
 	
-	public Raft(StateStorage stateStorage, Log log, Nodes<RaftMessage> nodes, String id)
+	public Raft(StateStorage stateStorage, Log log, Nodes<RaftMessage> nodes, 
+			String id,
+			IoConsumer<Bytes> applier)
 	{
+		this.applier = applier;
 		this.logger = LoggerFactory.getLogger(Raft.class.getName() + "[" + id + "]");
 		
 		this.stateStorage = stateStorage;
@@ -537,6 +543,17 @@ public class Raft
 			if(futures.containsKey(l))
 			{
 				futures.get(l).complete(null);
+			}
+			
+			// FIXME: This should run on its own thread
+			try
+			{
+				applier.accept(log.get(l).getData());
+			}
+			catch(IOException e)
+			{
+				// TODO: How do we handle IO errors here?
+				break;
 			}
 			
 			lastApplied = l;

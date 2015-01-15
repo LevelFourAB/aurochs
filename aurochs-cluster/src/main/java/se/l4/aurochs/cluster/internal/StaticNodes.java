@@ -7,7 +7,6 @@ import java.util.function.Consumer;
 import se.l4.aurochs.cluster.nodes.Node;
 import se.l4.aurochs.cluster.nodes.NodeEvent;
 import se.l4.aurochs.cluster.nodes.Nodes;
-import se.l4.aurochs.cluster.nodes.NodeEvent.Type;
 import se.l4.aurochs.core.events.EventHandle;
 
 public class StaticNodes<T>
@@ -24,6 +23,17 @@ public class StaticNodes<T>
 	public StaticNodes(Collection<Node<T>> nodes)
 	{
 		this.nodes = nodes;
+	}
+	
+	@Override
+	public Node<T> get(String id)
+	{
+		for(Node<T> node : nodes)
+		{
+			if(node.getId().equals(id)) return node;
+		}
+		
+		return null;
 	}
 	
 	@Override

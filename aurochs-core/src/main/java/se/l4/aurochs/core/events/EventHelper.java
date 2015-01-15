@@ -4,8 +4,6 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 
-import se.l4.aurochs.core.channel.ChannelListener;
-
 public class EventHelper<L>
 {
 	private static final Object[] EMPTY = new Object[0];
@@ -26,7 +24,7 @@ public class EventHelper<L>
 		{
 			Object[] listeners = this.listeners;
 			
-			Object[] result = new ChannelListener[listeners.length + 1];
+			Object[] result = new Object[listeners.length + 1];
 			System.arraycopy(listeners, 0, result, 0, listeners.length);
 			result[listeners.length] = listener;
 			
@@ -61,7 +59,7 @@ public class EventHelper<L>
 			}
 			
 			int length = listeners.length;
-			Object[] result = new ChannelListener[length - 1];
+			Object[] result = new Object[length - 1];
 			System.arraycopy(listeners, 0, result, 0, index);
 			
 			if(index < length - 1)

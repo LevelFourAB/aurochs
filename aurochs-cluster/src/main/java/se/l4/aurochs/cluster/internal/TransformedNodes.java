@@ -22,6 +22,12 @@ public class TransformedNodes<O, D>
 	}
 	
 	@Override
+	public Node<D> get(String id)
+	{
+		throw new UnsupportedOperationException();
+	}
+	
+	@Override
 	public EventHandle listen(Consumer<NodeEvent<D>> consumer)
 	{
 		return nodes.listen(e -> {
@@ -38,7 +44,7 @@ public class TransformedNodes<O, D>
 					e.getType(),
 					new Node<>(
 						e.getNode().getId(),
-						e.getNode().getChannel().transform(codec))
+						e.getNode().getChannel() == null ? null : e.getNode().getChannel().transform(codec))
 				));
 			}
 		});

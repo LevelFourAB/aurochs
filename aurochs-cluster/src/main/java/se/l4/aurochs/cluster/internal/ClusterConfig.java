@@ -6,6 +6,7 @@ import javax.validation.constraints.NotNull;
 import org.apache.bval.constraints.NotEmpty;
 
 import se.l4.aurochs.cluster.Cluster;
+import se.l4.aurochs.core.hosts.Hosts;
 import se.l4.aurochs.net.internal.ServerConfig;
 import se.l4.aurochs.serialization.Expose;
 import se.l4.aurochs.serialization.ReflectionSerializer;
@@ -20,10 +21,14 @@ public class ClusterConfig
 	@NotNull
 	@MapEnumVia(IgnoreCaseNameTranslator.class)
 	private Cluster.MemberType type;
-	
+
+	@Expose
 	@NotNull
 	@NotEmpty
-	private String node;
+	private String self;
+	
+	@Expose
+	private Hosts hosts;
 	
 	@Expose
 	@Valid
@@ -34,14 +39,19 @@ public class ClusterConfig
 		server = new ServerConfig();
 	}
 	
-	public String getNode()
+	public String getSelf()
 	{
-		return node;
+		return self;
 	}
 	
 	public Cluster.MemberType getType()
 	{
 		return type;
+	}
+	
+	public Hosts getHosts()
+	{
+		return hosts;
 	}
 	
 	public ServerConfig getServer()

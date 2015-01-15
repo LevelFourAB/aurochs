@@ -173,11 +173,7 @@ public class Raft
 	{
 		Node<RaftMessage> node = event.getNode();
 		
-		// TODO: Support transforming data in the channel
-		Channel<RaftMessage> channel = node.getChannel()
-			.filter(RaftMessage.class)
-			.on(executor);
-		
+		Channel<RaftMessage> channel = node.getChannel().on(executor);
 		channel.addListener(channelListener);
 		
 		Node<RaftMessage> transformed = new Node<>(node.getId(), channel);

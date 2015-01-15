@@ -21,7 +21,7 @@ public class NamedChannelCodec
 			.asInt()
 		);
 		
-		this.id = 100 + hash;
+		this.id = 1024 + hash;
 	}
 
 	@Override

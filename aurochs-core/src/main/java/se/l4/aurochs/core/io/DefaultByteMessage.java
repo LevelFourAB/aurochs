@@ -23,4 +23,10 @@ public class DefaultByteMessage
 	{
 		return data;
 	}
+	
+	@Override
+	public String toString()
+	{
+		return getClass().getSimpleName() + "{tag=" + tag + ", data=" + data + "}";
+	}
 }

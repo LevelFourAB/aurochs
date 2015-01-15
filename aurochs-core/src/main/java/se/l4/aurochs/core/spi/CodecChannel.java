@@ -45,4 +45,10 @@ public class CodecChannel<O, T>
 	{
 		channel.send(codec.toSource(message));
 	}
+	
+	@Override
+	public String toString()
+	{
+		return getClass().getSimpleName() + "{channel=" + channel + ", codec=" + codec + "}";
+	}
 }

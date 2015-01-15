@@ -57,4 +57,10 @@ public class ExecutorChannel<T>
 	{
 		channel.close();
 	}
+	
+	@Override
+	public String toString()
+	{
+		return getClass().getSimpleName() + "{channel=" + channel + ", executor=" + executor + "}";
+	}
 }

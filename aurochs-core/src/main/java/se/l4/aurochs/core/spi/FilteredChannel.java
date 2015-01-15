@@ -54,4 +54,10 @@ public class FilteredChannel<T>
 	{
 		channel.close();
 	}
+	
+	@Override
+	public String toString()
+	{
+		return getClass().getSimpleName() + "{channel=" + channel + ", predicate=" + predicate + "}";
+	}
 }

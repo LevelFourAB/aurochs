@@ -13,6 +13,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -36,7 +37,6 @@ import se.l4.aurochs.core.channel.ChannelListener;
 import se.l4.aurochs.core.channel.MessageEvent;
 import se.l4.aurochs.core.io.Bytes;
 import se.l4.aurochs.core.io.IoConsumer;
-import se.l4.crayon.services.ManagedService;
 
 import com.carrotsearch.hppc.LongObjectMap;
 import com.carrotsearch.hppc.LongObjectOpenHashMap;
@@ -45,7 +45,7 @@ import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 public class Raft
-	implements ManagedService, StateLog<Bytes>
+	implements StateLog<Bytes>
 {
 	private static final long LOG_CACHE_SIZE = 10;
 
@@ -87,12 +87,19 @@ public class Raft
 	private final LongObjectMap<CompletableFuture<Void>> futures;
 
 	private final IoConsumer<Bytes> applier;
+	private final boolean applierVolatile;
+
+	private Thread applierThread;
+
+	private Condition commitIndexUpdated;
 	
 	public Raft(StateStorage stateStorage, Log log, Nodes<RaftMessage> nodes, 
 			String id,
-			IoConsumer<Bytes> applier)
+			IoConsumer<Bytes> applier,
+			boolean applierVolatile)
 	{
 		this.applier = applier;
+		this.applierVolatile = applierVolatile;
 		this.logger = LoggerFactory.getLogger(Raft.class.getName() + "[" + id + "]");
 		
 		this.stateStorage = stateStorage;
@@ -108,14 +115,22 @@ public class Raft
 			.build();
 		scheduler = Executors.newScheduledThreadPool(1, threadFactory);
 		executor = Executors.newCachedThreadPool(threadFactory);
+		applierThread = new Thread(this::applyCommitableEntries, "Raft[" + id + "] Log Applier");
+		applierThread.start();
 		
 		this.stateLock = new ReentrantLock();
+		commitIndexUpdated = stateLock.newCondition();
 		random = new Random();
 		
 //		logCache = createLogCache(log);
 		
 		this.channelListener = createChannelListener();
 		this.nodes = Maps.newHashMap();
+		
+		nodeStates = Maps.newHashMap();
+		votes = Sets.newHashSet();
+		
+		lastApplied = stateStorage.getApplyIndex();
 		
 		nodes.listen(this::handleNodeEvent);
 		
@@ -124,9 +139,6 @@ public class Raft
 		{
 			throw new IllegalArgumentException("Nodes did not include self with id " + id);
 		}
-		
-		nodeStates = Maps.newHashMap();
-		votes = Sets.newHashSet();
 		
 		role = Role.FOLLOWER;
 		scheduleElectionTimeout();
@@ -181,19 +193,11 @@ public class Raft
 	}
 	
 	@Override
-	public void start()
-		throws Exception
+	public void close()
 	{
-		// TODO Auto-generated method stub
-		
-	}
-	
-	@Override
-	public void stop()
-		throws Exception
-	{
-		// TODO Auto-generated method stub
-		
+		executor.shutdown();
+		scheduler.shutdown();
+		applierThread.interrupt();
 	}
 	
 	@Override
@@ -531,29 +535,79 @@ public class Raft
 	{
 		commitIndex = index;
 		
-		// Commit all items from lastApplied up to and including index
-		logger.debug("Committing up to {}", index);
-		
+		// Complete any pending futures
 		for(long l=lastApplied+1; l<=index; l++)
 		{
 			if(futures.containsKey(l))
 			{
-				futures.get(l).complete(null);
+				long ci = l;
+				executor.execute(() -> {
+					futures.get(ci).complete(null);
+					futures.remove(ci);
+				});
 			}
-			
-			// FIXME: This should run on its own thread
+		}
+		
+		commitIndexUpdated.signal();
+	}
+	
+	private void applyCommitableEntries()
+	{
+		while(! Thread.interrupted())
+		{
+			long applyFrom;
+			long applyUpTo;
+			stateLock.lock();
 			try
 			{
-				applier.accept(log.get(l).getData());
+				applyUpTo = lastApplied;
+				while(applyUpTo == commitIndex)
+				{
+					commitIndexUpdated.await();
+				}
+				
+				applyFrom = lastApplied + 1;
+				applyUpTo = commitIndex;
 			}
-			catch(IOException e)
+			catch(InterruptedException e)
 			{
-				// TODO: How do we handle IO errors here?
-				break;
+				return;
+			}
+			finally
+			{
+				stateLock.unlock();
 			}
 			
-			lastApplied = l;
-			logger.debug("Applying {}", l);
+			// Commit all items from lastApplied up to and including index
+			logger.debug("Committing up to {}", applyUpTo);
+			
+			for(long l=applyFrom; l<=applyUpTo; l++)
+			{
+				logger.debug("Applying {}", l);
+				try
+				{
+					applier.accept(log.get(l).getData());
+				}
+				catch(IOException e)
+				{
+					// TODO: How do we handle IO errors here?
+					break;
+				}
+	
+				stateLock.lock();
+				try
+				{
+					lastApplied = l;
+					if(! applierVolatile)
+					{
+						stateStorage.updateApplyIndex(l);
+					}
+				}
+				finally
+				{
+					stateLock.unlock();
+				}
+			}
 		}
 	}
 	

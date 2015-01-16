@@ -3,6 +3,7 @@ package se.l4.aurochs.cluster;
 import java.util.concurrent.CompletableFuture;
 
 public interface StateLog<T>
+	extends AutoCloseable
 {
 	/**
 	 * Submit an entry to this state log. This method will return a future
@@ -12,4 +13,10 @@ public interface StateLog<T>
 	 * @return
 	 */
 	CompletableFuture<Void> submit(T entry);
+	
+	/**
+	 * Close this state log.
+	 */
+	@Override
+	public void close();
 }

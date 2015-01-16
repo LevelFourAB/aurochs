@@ -14,6 +14,7 @@ public class InMemoryStateStorage
 {
 	private long currentTerm;
 	private Map<Long, String> votes;
+	private long applyIndex;
 	
 	public InMemoryStateStorage()
 	{
@@ -50,4 +51,15 @@ public class InMemoryStateStorage
 		votes.clear();
 	}
 
+	@Override
+	public long getApplyIndex()
+	{
+		return applyIndex;
+	}
+	
+	@Override
+	public void updateApplyIndex(long index)
+	{
+		applyIndex = index;
+	}
 }

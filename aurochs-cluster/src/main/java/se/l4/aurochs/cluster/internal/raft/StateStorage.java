@@ -39,4 +39,18 @@ public interface StateStorage
 	 * 
 	 */
 	void clearVotes();
+	
+	/**
+	 * Get the latest log index that has been applied.
+	 * 
+	 * @return
+	 */
+	long getApplyIndex();
+	
+	/**
+	 * Update the latest log index that has been applied.
+	 * 
+	 * @param index
+	 */
+	void updateApplyIndex(long index);
 }

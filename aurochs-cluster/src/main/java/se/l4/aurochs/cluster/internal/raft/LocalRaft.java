@@ -36,7 +36,7 @@ public class LocalRaft
 				nodes.add(new Node<>(n, n.equals(node) ? local.getIncoming() : local.getOutgoing()));
 			}
 			
-			result.put(node, new Raft(new InMemoryStateStorage(), new InMemoryLog(), new StaticNodes(nodes), node, (in) -> {}));
+			result.put(node, new Raft(new InMemoryStateStorage(), new InMemoryLog(), new StaticNodes(nodes), node, (in) -> {}, false));
 		}
 		
 		return result.build();

@@ -1,5 +1,6 @@
 package se.l4.aurochs.cluster;
 
+import java.io.File;
 import java.util.function.Function;
 
 import se.l4.aurochs.cluster.nodes.Nodes;
@@ -58,6 +59,14 @@ public interface StateLogBuilder<T>
 	 * @return
 	 */
 	StateLogBuilder<T> inMemory();
+	
+	/**
+	 * Store state in a file.
+	 * 
+	 * @param file
+	 * @return
+	 */
+	StateLogBuilder<T> stateInFile(File file);
 	
 	StateLog<T> build();
 }

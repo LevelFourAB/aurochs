@@ -1,5 +1,6 @@
 package se.l4.aurochs.cluster.internal.raft;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 
@@ -24,6 +25,7 @@ public class RaftBuilder<T>
 	
 	private ChannelCodec<Bytes, T> codec;
 	private IoConsumer<T> applier;
+	private boolean applierVolatile;
 	
 	public RaftBuilder()
 	{
@@ -54,9 +56,19 @@ public class RaftBuilder<T>
 	}
 	
 	@Override
+	public StateLogBuilder<T> stateInFile(File file)
+	{
+		MVStoreFileStorage storage = new MVStoreFileStorage(file);
+		stateStorage = storage;
+		log = storage;
+		return this;
+	}
+	
+	@Override
 	public StateLogBuilder<T> withApplier(IoConsumer<T> applier)
 	{
 		this.applier = applier;
+		this.applierVolatile = false;
 		return this;
 	}
 	
@@ -64,6 +76,7 @@ public class RaftBuilder<T>
 	public StateLogBuilder<T> withVolatileApplier(IoConsumer<T> applier)
 	{
 		this.applier = applier;
+		this.applierVolatile = true;
 		return this;
 	}
 	
@@ -71,7 +84,7 @@ public class RaftBuilder<T>
 	public StateLog<T> build()
 	{
 		IoConsumer<Bytes> applier = createApplier();
-		Raft raft = new Raft(stateStorage, log, nodes, id, applier);
+		Raft raft = new Raft(stateStorage, log, nodes, id, applier, applierVolatile);
 		
 		if(codec == null) return (StateLog) raft;
 		
@@ -123,6 +136,12 @@ public class RaftBuilder<T>
 		public CompletableFuture<Void> submit(T entry)
 		{
 			return log.submit(codec.toSource(entry));
+		}
+		
+		@Override
+		public void close()
+		{
+			log.close();
 		}
 	}
 }

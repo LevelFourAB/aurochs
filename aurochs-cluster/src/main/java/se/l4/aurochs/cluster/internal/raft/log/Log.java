@@ -47,7 +47,7 @@ public interface Log
 	 * @param data
 	 * @return
 	 */
-	long store(long term, Bytes data)
+	long store(long term, LogEntry.Type type, Bytes data)
 		throws IOException;
 	
 	/**

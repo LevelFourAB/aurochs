@@ -5,11 +5,25 @@ import se.l4.aurochs.core.io.Bytes;
 public interface LogEntry
 {
 	/**
+	 * Type of the log entry, used to support log keeping of internal data.
+	 * 
+	 * @author Andreas Holstenson
+	 *
+	 */
+	enum Type
+	{
+		/**
+		 * Data as submitted by a client of the state log.
+		 */
+		DATA
+	}
+	
+	/**
 	 * Get the identifier of this entry.
 	 * 
 	 * @return
 	 */
-	long getId();
+	long getIndex();
 	
 	/**
 	 * Get the term this was stored.
@@ -17,6 +31,13 @@ public interface LogEntry
 	 * @return
 	 */
 	long getTerm();
+	
+	/**
+	 * Get the type of this entry.
+	 * 
+	 * @return
+	 */
+	Type getType();
 	
 	/**
 	 * Get the data of this entry. The returned {@link Bytes} should be valid for usage as long

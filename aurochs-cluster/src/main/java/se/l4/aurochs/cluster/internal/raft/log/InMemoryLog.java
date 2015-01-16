@@ -59,10 +59,10 @@ public class InMemoryLog
 	}
 	
 	@Override
-	public long store(long term, Bytes data)
+	public long store(long term, LogEntry.Type type, Bytes data)
 		throws IOException
 	{
-		entries.add(new DefaultLogEntry(entries.size() + 1, term, Bytes.create(data.toByteArray())));
+		entries.add(new DefaultLogEntry(entries.size() + 1, term, type, Bytes.create(data.toByteArray())));
 		return entries.size();
 	}
 }

@@ -49,7 +49,7 @@ public class Raft
 {
 	private static final long LOG_CACHE_SIZE = 10;
 
-	private static final LogEntry LOG_HEAD = new DefaultLogEntry(0, 0, null);
+	private static final LogEntry LOG_HEAD = new DefaultLogEntry(0, 0, null, null);
 
 	private final Logger logger;
 	
@@ -226,7 +226,7 @@ public class Raft
 		stateLock.lock();
 		try
 		{
-			long id = log.store(stateStorage.getCurrentTerm(), data);
+			long id = log.store(stateStorage.getCurrentTerm(), LogEntry.Type.DATA, data);
 			
 			CompletableFuture<Void> future = new CompletableFuture<>();
 			futures.put(id, future);
@@ -283,7 +283,7 @@ public class Raft
 			
 			String vote = stateStorage.getVote(newTerm);
 			LogEntry lastLogEntry = getLastLogEntry();
-			if((vote == null || vote.equals(node.getId())) && lastLogEntry.getId() <= message.getLastLogIndex())
+			if((vote == null || vote.equals(node.getId())) && lastLogEntry.getIndex() <= message.getLastLogIndex())
 			{
 				logger.debug("First vote, voting yes to node {}", node.getId());
 				stateStorage.updateVote(message.getTerm(), node.getId());
@@ -330,7 +330,7 @@ public class Raft
 					LogEntry lastLogEntry = getLastLogEntry();
 					for(Node<RaftMessage> n : nodes.values())
 					{
-						nodeStates.put(n.getId(), new NodeState(lastLogEntry.getId() + 1));
+						nodeStates.put(n.getId(), new NodeState(lastLogEntry.getIndex() + 1));
 					}
 					
 					sendHeartbeat();
@@ -412,27 +412,27 @@ public class Raft
 			// Store all of the new entries
 			for(LogEntry e : message.getEntries())
 			{
-				LogEntry previous = getLogEntry(e.getId());
+				LogEntry previous = getLogEntry(e.getIndex());
 				if(previous != null)
 				{
 					// This entry is already stored
 					if(previous.getTerm() == e.getTerm())
 					{
-						logger.debug("Already have log entry at {} with same term, no need to apply", e.getId());
+						logger.debug("Already have log entry at {} with same term, no need to apply", e.getIndex());
 						// This is the same entry, no need to store it
 						continue;
 					}
 					else
 					{
-						logger.debug("Log entry at {} has different term, resetting log", e.getId());
+						logger.debug("Log entry at {} has different term, resetting log", e.getIndex());
 						
 						// Remove this entry from the log and all following it
-						log.resetTo(e.getId() - 1);
+						log.resetTo(e.getIndex() - 1);
 					}
 				}
 				
-				logger.debug("Appending {} to log", e.getId());
-				long index = log.store(e.getTerm(), e.getData());
+				logger.debug("Appending {} to log", e.getIndex());
+				long index = log.store(e.getTerm(), e.getType(), e.getData());
 			}
 			
 			if(message.getLeaderCommit() > commitIndex)
@@ -483,7 +483,7 @@ public class Raft
 				
 				updateCommitIndex();
 				
-				if(state.nextIndex <= lastLogEntry.getId())
+				if(state.nextIndex <= lastLogEntry.getIndex())
 				{
 					logger.debug("{} is not yet up to date, next index is {}", node.getId(), state.nextIndex);
 					
@@ -714,9 +714,9 @@ public class Raft
 		throws IOException
 	{
 		NodeState state = nodeStates.get(node.getId());
-		if(state.nextIndex == lastLogEntry.getId() + 1)
+		if(state.nextIndex == lastLogEntry.getIndex() + 1)
 		{
-			sendTo(node, new AppendEntries(id, term, lastLogEntry.getId(), lastLogEntry.getTerm(), Collections.emptyList(), commitIndex));
+			sendTo(node, new AppendEntries(id, term, lastLogEntry.getIndex(), lastLogEntry.getTerm(), Collections.emptyList(), commitIndex));
 		}
 		else
 		{
@@ -724,13 +724,13 @@ public class Raft
 			
 			// Send a maximum of five entries at a time
 			// TODO: We should really look at the size of the entries instead of just counting
-			long[] entriesToSend = new long[Math.min(5, (int) (lastLogEntry.getId() - entry.getId()))];
+			long[] entriesToSend = new long[Math.min(5, (int) (lastLogEntry.getIndex() - entry.getIndex()))];
 			for(int i=0, n=entriesToSend.length; i<n; i++)
 			{
-				entriesToSend[i] = entry.getId() + 1;
+				entriesToSend[i] = entry.getIndex() + 1;
 			}
 			List<LogEntry> entries = log.get(entriesToSend);
-			sendTo(node, new AppendEntries(id, term, entry.getId(), entry.getTerm(), entries, commitIndex));
+			sendTo(node, new AppendEntries(id, term, entry.getIndex(), entry.getTerm(), entries, commitIndex));
 		}
 	}
 	

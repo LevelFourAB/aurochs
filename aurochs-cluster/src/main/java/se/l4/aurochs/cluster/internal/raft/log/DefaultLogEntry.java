@@ -7,17 +7,19 @@ public class DefaultLogEntry
 {
 	private final long id;
 	private final long term;
+	private final Type type;
 	private final Bytes data;
 
-	public DefaultLogEntry(long id, long term, Bytes data)
+	public DefaultLogEntry(long id, long term, Type type, Bytes data)
 	{
 		this.id = id;
 		this.term = term;
+		this.type = type;
 		this.data = data;
 	}
 
 	@Override
-	public long getId()
+	public long getIndex()
 	{
 		return id;
 	}
@@ -26,6 +28,12 @@ public class DefaultLogEntry
 	public long getTerm()
 	{
 		return term;
+	}
+	
+	@Override
+	public Type getType()
+	{
+		return type;
 	}
 
 	@Override

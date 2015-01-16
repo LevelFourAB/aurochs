@@ -126,11 +126,11 @@ public class MVStoreFileStorage
 	{
 		LogEntryData data = log.get(index);
 		if(data == null) return null;
-		return new DefaultLogEntry(data.index, data.term, new BytesImpl(data.data));
+		return new DefaultLogEntry(data.index, data.term, data.type, new BytesImpl(data.data));
 	}
 	
 	@Override
-	public long store(long term, Bytes data)
+	public long store(long term, LogEntry.Type type, Bytes data)
 		throws IOException
 	{
 		byte[] dataId;
@@ -140,7 +140,7 @@ public class MVStoreFileStorage
 		}
 		
 		long nextIndex = last() + 1;
-		log.put(nextIndex, new LogEntryData(nextIndex, term, dataId));
+		log.put(nextIndex, new LogEntryData(nextIndex, term, type, dataId));
 		
 		return nextIndex;
 	}
@@ -187,14 +187,16 @@ public class MVStoreFileStorage
 	
 	private static class LogEntryData
 	{
-		private long index;
-		private long term;
-		private byte[] data;
+		private final long index;
+		private final long term;
+		private final LogEntry.Type type;
+		private final byte[] data;
 		
-		public LogEntryData(long index, long term, byte[] data)
+		public LogEntryData(long index, long term, LogEntry.Type type, byte[] data)
 		{
 			this.index = index;
 			this.term = term;
+			this.type = type;
 			this.data = data;
 		}
 	}
@@ -220,10 +222,11 @@ public class MVStoreFileStorage
 		{
 			long index = buff.getLong();
 			long term = buff.getLong();
+			LogEntry.Type type = LogEntry.Type.values()[buff.get()];
 			int len = buff.getInt();
 			byte[] data = new byte[len];
 			buff.get(data);
-			return new LogEntryData(index, term, data);
+			return new LogEntryData(index, term, type, data);
 		}
 		
 		@Override
@@ -241,6 +244,7 @@ public class MVStoreFileStorage
 			LogEntryData le = (LogEntryData) obj;
 			buff.putLong(le.index);
 			buff.putLong(le.term);
+			buff.put((byte) le.type.ordinal());
 			buff.putInt(le.data.length);
 			buff.put(le.data);
 		}

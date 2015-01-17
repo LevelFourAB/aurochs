@@ -22,7 +22,6 @@ import se.l4.aurochs.config.internal.DefaultConfig;
 import se.l4.aurochs.config.internal.RawFormatReader;
 import se.l4.aurochs.serialization.SerializerCollection;
 
-import com.google.common.io.Closeables;
 import com.google.common.io.InputSupplier;
 
 /**
@@ -187,20 +186,14 @@ public class ConfigBuilder
 		
 		for(InputSupplier<InputStream> supplier : suppliers)
 		{
-			InputStream in = null;
-			try
+			try(InputStream in = supplier.getInput())
 			{
-				in = supplier.getInput();
 				Map<String, Object> readConfig = RawFormatReader.read(in);
 				ConfigResolver.resolveTo(readConfig, data);
 			}
 			catch(IOException e)
 			{
 				throw new ConfigException("Unable to read " + supplier.toString() + "; " + e.getMessage(), e);
-			}
-			finally
-			{
-				Closeables.closeQuietly(in);
 			}
 		}
 		

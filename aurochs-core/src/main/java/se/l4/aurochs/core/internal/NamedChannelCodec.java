@@ -1,17 +1,21 @@
 package se.l4.aurochs.core.internal;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 
 import se.l4.aurochs.core.channel.ChannelCodec;
 import se.l4.aurochs.core.io.ByteMessage;
 import se.l4.aurochs.core.io.Bytes;
 import se.l4.aurochs.core.io.DefaultByteMessage;
 
+import com.google.common.collect.Maps;
 import com.google.common.hash.Hashing;
 
 public class NamedChannelCodec
 	implements ChannelCodec<ByteMessage, Bytes>
 {
+	private static final Map<Long, String> CREATED_CODECS = Maps.newHashMap();
+	
 	private long id;
 
 	public NamedChannelCodec(String name)
@@ -22,6 +26,16 @@ public class NamedChannelCodec
 		);
 		
 		this.id = 1024 + hash;
+		
+		String old = CREATED_CODECS.get(id);
+		if(old == null)
+		{
+			CREATED_CODECS.put(id, name);
+		}
+		else if(! name.equals(old))
+		{
+			throw new Error("Hash conflict detected between `" + name + "` and already registered channel `" + old + "`");
+		}
 	}
 
 	@Override

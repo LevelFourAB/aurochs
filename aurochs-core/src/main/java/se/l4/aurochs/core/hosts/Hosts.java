@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import se.l4.aurochs.core.events.EventHandle;
-import se.l4.aurochs.serialization.Use;
 
 /**
  * Set of host names. The set is used to connect to one or more servers with
@@ -16,7 +15,6 @@ import se.l4.aurochs.serialization.Use;
  * @author Andreas Holstenson
  *
  */
-@Use(HostsSerializer.class)
 public interface Hosts
 {
 	/**

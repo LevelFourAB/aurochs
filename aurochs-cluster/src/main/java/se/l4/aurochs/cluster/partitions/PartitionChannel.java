@@ -1,11 +1,12 @@
 package se.l4.aurochs.cluster.partitions;
 
-import java.util.function.IntFunction;
-
-import se.l4.aurochs.cluster.ClusterChannel;
+import java.util.concurrent.CompletableFuture;
 
 public interface PartitionChannel<T extends PartitionMessage>
-	extends ClusterChannel<T>
 {
-	void sendToAll(IntFunction<PartitionMessage> messageCreator);
+	Partitioner partitioner();
+	
+	<R extends T> CompletableFuture<R> sendToOneOf(int partition, T message);
+	
+	<R extends T> CompletableFuture<R> sendToAll(int partition, T message);
 }

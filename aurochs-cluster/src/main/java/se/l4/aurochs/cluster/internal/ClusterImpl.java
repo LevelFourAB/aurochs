@@ -1,5 +1,6 @@
 package se.l4.aurochs.cluster.internal;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -11,6 +12,9 @@ import org.slf4j.LoggerFactory;
 
 import se.l4.aurochs.cluster.Cluster;
 import se.l4.aurochs.cluster.ServiceBuilder;
+import se.l4.aurochs.cluster.internal.partitions.LocalPartitionsCoordinator;
+import se.l4.aurochs.cluster.internal.partitions.MutablePartitions;
+import se.l4.aurochs.cluster.internal.service.ServiceBuilderImpl;
 import se.l4.aurochs.cluster.nodes.Node;
 import se.l4.aurochs.config.Config;
 import se.l4.aurochs.core.Session;
@@ -24,6 +28,7 @@ import se.l4.aurochs.net.RemoteSession;
 import se.l4.aurochs.net.Server;
 import se.l4.aurochs.net.ServerBuilder;
 import se.l4.aurochs.net.ServerConnection;
+import se.l4.aurochs.serialization.SerializerCollection;
 import se.l4.crayon.services.ManagedService;
 
 import com.google.inject.Inject;
@@ -42,18 +47,30 @@ public class ClusterImpl
 	private final ClusterConfig config;
 	private final Map<Session, Node<ByteMessage>> sessionToNode;
 
+	private final SerializerCollection serializers;
+	
+	private final MutablePartitions<ByteMessage> partitions;
+	private final LocalPartitionsCoordinator partitionCoordinator;
+	
 	private MutableNodes<ByteMessage> coreNodes; 
 	private Server server;
 
 	@Inject
-	public ClusterImpl(Config config, Provider<ServerBuilder> serverBuilders, Provider<ServerConnection> connections)
+	public ClusterImpl(Config config,
+			Provider<ServerBuilder> serverBuilders,
+			Provider<ServerConnection> connections, 
+			SerializerCollection serializers)
 	{
 		this.serverBuilders = serverBuilders;
 		this.connections = connections;
+		this.serializers = serializers;
 		this.config = config.get("cluster", ClusterConfig.class)
 			.getOrDefault(new ClusterConfig());
 		
 		sessionToNode = new ConcurrentHashMap<>();
+		
+		partitions = new MutablePartitions<>(7);
+		partitionCoordinator = new LocalPartitionsCoordinator(serializers, this.config.getStorage(), partitions);
 	}
 	
 	@Override
@@ -130,7 +147,21 @@ public class ClusterImpl
 			}
 		});
 		
-		new ClusterCoordinator(coreNodes, self);
+		File storage = config.getStorage();
+		storage.mkdirs();
+		
+		new ClusterCoordinator(coreNodes, self, storage);
+		
+		// Fire up a static partition table
+		for(int i=0, n=partitions.getTotal(); i<n; i++)
+		{
+			for(Node<ByteMessage> node : coreNodes.list())
+			{
+				partitions.join(i, node);
+			}
+		}
+		
+		partitionCoordinator.start(self);
 	}
 	
 	@Override
@@ -180,8 +211,7 @@ public class ClusterImpl
 	@Override
 	public ServiceBuilder<Bytes> newService(String name)
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return new ServiceBuilderImpl<>(name, partitionCoordinator);
 	}
 	
 	@Override

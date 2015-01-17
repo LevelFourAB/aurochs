@@ -16,7 +16,7 @@ public class ClusterModule
 		bind(Cluster.class).to(ClusterImpl.class);
 	}
 	
-	@Contribution
+	@Contribution(name="cluster")
 	public void provideClusterService(ServiceManager manager, ClusterImpl cluster)
 	{
 		manager.addService(cluster);

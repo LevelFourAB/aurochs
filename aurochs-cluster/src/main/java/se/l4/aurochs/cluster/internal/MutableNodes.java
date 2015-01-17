@@ -1,5 +1,6 @@
 package se.l4.aurochs.cluster.internal;
 
+import java.util.Collection;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.function.Consumer;
@@ -38,6 +39,11 @@ public class MutableNodes<D>
 			NodeEvent<D> event = new NodeEvent<>(NodeEvent.Type.REMOVED, node);
 			events.forEach(in -> in.accept(event));
 		}
+	}
+	
+	public Collection<Node<D>> list()
+	{
+		return nodes;
 	}
 	
 	@Override

@@ -40,6 +40,7 @@ import se.l4.aurochs.core.io.IoConsumer;
 
 import com.carrotsearch.hppc.LongObjectMap;
 import com.carrotsearch.hppc.LongObjectOpenHashMap;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -84,14 +85,15 @@ public class Raft
 	private long commitIndex;
 	private long lastApplied;
 	
+	private final Thread applierThread;
+	private final Condition commitIndexUpdated;
+	
 	private final LongObjectMap<CompletableFuture<Void>> futures;
 
 	private final IoConsumer<Bytes> applier;
 	private final boolean applierVolatile;
-
-	private Thread applierThread;
-
-	private Condition commitIndexUpdated;
+	
+	private final List<NodeEvent<RaftMessage>> nodeChanges;
 	
 	public Raft(StateStorage stateStorage, Log log, Nodes<RaftMessage> nodes, 
 			String id,
@@ -132,6 +134,7 @@ public class Raft
 		
 		lastApplied = stateStorage.getApplyIndex();
 		
+		nodeChanges = Lists.newArrayList();
 		nodes.listen(this::handleNodeEvent);
 		
 		this.self = this.nodes.get(id);
@@ -185,11 +188,38 @@ public class Raft
 	{
 		Node<RaftMessage> node = event.getNode();
 		
-		Channel<RaftMessage> channel = node.getChannel().on(executor);
-		channel.addListener(channelListener);
-		
-		Node<RaftMessage> transformed = new Node<>(node.getId(), channel);
-		nodes.put(node.getId(), transformed);
+		stateLock.lock();
+		try
+		{
+			if(event.getType() == NodeEvent.Type.REMOVED)
+			{
+				if(! nodes.containsKey(node.getId())) return;
+				
+				nodeChanges.add(event);
+				
+				// TODO: Schedule the configuration change
+			}
+			else if(event.getType() == NodeEvent.Type.ADDED)
+			{
+				if(nodes.containsKey(node.getId())) return;
+				
+				nodeChanges.add(event);
+				
+				// TODO: Schedule the configuration change
+			}
+			else if(event.getType() == NodeEvent.Type.INITIAL)
+			{
+				Channel<RaftMessage> channel = node.getChannel().on(executor);
+				channel.addListener(channelListener);
+				
+				Node<RaftMessage> transformed = new Node<>(node.getId(), channel);
+				nodes.put(node.getId(), transformed);
+			}
+		}
+		finally
+		{
+			stateLock.unlock();
+		}
 	}
 	
 	@Override
@@ -318,24 +348,7 @@ public class Raft
 				logger.debug("Got a reply from {} who voted yes, currently {} votes yes", node.getId(), votes.size() + 1);
 				
 				votes.add(node.getId());
-				if(role != Role.LEADER && isMajority(votes.size(), nodes.size()))
-				{
-					cancelElectionTimeout();
-					
-					role = Role.LEADER;
-					leader = self;
-					
-					logger.debug("Became leader, due to having " + votes.size() + " votes of " + nodes.size() + " total");
-					
-					LogEntry lastLogEntry = getLastLogEntry();
-					for(Node<RaftMessage> n : nodes.values())
-					{
-						nodeStates.put(n.getId(), new NodeState(lastLogEntry.getIndex() + 1));
-					}
-					
-					sendHeartbeat();
-					scheduleSendHeartbeat();
-				}
+				maybeBecomeLeader();
 			}
 			else
 			{
@@ -345,6 +358,28 @@ public class Raft
 		finally
 		{
 			stateLock.unlock();
+		}
+	}
+
+	private void maybeBecomeLeader()
+	{
+		if(role != Role.LEADER && isMajority(votes.size(), nodes.size()))
+		{
+			cancelElectionTimeout();
+			
+			role = Role.LEADER;
+			leader = self;
+			
+			logger.debug("Became leader, due to having " + votes.size() + " votes of " + nodes.size() + " total");
+			
+			LogEntry lastLogEntry = getLastLogEntry();
+			for(Node<RaftMessage> n : nodes.values())
+			{
+				nodeStates.put(n.getId(), new NodeState(lastLogEntry.getIndex() + 1));
+			}
+			
+			sendHeartbeat();
+			scheduleSendHeartbeat();
 		}
 	}
 	
@@ -757,6 +792,9 @@ public class Raft
 			sendToAll(new RequestVote(term, id, 0, 0));
 			
 			scheduleElectionTimeout();
+			
+			// In case we are running by ourself, we check if we can become leader early
+			maybeBecomeLeader();
 		}
 		finally
 		{

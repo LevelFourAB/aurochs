@@ -1,5 +1,7 @@
 package se.l4.aurochs.cluster.internal;
 
+import java.io.File;
+
 import se.l4.aurochs.cluster.StateLog;
 import se.l4.aurochs.cluster.internal.raft.RaftBuilder;
 import se.l4.aurochs.cluster.nodes.Nodes;
@@ -17,11 +19,11 @@ public class ClusterCoordinator
 {
 	private final StateLog<Bytes> stateLog;
 
-	public ClusterCoordinator(Nodes<ByteMessage> nodes, String id)
+	public ClusterCoordinator(Nodes<ByteMessage> nodes, String id, File storage)
 	{
 		stateLog = new RaftBuilder<Bytes>()
 			.withNodes(nodes.transform(new NamedChannelCodec("cluster")), id)
-			.inMemory()
+			.stateInFile(new File(storage, "core.log"))
 			.withVolatileApplier(this::applyState)
 			.build();
 	}

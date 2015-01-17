@@ -47,7 +47,8 @@ public class MVStoreFileStorage
 	
 	private void loadState()
 	{
-		this.term = (Long) state.get("term");
+		Long term = (Long) state.get("term");
+		this.term = term == null ? 0 : term.longValue();
 	}
 	
 	@Override
@@ -97,7 +98,8 @@ public class MVStoreFileStorage
 	@Override
 	public long getApplyIndex()
 	{
-		return (Long) state.get("applyIndex");
+		Long apply = (Long) state.get("applyIndex");
+		return apply == null ? 0 : apply.longValue();
 	}
 	
 	@Override

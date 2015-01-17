@@ -1,5 +1,7 @@
 package se.l4.aurochs.cluster.internal;
 
+import java.io.File;
+
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
@@ -31,12 +33,18 @@ public class ClusterConfig
 	private Hosts hosts;
 	
 	@Expose
+	@NotNull
+	private File storage;
+	
+	@Expose
 	@Valid
 	private ServerConfig server;
 	
 	public ClusterConfig()
 	{
+		type = Cluster.MemberType.CLIENT;
 		server = new ServerConfig();
+		storage = new File("cluster");
 	}
 	
 	public String getSelf()
@@ -52,6 +60,11 @@ public class ClusterConfig
 	public Hosts getHosts()
 	{
 		return hosts;
+	}
+	
+	public File getStorage()
+	{
+		return storage;
 	}
 	
 	public ServerConfig getServer()

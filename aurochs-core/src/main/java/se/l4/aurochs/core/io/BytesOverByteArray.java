@@ -29,4 +29,10 @@ public class BytesOverByteArray
 	{
 		return data;
 	}
+	
+	@Override
+	public String toString()
+	{
+		return getClass().getSimpleName() + "{size=" + data.length + "}";
+	}
 }

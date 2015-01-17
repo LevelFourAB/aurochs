@@ -27,6 +27,8 @@ public class CombiningChannel<T>
 	public void send(T message)
 	{
 		Channel[] channels = this.channels;
+		if(channels.length == 0) return;
+		
 		int idx = ThreadLocalRandom.current().nextInt(channels.length);
 		channels[idx].send(message);
 	}

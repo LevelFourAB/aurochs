@@ -67,4 +67,34 @@ public interface ChannelCodec<From, To>
 			}
 		};
 	}
+	
+	default <T> ChannelCodec<From, T> then(ChannelCodec<To, T> codec)
+	{
+		ChannelCodec<From, To> self = this;
+		return new ChannelCodec<From, T>()
+		{
+			@Override
+			public boolean accepts(From in)
+			{
+				return self.accepts(in);
+			}
+			
+			@Override
+			public T fromSource(From object)
+			{
+				To to = self.fromSource(object);
+				if(codec.accepts(to))
+				{
+					return codec.fromSource(to);
+				}
+				return null;
+			}
+			
+			@Override
+			public From toSource(T object)
+			{
+				return self.toSource(codec.toSource(object));
+			}
+		};
+	}
 }

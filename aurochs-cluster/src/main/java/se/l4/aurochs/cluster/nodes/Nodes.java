@@ -26,6 +26,11 @@ public interface Nodes<D>
 	 */
 	Node<D> get(String id);
 	
+	default boolean has(String node)
+	{
+		return get(node) != null;
+	}
+	
 	default <T> Nodes<T> transform(ChannelCodec<D, T> codec)
 	{
 		return new TransformedNodes<>(this, codec);

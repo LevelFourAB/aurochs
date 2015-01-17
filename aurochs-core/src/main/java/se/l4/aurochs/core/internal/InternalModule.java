@@ -8,6 +8,7 @@ import se.l4.aurochs.config.Config;
 import se.l4.aurochs.config.ConfigBuilder;
 import se.l4.aurochs.config.internal.FileSerializer;
 import se.l4.aurochs.core.SerializerRegistration;
+import se.l4.aurochs.core.hosts.HostsModule;
 import se.l4.aurochs.core.spi.Sessions;
 import se.l4.aurochs.serialization.DefaultSerializerCollection;
 import se.l4.aurochs.serialization.SerializerCollection;
@@ -40,6 +41,7 @@ public class InternalModule
 	protected void configure()
 	{
 		install(new ServicesModule());
+		install(new HostsModule());
 		
 		bind(Sessions.class).to(SessionsImpl.class);
 		

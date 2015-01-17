@@ -26,6 +26,7 @@ import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.core.joran.spi.JoranException;
 
 import com.google.common.base.Joiner;
+import com.google.common.base.Throwables;
 import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.google.inject.Stage;
@@ -253,15 +254,24 @@ public class Application
 		
 		configureLogging();
 		
-		InternalModule internalModule = new InternalModule(configFiles);
-		Injector injector = configurator
-			.setLogger(NOPLogger.NOP_LOGGER)
-			.add(internalModule)
-			.add(new AutoLoaderModule(packages))
-			.setLogger(logger)
-			.configure();
-		
-		return new SystemSessionImpl(injector);
+		try
+		{
+			InternalModule internalModule = new InternalModule(configFiles);
+			Injector injector = configurator
+				.setLogger(NOPLogger.NOP_LOGGER)
+				.add(internalModule)
+				.add(new AutoLoaderModule(packages))
+				.setLogger(logger)
+				.configure();
+			
+			return new SystemSessionImpl(injector);
+		}
+		catch(Throwable t)
+		{
+			logger.error("Unable to start application " + identifier + "; " + t.getMessage(), t);
+			
+			throw Throwables.propagate(t);
+		}
 	}
 	
 	private void configureLogging()

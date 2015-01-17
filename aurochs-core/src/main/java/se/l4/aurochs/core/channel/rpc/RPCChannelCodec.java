@@ -29,10 +29,9 @@ public class RPCChannelCodec<T>
 	{
 		try(ExtendedDataInput in = object.asDataInput())
 		{
-			int tag = in.readByte();
+			int tag = in.readUnsignedByte();
 			long id = in.readVLong();
 			T payload = subCodec.fromSource(in.readBytes());
-			
 			switch(tag)
 			{
 				case 0:

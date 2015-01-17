@@ -9,8 +9,8 @@ public class LocalChannel<T>
 
 	public LocalChannel()
 	{
-		incoming = new ActualChannel<>();
-		outgoing = new ActualChannel<>();
+		incoming = new ActualChannel<>(true);
+		outgoing = new ActualChannel<>(false);
 		
 		incoming.other = outgoing;
 		outgoing.other = incoming;
@@ -34,7 +34,13 @@ public class LocalChannel<T>
 	private static class ActualChannel<T>
 		extends AbstractChannel<T>
 	{
+		private final boolean incoming;
 		private ActualChannel<T> other;
+		
+		public ActualChannel(boolean incoming)
+		{
+			this.incoming = incoming;
+		}
 		
 		@Override
 		public void send(T message)
@@ -45,6 +51,12 @@ public class LocalChannel<T>
 		@Override
 		public void close()
 		{
+		}
+		
+		@Override
+		public String toString()
+		{
+			return (incoming ? "Incoming" : "Outgoing") + "Channel";
 		}
 	}
 }

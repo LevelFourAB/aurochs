@@ -54,6 +54,9 @@ public class MutablePartitions<T>
 			if(nodes.add(new NodeInfo<T>(partition, node)))
 			{
 				partitionToNode[partition].addNode(node);
+				
+				PartitionEvent<T> event = new PartitionEvent<T>(PartitionEvent.Type.JOINED, partition, node);
+				events.forEach(l -> l.accept(event));
 			}
 		}
 		finally
@@ -70,6 +73,9 @@ public class MutablePartitions<T>
 			if(nodes.remove(new NodeInfo<T>(partition, node)))
 			{
 				partitionToNode[partition].removeNode(node);
+				
+				PartitionEvent<T> event = new PartitionEvent<T>(PartitionEvent.Type.LEFT, partition, node);
+				events.forEach(l -> l.accept(event));
 			}
 		}
 		finally

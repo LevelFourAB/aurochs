@@ -15,6 +15,12 @@ public class PartitionerImpl
 	}
 	
 	@Override
+	public int total()
+	{
+		return partitions.getTotal();
+	}
+	
+	@Override
 	public int partition(byte[] data)
 	{
 		return hash(data) % partitions.getTotal();
@@ -32,6 +38,24 @@ public class PartitionerImpl
 		return hash(id) % partitions.getTotal();
 	}
 	
+	@Override
+	public int partition(Object id)
+	{
+		if(id instanceof String)
+		{
+			return partition((String) id);
+		}
+		else if(id instanceof byte[])
+		{
+			return partition((byte[]) id);
+		}
+		else if(id instanceof Number)
+		{
+			return partition(((Number) id).longValue());
+		}
+		
+		throw new IllegalArgumentException("Unsupported id: " + id);
+	}
 
 	private int hash(String string)
 	{

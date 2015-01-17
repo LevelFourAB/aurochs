@@ -21,6 +21,7 @@ public class RPCHelper<T>
 		futures = new ConcurrentHashMap<>();
 	}
 	
+	@SuppressWarnings("unchecked")
 	public <R extends T> CompletableFuture<R> request(T request, Consumer<RpcRequest<T>> sender)
 	{
 		long id = counter.incrementAndGet();
@@ -28,14 +29,14 @@ public class RPCHelper<T>
 			.whenComplete((a, b) -> futures.remove(this));
 		
 		RpcRequest<T> rpc = new DefaultRPCRequest<>(id, request);
-		futures.put(id, (CompletableFuture) future);
+		futures.put(id, (CompletableFuture<T>) future);
 		
 		sender.accept(rpc);
 		
 		return future;
 	}
 	
-	public void accept(RpcMessage message, Consumer<RpcReply<T>> sender)
+	public void accept(RpcMessage<T> message, Consumer<RpcReply<T>> sender)
 	{
 		if(message instanceof RpcRequest)
 		{
@@ -48,7 +49,7 @@ public class RPCHelper<T>
 		}
 		else if(message instanceof RpcReply)
 		{
-			RpcReply<T> reply = (RpcReply) message;
+			RpcReply<T> reply = (RpcReply<T>) message;
 			CompletableFuture<T> future = futures.get(reply.getRequestId());
 			if(future != null)
 			{

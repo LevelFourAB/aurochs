@@ -6,12 +6,14 @@ import se.l4.aurochs.core.channel.Channel;
 public class Node<T>
 {
 	private final String id;
-	private final Channel<T> channel;
+	private final Channel<T> incoming;
+	private final Channel<T> outgoing;
 	
-	public Node(String id, Channel<T> channel)
+	public Node(String id, Channel<T> incoming, Channel<T> outgoing)
 	{
 		this.id = id;
-		this.channel = channel;
+		this.incoming = incoming;
+		this.outgoing = outgoing;
 	}
 	
 	public String getId()
@@ -19,9 +21,14 @@ public class Node<T>
 		return id;
 	}
 	
-	public Channel<T> getChannel()
+	public Channel<T> incoming()
 	{
-		return channel;
+		return incoming;
+	}
+	
+	public Channel<T> outgoing()
+	{
+		return outgoing;
 	}
 
 	@Override

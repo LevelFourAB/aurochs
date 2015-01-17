@@ -209,10 +209,10 @@ public class Raft
 			}
 			else if(event.getType() == NodeEvent.Type.INITIAL)
 			{
-				Channel<RaftMessage> channel = node.getChannel().on(executor);
+				Channel<RaftMessage> channel = node.incoming().on(executor);
 				channel.addListener(channelListener);
 				
-				Node<RaftMessage> transformed = new Node<>(node.getId(), channel);
+				Node<RaftMessage> transformed = new Node<>(node.getId(), channel, node.outgoing());
 				nodes.put(node.getId(), transformed);
 			}
 		}
@@ -257,9 +257,14 @@ public class Raft
 		try
 		{
 			long id = log.store(stateStorage.getCurrentTerm(), LogEntry.Type.DATA, data);
+			logger.debug("New log entry with index {}", id);
 			
 			CompletableFuture<Void> future = new CompletableFuture<>();
 			futures.put(id, future);
+			
+			NodeState state = nodeStates.get(self.getId());
+			state.matchIndex = id;
+			updateCommitIndex();
 			
 			// TODO: Should we send a heartbeat every time we do something?
 			sendHeartbeat();
@@ -377,6 +382,10 @@ public class Raft
 			{
 				nodeStates.put(n.getId(), new NodeState(lastLogEntry.getIndex() + 1));
 			}
+			
+			NodeState state = nodeStates.get(self);
+			state.matchIndex = lastLogEntry.getIndex();
+			updateCommitIndex();
 			
 			sendHeartbeat();
 			scheduleSendHeartbeat();
@@ -596,7 +605,7 @@ public class Raft
 			try
 			{
 				applyUpTo = lastApplied;
-				while(applyUpTo == commitIndex)
+				while(applyUpTo >= commitIndex)
 				{
 					commitIndexUpdated.await();
 				}
@@ -614,7 +623,7 @@ public class Raft
 			}
 			
 			// Commit all items from lastApplied up to and including index
-			logger.debug("Committing up to {}", applyUpTo);
+			logger.debug("Committing up to {} from {}", applyUpTo, applyFrom);
 			
 			for(long l=applyFrom; l<=applyUpTo; l++)
 			{
@@ -860,7 +869,7 @@ public class Raft
 		{
 			if(n != self)
 			{
-				n.getChannel().send(msg);
+				n.outgoing().send(msg);
 			}
 		}
 	}
@@ -873,7 +882,7 @@ public class Raft
 	 */
 	private void sendTo(Node<RaftMessage> node, RaftMessage msg)
 	{
-		node.getChannel().send(msg);
+		node.outgoing().send(msg);
 	}
 
 	enum Role

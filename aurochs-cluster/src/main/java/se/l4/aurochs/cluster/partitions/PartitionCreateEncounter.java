@@ -7,7 +7,7 @@ import java.util.function.Function;
 import se.l4.aurochs.cluster.StateLogBuilder;
 import se.l4.aurochs.core.io.Bytes;
 
-public interface PartitionCreateEncounter<T extends PartitionMessage>
+public interface PartitionCreateEncounter<T>
 {
 	/**
 	 * Get a data directory suitable for storing data for the service being created.

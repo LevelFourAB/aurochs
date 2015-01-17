@@ -12,7 +12,6 @@ import se.l4.aurochs.cluster.internal.raft.RaftBuilder;
 import se.l4.aurochs.cluster.nodes.Nodes;
 import se.l4.aurochs.cluster.partitions.PartitionChannel;
 import se.l4.aurochs.cluster.partitions.PartitionCreateEncounter;
-import se.l4.aurochs.cluster.partitions.PartitionMessage;
 import se.l4.aurochs.cluster.partitions.PartitionService;
 import se.l4.aurochs.core.channel.ChannelCodec;
 import se.l4.aurochs.core.internal.NamedChannelCodec;
@@ -49,7 +48,7 @@ public class LocalPartition
 		services = Maps.newHashMap();
 	}
 	
-	public <T extends PartitionMessage> void startService(PartitionServiceRegistration<T> registration)
+	public <T> void startService(PartitionServiceRegistration<T> registration)
 	{
 		Encounter<T> encounter = new Encounter<>(registration.getName(), registration.getChannel());
 		PartitionService<T> service = registration.getFactory().apply(encounter);
@@ -65,7 +64,7 @@ public class LocalPartition
 		handle.stop();
 	}
 	
-	private class Encounter<T extends PartitionMessage>
+	private class Encounter<T>
 		implements PartitionCreateEncounter<T>
 	{
 		private final File file;
@@ -92,7 +91,7 @@ public class LocalPartition
 		@Override
 		public PartitionChannel<T> createChannel(Function<T, CompletableFuture<T>> messageHandler)
 		{
-			return ((PartitionChannelImpl<T>) channel).withRequestHandler(messageHandler);
+			return ((ServicePartitionChannel<T>) channel).forPartition(partition, messageHandler);
 		}
 		
 		@Override

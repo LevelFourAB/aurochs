@@ -5,6 +5,7 @@ import java.util.function.Consumer;
 
 import se.l4.aurochs.cluster.nodes.Node;
 import se.l4.aurochs.cluster.nodes.Nodes;
+import se.l4.aurochs.core.channel.Channel;
 import se.l4.aurochs.core.channel.ChannelCodec;
 import se.l4.aurochs.core.events.EventHandle;
 
@@ -33,7 +34,18 @@ public class TransformedPartitions<O, T>
 			Node<T> transformed = nodes.get(node);
 			if(transformed == null)
 			{
-				transformed = new Node<>(node.getId(), node.getChannel().transform(codec));
+				Channel<T> incoming;
+				Channel<T> outgoing;
+				if(node.incoming() == node.outgoing())
+				{
+					incoming = outgoing = node.incoming().transform(codec);
+				}
+				else
+				{
+					incoming = node.incoming().transform(codec);
+					outgoing = node.outgoing().transform(codec);
+				}
+				transformed = new Node<>(node.getId(), incoming, outgoing);
 				nodes.put(node, transformed);
 			}
 			

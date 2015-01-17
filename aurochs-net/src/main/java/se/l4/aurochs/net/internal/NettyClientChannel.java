@@ -280,7 +280,8 @@ public class NettyClientChannel
 			return;
 		}
 		
-		current[0].writeAndFlush(message);
+		int idx = ThreadLocalRandom.current().nextInt(this.channels.length);
+		current[idx].writeAndFlush(message);
 	}
 	
 	@Override

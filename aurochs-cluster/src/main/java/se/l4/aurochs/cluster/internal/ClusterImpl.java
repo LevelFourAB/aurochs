@@ -19,6 +19,7 @@ import se.l4.aurochs.cluster.nodes.Node;
 import se.l4.aurochs.config.Config;
 import se.l4.aurochs.core.Session;
 import se.l4.aurochs.core.channel.CombiningChannel;
+import se.l4.aurochs.core.channel.LocalChannel;
 import se.l4.aurochs.core.hosts.Hosts;
 import se.l4.aurochs.core.internal.NamedChannelCodec;
 import se.l4.aurochs.core.io.ByteMessage;
@@ -139,11 +140,12 @@ public class ClusterImpl
 				
 				CombiningChannel<ByteMessage> channel = new CombiningChannel<>();
 				channel.addChannel(session.getRawChannel());
-				coreNodes.addNode(new Node<>(id, channel));
+				coreNodes.addNode(new Node<>(id, channel, channel));
 			}
 			else
 			{
-				coreNodes.addNode(new Node<>(id, new CombiningChannel<>()));
+				LocalChannel<ByteMessage> channel = LocalChannel.create();
+				coreNodes.addNode(new Node<>(id, channel.getIncoming(), channel.getOutgoing()));
 			}
 		});
 		
@@ -182,7 +184,7 @@ public class ClusterImpl
 				Node<ByteMessage> node = coreNodes.get(id);
 				if(node != null)
 				{
-					((CombiningChannel) node.getChannel()).addChannel(session.getRawChannel());
+					((CombiningChannel) node.incoming()).addChannel(session.getRawChannel());
 					sessionToNode.put(session, node);
 				}
 			}
@@ -199,7 +201,7 @@ public class ClusterImpl
 		Node<ByteMessage> node = sessionToNode.remove(session);
 		if(node == null) return;
 		
-		((CombiningChannel) node.getChannel()).removeChannel(session.getRawChannel());
+		((CombiningChannel) node.incoming()).removeChannel(session.getRawChannel());
 	}
 	
 	@Override

@@ -39,6 +39,15 @@ public abstract class AbstractChannel<T>
 		{
 			ChannelListener[] listeners = this.listeners;
 			
+			for(int i=0, n=listeners.length; i<n; i++)
+			{
+				if(listeners[i] == listener)
+				{
+					// Already registered
+					return;
+				}
+			}
+			
 			ChannelListener[] result = new ChannelListener[listeners.length + 1];
 			System.arraycopy(listeners, 0, result, 0, listeners.length);
 			result[listeners.length] = listener;

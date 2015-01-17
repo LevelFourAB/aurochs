@@ -2,7 +2,7 @@ package se.l4.aurochs.cluster.partitions;
 
 import java.util.concurrent.CompletableFuture;
 
-public interface PartitionChannel<T extends PartitionMessage>
+public interface PartitionChannel<T>
 {
 	Partitioner partitioner();
 	

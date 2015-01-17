@@ -4,10 +4,9 @@ import java.util.function.Function;
 
 import se.l4.aurochs.cluster.partitions.PartitionChannel;
 import se.l4.aurochs.cluster.partitions.PartitionCreateEncounter;
-import se.l4.aurochs.cluster.partitions.PartitionMessage;
 import se.l4.aurochs.cluster.partitions.PartitionService;
 
-public class PartitionServiceRegistration<T extends PartitionMessage>
+public class PartitionServiceRegistration<T>
 {
 	private final String name;
 	private final PartitionChannel<T> channel;

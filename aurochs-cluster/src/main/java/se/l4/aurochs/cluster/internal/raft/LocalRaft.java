@@ -33,7 +33,10 @@ public class LocalRaft
 			for(String n : allNodes)
 			{
 				LocalChannel<Object> local = channels.get(n);
-				nodes.add(new Node<>(n, n.equals(node) ? local.getIncoming() : local.getOutgoing()));
+				nodes.add(new Node<>(n,
+					n.equals(node) ? local.getIncoming() : local.getOutgoing(),
+					! n.equals(node) ? local.getIncoming() : local.getOutgoing()
+				));
 			}
 			
 			result.put(node, new Raft(new InMemoryStateStorage(), new InMemoryLog(), new StaticNodes(nodes), node, (in) -> {}, false));

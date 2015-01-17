@@ -2,6 +2,7 @@ package se.l4.aurochs.net.internal;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelPipeline;
+import io.netty.handler.timeout.IdleStateHandler;
 
 import java.io.IOException;
 import java.util.concurrent.Executor;
@@ -90,7 +91,7 @@ public class DefaultTransportFunctions
 		pipeline.addLast("encoder", new ByteMessageEncoder());
 		
 		// Idle state
-//		pipeline.addLast("idleStateHandler", new IdleStateHandler(15, 5, 0));
+		pipeline.addLast("idleStateHandler", new IdleStateHandler(15, 5, 0));
 		
 		// Actual handler
 		pipeline.addLast("messaging", new MessagingHandler(messageExecutor, messageReceiver));

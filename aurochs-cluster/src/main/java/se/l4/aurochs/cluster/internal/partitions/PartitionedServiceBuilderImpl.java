@@ -5,7 +5,6 @@ import java.util.function.Function;
 
 import se.l4.aurochs.cluster.partitions.PartitionChannel;
 import se.l4.aurochs.cluster.partitions.PartitionCreateEncounter;
-import se.l4.aurochs.cluster.partitions.PartitionMessage;
 import se.l4.aurochs.cluster.partitions.PartitionService;
 import se.l4.aurochs.cluster.partitions.PartitionedServiceBuilder;
 import se.l4.aurochs.core.channel.ChannelCodec;
@@ -17,7 +16,7 @@ import se.l4.aurochs.core.io.ByteMessage;
 import se.l4.aurochs.core.io.Bytes;
 import se.l4.aurochs.serialization.SerializerCollection;
 
-public class PartitionedServiceBuilderImpl<T extends PartitionMessage>
+public class PartitionedServiceBuilderImpl<T>
 	implements PartitionedServiceBuilder<T>
 {
 	private final SerializerCollection serializers;
@@ -37,14 +36,14 @@ public class PartitionedServiceBuilderImpl<T extends PartitionMessage>
 	}
 
 	@Override
-	public <O extends PartitionMessage> PartitionedServiceBuilder<O> withCodec(ChannelCodec<Bytes, O> codec)
+	public <O> PartitionedServiceBuilder<O> withCodec(ChannelCodec<Bytes, O> codec)
 	{
 		this.codec = (ChannelCodec) codec;
 		return (PartitionedServiceBuilder) this;
 	}
 
 	@Override
-	public <O extends PartitionMessage> PartitionedServiceBuilder<O> withSerializingCodec(Class<O> type)
+	public <O> PartitionedServiceBuilder<O> withSerializingCodec(Class<O> type)
 	{
 		return withCodec(SerializationCodec.newDynamicCodec(serializers, type));
 	}
@@ -54,12 +53,11 @@ public class PartitionedServiceBuilderImpl<T extends PartitionMessage>
 	{
 		if(codec == null) throw new IllegalArgumentException("A ChannelCodec must be specified");
 		
-		ChannelCodec<ByteMessage, RpcMessage<T>> channelCodec = new NamedChannelCodec("service:" + name)
-			.then(new RPCChannelCodec<T>(codec));
+		ChannelCodec<ByteMessage, RpcMessage<PartitionMessage<T>>> channelCodec = new NamedChannelCodec("service:" + name)
+			.then(new RPCChannelCodec<>(new PartitionMessageCodec<>(codec)));
 		
-		PartitionChannelImpl<T> channel = new PartitionChannelImpl<>(
-			new TransformedPartitions<>(partitions, channelCodec),
-			req -> null
+		ServicePartitionChannel<T> channel = new ServicePartitionChannel<>(
+			new TransformedPartitions<>(partitions, channelCodec)
 		);
 		
 		finisher.accept(new PartitionServiceRegistration<>(name, channel, service));

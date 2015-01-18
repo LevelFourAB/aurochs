@@ -383,7 +383,7 @@ public class Raft
 				nodeStates.put(n.getId(), new NodeState(lastLogEntry.getIndex() + 1));
 			}
 			
-			NodeState state = nodeStates.get(self);
+			NodeState state = nodeStates.get(self.getId());
 			state.matchIndex = lastLogEntry.getIndex();
 			updateCommitIndex();
 			

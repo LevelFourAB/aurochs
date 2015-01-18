@@ -57,7 +57,7 @@ public class RaftChannelCodec
 					{
 						long entryIndex = in.readVLong();
 						long entryTerm = in.readVLong();
-						int type = in.readVInt();
+						int type = in.readUnsignedByte();
 						Bytes bytes = in.readBytes();
 						entries.add(new DefaultLogEntry(entryIndex, entryTerm, LogEntry.Type.values()[type], bytes));
 					}
@@ -120,6 +120,7 @@ public class RaftChannelCodec
 			{
 				out.writeVLong(e.getIndex());
 				out.writeVLong(e.getTerm());
+				out.writeByte(e.getType().ordinal());
 				out.writeBytes(e.getData());
 			}
 		}

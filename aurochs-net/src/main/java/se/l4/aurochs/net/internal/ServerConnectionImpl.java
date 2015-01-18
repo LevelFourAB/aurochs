@@ -46,11 +46,15 @@ public class ServerConnectionImpl
 
 	private Consumer<Channel<ByteMessage>> initializer;
 
+	private int minConnections;
+
 	@Inject
 	public ServerConnectionImpl(Injector injector, TransportFunctions functions)
 	{
 		this.injector = injector;
 		this.functions = functions;
+		
+		minConnections = 1;
 		
 		tlsMode = TLSMode.AUTOMATIC;
 		trustManager = SslHelper.TRUSTING;
@@ -112,6 +116,13 @@ public class ServerConnectionImpl
 	}
 	
 	@Override
+	public ServerConnection setMinConnections(int minConnections)
+	{
+		this.minConnections = minConnections;
+		return this;
+	}
+	
+	@Override
 	public RemoteSession connect()
 	{
 		if(hosts == null)
@@ -133,7 +144,7 @@ public class ServerConnectionImpl
 		);
 		
 		EventLoopGroup group = new NioEventLoopGroup();
-		NettyClientChannel channel = new NettyClientChannel(group, functions, executor, tlsMode, trustManager, hosts, initializer);
+		NettyClientChannel channel = new NettyClientChannel(group, functions, executor, tlsMode, trustManager, hosts, minConnections, initializer);
 		
 		channel.start();
 		

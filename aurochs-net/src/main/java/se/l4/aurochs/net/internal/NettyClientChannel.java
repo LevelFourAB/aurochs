@@ -68,6 +68,7 @@ public class NettyClientChannel
 			TLSMode tlsMode,
 			TrustManager trustManager,
 			Collection<URI> hosts,
+			int minConnections,
 			Consumer<se.l4.aurochs.core.channel.Channel<ByteMessage>> initializer)
 	{
 		this.group = group;
@@ -79,7 +80,7 @@ public class NettyClientChannel
 		this.initializer = initializer;
 		
 		scheduler = Executors.newScheduledThreadPool(1); // TODO: Should we share this between all connections?
-		connections = 1;
+		connections = minConnections;
 		
 		this.channelGroup = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
 		channels = new Channel[0];

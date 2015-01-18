@@ -89,6 +89,14 @@ public interface ServerConnection
 	ServerConnection setChannelInitializer(Consumer<Channel<ByteMessage>> initializer);
 	
 	/**
+	 * Set the minimum amount of connections to keep to the server.
+	 * 
+	 * @param minConnections
+	 * @return
+	 */
+	ServerConnection setMinConnections(int minConnections);
+	
+	/**
 	 * Start the connection, returning a new session. This method will not block and wait for
 	 * the connection to be established. Use {@link RemoteSession#connectionFuture()} to wait for
 	 * the connection.

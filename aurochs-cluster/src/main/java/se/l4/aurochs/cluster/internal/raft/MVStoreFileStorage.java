@@ -154,8 +154,7 @@ public class MVStoreFileStorage
 		Iterator<Long> it = log.keyIterator(index);
 		while(it.hasNext())
 		{
-			it.next();
-			it.remove();
+			log.remove(it.next());
 		}
 	}
 	

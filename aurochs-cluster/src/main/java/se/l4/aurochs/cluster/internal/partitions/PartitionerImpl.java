@@ -23,19 +23,19 @@ public class PartitionerImpl
 	@Override
 	public int partition(byte[] data)
 	{
-		return hash(data) % partitions.getTotal();
+		return (int) (Integer.toUnsignedLong(hash(data)) % partitions.getTotal());
 	}
 	
 	@Override
 	public int partition(long id)
 	{
-		return hash(id) % partitions.getTotal();
+		return (int) (Integer.toUnsignedLong(hash(id)) % partitions.getTotal());
 	}
 	
 	@Override
 	public int partition(String id)
 	{
-		return hash(id) % partitions.getTotal();
+		return (int) (Integer.toUnsignedLong(hash(id)) % partitions.getTotal());
 	}
 	
 	@Override

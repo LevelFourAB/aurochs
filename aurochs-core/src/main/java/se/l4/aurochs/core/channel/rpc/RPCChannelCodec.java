@@ -31,7 +31,7 @@ public class RPCChannelCodec<T>
 		{
 			int tag = in.readUnsignedByte();
 			long id = in.readVLong();
-			T payload = subCodec.fromSource(in.readBytes());
+			T payload = subCodec.fromSource(in.readTemporaryBytes());
 			switch(tag)
 			{
 				case 0:

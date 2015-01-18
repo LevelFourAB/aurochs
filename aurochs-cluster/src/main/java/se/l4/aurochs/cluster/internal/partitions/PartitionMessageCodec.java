@@ -30,7 +30,7 @@ public class PartitionMessageCodec<T>
 		try(ExtendedDataInput in = object.asDataInput())
 		{
 			int partition = in.readVInt();
-			T payload = subCodec.fromSource(in.readBytes());
+			T payload = subCodec.fromSource(in.readTemporaryBytes());
 			
 			return new PartitionMessage<T>(partition, payload);
 		}

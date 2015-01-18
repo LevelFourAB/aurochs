@@ -13,6 +13,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -26,6 +27,8 @@ import se.l4.aurochs.cluster.internal.raft.log.Log;
 import se.l4.aurochs.cluster.internal.raft.log.LogEntry;
 import se.l4.aurochs.cluster.internal.raft.messages.AppendEntries;
 import se.l4.aurochs.cluster.internal.raft.messages.AppendEntriesReply;
+import se.l4.aurochs.cluster.internal.raft.messages.ClientAddToLog;
+import se.l4.aurochs.cluster.internal.raft.messages.ClientAddToLogReply;
 import se.l4.aurochs.cluster.internal.raft.messages.RaftMessage;
 import se.l4.aurochs.cluster.internal.raft.messages.RequestVote;
 import se.l4.aurochs.cluster.internal.raft.messages.RequestVoteReply;
@@ -89,19 +92,32 @@ public class Raft
 	private final Condition commitIndexUpdated;
 	
 	private final LongObjectMap<CompletableFuture<Void>> futures;
+	private final AtomicLong futureIds;
 
 	private final IoConsumer<Bytes> applier;
 	private final boolean applierVolatile;
 	
 	private final List<NodeEvent<RaftMessage>> nodeChanges;
+
+	private int heartbeatTime;
+	private int minTimeout;
+	private int maxTimeout;
 	
 	public Raft(StateStorage stateStorage, Log log, Nodes<RaftMessage> nodes, 
 			String id,
 			IoConsumer<Bytes> applier,
-			boolean applierVolatile)
+			boolean applierVolatile,
+			int heartbeat,
+			int minTimeout,
+			int maxTimeout)
 	{
 		this.applier = applier;
 		this.applierVolatile = applierVolatile;
+		
+		this.heartbeatTime = heartbeat;
+		this.minTimeout = minTimeout;
+		this.maxTimeout = maxTimeout;
+		
 		this.logger = LoggerFactory.getLogger(Raft.class.getName() + "[" + id + "]");
 		
 		this.stateStorage = stateStorage;
@@ -110,6 +126,7 @@ public class Raft
 		this.id = id;
 		
 		futures = new LongObjectOpenHashMap<>();
+		futureIds = new AtomicLong();
 		
 		ThreadFactory threadFactory = new ThreadFactoryBuilder()
 			.setNameFormat("Raft[" + id + "] %s")
@@ -180,6 +197,14 @@ public class Raft
 				{
 					handleAppendEntriesReply(node, (AppendEntriesReply) message);
 				}
+				else if(message instanceof ClientAddToLog)
+				{
+					handleClientAddToLog(node, (ClientAddToLog) message);
+				}
+				else if(message instanceof ClientAddToLogReply)
+				{
+					handleClientAddToLogReply(node, (ClientAddToLogReply) message);
+				}
 			}
 		};
 	}
@@ -236,7 +261,7 @@ public class Raft
 		stateLock.lock();
 		try
 		{
-			if(leader == self)
+			if(leader == self && role == Role.LEADER)
 			{
 				return requestAppendEntry(entry);
 			}
@@ -283,8 +308,54 @@ public class Raft
 	
 	private CompletableFuture<Void> forwardAppendEntryToLeader(Bytes data)
 	{
-		return null;
+		stateLock.lock();
+		try
+		{
+			if(leader == null || (leader == self && role != Role.LEADER))
+			{
+				// TODO: Unstable, wait until we switch leader
+				return null;
+			}
+			
+			long id = futureIds.incrementAndGet();
+			CompletableFuture<Void> future = new CompletableFuture<>();
+			futures.put(-id, future);
+			sendTo(leader, new ClientAddToLog(self.getId(), stateStorage.getCurrentTerm(), id, data));
+			return future;
+		}
+		finally
+		{
+			stateLock.unlock();
+		}
 	}
+	
+	protected void handleClientAddToLog(Node<RaftMessage> node, ClientAddToLog message)
+	{
+		logger.info("Requested add from non leader " +  node + " with id " + message.getId());
+		
+		long id = message.getId();
+		requestAppendEntry(message.getData())
+			.whenComplete((r, ex) -> {
+				if(ex == null)
+				{
+					sendTo(node, new ClientAddToLogReply(self.getId(), stateStorage.getCurrentTerm(), id));
+				}
+				
+				// TODO: Do we need to handle the exception?
+			});
+	}
+	
+	protected void handleClientAddToLogReply(Node<RaftMessage> node, ClientAddToLogReply message)
+	{
+		Long fid = -message.getId();
+		CompletableFuture<Void> future = futures.get(fid);
+		if(future != null)
+		{
+			future.complete(null);
+			futures.remove(fid);
+		}
+	}
+
 	
 	/**
 	 * Handler for when a candidate node asks us to vote for them.
@@ -318,7 +389,8 @@ public class Raft
 			
 			String vote = stateStorage.getVote(newTerm);
 			LogEntry lastLogEntry = getLastLogEntry();
-			if((vote == null || vote.equals(node.getId())) && lastLogEntry.getIndex() <= message.getLastLogIndex())
+			boolean upToDate = lastLogEntry.getIndex() <= message.getLastLogIndex();
+			if((vote == null || vote.equals(node.getId())) && upToDate)
 			{
 				logger.debug("First vote, voting yes to node {}", node.getId());
 				stateStorage.updateVote(message.getTerm(), node.getId());
@@ -327,7 +399,14 @@ public class Raft
 			}
 			
 			// Vote no to this node
-			logger.debug("Already voted for {} instead of {}, voting no", vote, node.getId());
+			if(upToDate)
+			{
+				logger.debug("Already voted for {} instead of {}, voting no", vote, node.getId());
+			}
+			else
+			{
+				logger.debug("Candidate not as up to date as us, our last log entry is {} and candidates is {}. Voting no", lastLogEntry.getIndex(), message.getLastLogIndex());
+			}
 			sendTo(node, new RequestVoteReply(id, newTerm, false));
 		}
 		finally
@@ -375,7 +454,8 @@ public class Raft
 			role = Role.LEADER;
 			leader = self;
 			
-			logger.debug("Became leader, due to having " + votes.size() + " votes of " + nodes.size() + " total");
+			logger.info("Term " + stateStorage.getCurrentTerm() + ": Became leader");
+			logger.debug("Had {} votes of {} total", votes.size(), nodes.size());
 			
 			LogEntry lastLogEntry = getLastLogEntry();
 			for(Node<RaftMessage> n : nodes.values())
@@ -415,6 +495,7 @@ public class Raft
 				
 				// And update our local leader
 				leader = node;
+				logger.info("Term " + stateStorage.getCurrentTerm() + ": " + node.getId() + " became leader");
 				
 				term = message.getTerm();
 			}
@@ -665,6 +746,8 @@ public class Raft
 		// Update the state
 		stateStorage.updateCurrentTerm(term);
 		role = Role.FOLLOWER;
+		
+		leader = null;
 	}
 	
 	private LogEntry getLastLogEntry()
@@ -683,7 +766,7 @@ public class Raft
 	
 	private LogEntry getLogEntry(long id)
 	{
-		if(id == 0) return LOG_HEAD;
+		if(id <= 0) return LOG_HEAD;
 		if(id > log.last()) return null;
 		
 		try
@@ -706,8 +789,11 @@ public class Raft
 		{
 			if(role != Role.LEADER)
 			{
-				heartbeat.cancel(false);
-				heartbeat = null;
+				if(heartbeat != null)
+				{
+					heartbeat.cancel(false);
+					heartbeat = null;
+				}
 				return;
 			}
 			
@@ -798,7 +884,8 @@ public class Raft
 			votes.clear();
 			votes.add(id);
 			
-			sendToAll(new RequestVote(term, id, 0, 0));
+			LogEntry last = getLastLogEntry();
+			sendToAll(new RequestVote(term, id, last.getIndex(), last.getTerm()));
 			
 			scheduleElectionTimeout();
 			
@@ -836,7 +923,7 @@ public class Raft
 	{
 		logger.debug("Scheduling an election due to missing heartbeat");
 		cancelElectionTimeout();
-		electionTimeout = scheduler.schedule(this::startElection, 150 + random.nextInt(150), TimeUnit.MILLISECONDS);
+		electionTimeout = scheduler.schedule(this::startElection, minTimeout + random.nextInt(maxTimeout - minTimeout), TimeUnit.MILLISECONDS);
 	}
 	
 	/**
@@ -845,7 +932,7 @@ public class Raft
 	private void scheduleHearbeatElection()
 	{
 		cancelElectionTimeout();
-		electionTimeout = scheduler.schedule(this::scheduleElectionTimeout, 10, TimeUnit.SECONDS);
+		electionTimeout = scheduler.schedule(this::startElection, minTimeout + random.nextInt(maxTimeout - minTimeout), TimeUnit.MILLISECONDS);
 	}
 
 	/**
@@ -855,7 +942,7 @@ public class Raft
 	private void scheduleSendHeartbeat()
 	{
 		cancelElectionTimeout();
-		heartbeat = scheduler.scheduleAtFixedRate(this::sendHeartbeat, 5, 5, TimeUnit.SECONDS);
+		heartbeat = scheduler.scheduleAtFixedRate(this::sendHeartbeat, heartbeatTime, heartbeatTime, TimeUnit.MILLISECONDS);
 	}
 	
 	/**

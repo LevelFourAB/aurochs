@@ -39,7 +39,7 @@ public class LocalRaft
 				));
 			}
 			
-			result.put(node, new Raft(new InMemoryStateStorage(), new InMemoryLog(), new StaticNodes(nodes), node, (in) -> {}, false));
+			result.put(node, new Raft(new InMemoryStateStorage(), new InMemoryLog(), new StaticNodes(nodes), node, (in) -> {}, false, 75, 150, 300));
 		}
 		
 		return result.build();

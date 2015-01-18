@@ -84,7 +84,7 @@ public class RaftBuilder<T>
 	public StateLog<T> build()
 	{
 		IoConsumer<Bytes> applier = createApplier();
-		Raft raft = new Raft(stateStorage, log, nodes, id, applier, applierVolatile);
+		Raft raft = new Raft(stateStorage, log, nodes, id, applier, applierVolatile, 75, 150, 300);
 		
 		if(codec == null) return (StateLog) raft;
 		

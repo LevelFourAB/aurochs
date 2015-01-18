@@ -7,6 +7,8 @@ import se.l4.aurochs.cluster.internal.raft.log.DefaultLogEntry;
 import se.l4.aurochs.cluster.internal.raft.log.LogEntry;
 import se.l4.aurochs.cluster.internal.raft.messages.AppendEntries;
 import se.l4.aurochs.cluster.internal.raft.messages.AppendEntriesReply;
+import se.l4.aurochs.cluster.internal.raft.messages.ClientAddToLog;
+import se.l4.aurochs.cluster.internal.raft.messages.ClientAddToLogReply;
 import se.l4.aurochs.cluster.internal.raft.messages.RaftMessage;
 import se.l4.aurochs.cluster.internal.raft.messages.RequestVote;
 import se.l4.aurochs.cluster.internal.raft.messages.RequestVoteReply;
@@ -69,6 +71,10 @@ public class RaftChannelCodec
 						in.readVLong(), in.readVInt(),
 						in.readBoolean()
 					);
+				case 5:
+					return new ClientAddToLog(sender, term, in.readVLong(), in.readBytes());
+				case 6:
+					return new ClientAddToLogReply(sender, term, in.readVLong());
 				default:
 					throw new RaftException("Unable to read message with tag " + tag);
 			}
@@ -133,6 +139,21 @@ public class RaftChannelCodec
 			out.writeVLong(msg.getPrevLogIndex());
 			out.writeVInt(msg.getEntries());
 			out.writeBoolean(msg.isSuccess());
+		}
+		else if(object instanceof ClientAddToLog)
+		{
+			out.write(5);
+			out.writeUTF(object.getSenderId());
+			out.writeVLong(object.getTerm());
+			out.writeVLong(((ClientAddToLog) object).getId());
+			out.writeBytes(((ClientAddToLog) object).getData());
+		}
+		else if(object instanceof ClientAddToLogReply)
+		{
+			out.write(6);
+			out.writeUTF(object.getSenderId());
+			out.writeVLong(object.getTerm());
+			out.writeVLong(((ClientAddToLogReply) object).getId());
 		}
 	}
 }

@@ -13,6 +13,12 @@ public interface ExtendedDataInput
 	long readVLong()
 		throws IOException;
 	
+	String readString()
+		throws IOException;
+	
 	Bytes readBytes()
+		throws IOException;
+	
+	Bytes readTemporaryBytes()
 		throws IOException;
 }

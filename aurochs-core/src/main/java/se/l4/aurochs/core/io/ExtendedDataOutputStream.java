@@ -52,6 +52,32 @@ public class ExtendedDataOutputStream
 	}
 	
 	@Override
+	public void writeString(String string)
+		throws IOException
+	{
+		writeVInt(string.length());
+		for(int i=0, n=string.length(); i<n; i++)
+		{
+			char c = string.charAt(i);
+			if(c <= 0x007f)
+			{
+				out.write((byte) c);
+			}
+			else if(c > 0x07ff)
+			{
+				out.write((byte) (0xe0 | c >> 12 & 0x0f));
+				out.write((byte) (0x80 | c >> 6 & 0x3f));
+				out.write((byte) (0x80 | c >> 0 & 0x3f));
+			}
+			else
+			{
+				out.write((byte) (0xc0 | c >> 6 & 0x1f));
+				out.write((byte) (0x80 | c >> 0 & 0x3f));
+			}
+		}
+	}
+	
+	@Override
 	public void writeBytes(Bytes bytes)
 		throws IOException
 	{

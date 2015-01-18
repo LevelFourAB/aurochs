@@ -13,6 +13,9 @@ public interface ExtendedDataOutput
 	void writeVLong(long l)
 		throws IOException;
 	
+	void writeString(String string)
+		throws IOException;
+	
 	void writeBytes(Bytes bytes)
 		throws IOException;
 }

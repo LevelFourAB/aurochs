@@ -100,9 +100,7 @@ public class ServicePartitionChannel<T>
 	
 	private void listener(Node<RpcMessage<PartitionMessage<T>>> node, MessageEvent<RpcMessage<PartitionMessage<T>>> event)
 	{
-		rpc.accept(event.getMessage(), msg -> {
-			node.outgoing().send(msg);
-		});
+		rpc.accept(event.getMessage(), msg -> node.outgoing().send(msg));
 	}
 	
 	@SuppressWarnings("unchecked")

@@ -5,7 +5,6 @@ import java.util.function.Consumer;
 import se.l4.aurochs.cluster.nodes.Node;
 import se.l4.aurochs.cluster.nodes.NodeEvent;
 import se.l4.aurochs.cluster.nodes.Nodes;
-import se.l4.aurochs.core.channel.Channel;
 import se.l4.aurochs.core.channel.ChannelCodec;
 import se.l4.aurochs.core.events.EventHandle;
 
@@ -36,26 +35,14 @@ public class TransformedNodes<O, D>
 			{
 				consumer.accept(new NodeEvent<>(
 					NodeEvent.Type.REMOVED,
-					new Node<>(e.getNode().getId(), null, null)
+					new Node<>(e.getNode().getId(), null, null, null, null)
 				));
 			}
 			else
 			{
-				Channel<D> incoming;
-				Channel<D> outgoing;
-				if(e.getNode().incoming() == e.getNode().outgoing())
-				{
-					incoming = outgoing = e.getNode().incoming().transform(codec);
-				}
-				else
-				{
-					incoming = e.getNode().incoming().transform(codec);
-					outgoing = e.getNode().outgoing().transform(codec);
-				}
-				
 				consumer.accept(new NodeEvent<>(
 					e.getType(),
-					new Node<>(e.getNode().getId(), incoming, outgoing)
+					e.getNode().transform(codec)
 				));
 			}
 		});

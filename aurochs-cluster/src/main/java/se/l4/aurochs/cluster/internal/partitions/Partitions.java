@@ -9,6 +9,13 @@ import se.l4.aurochs.core.events.EventHandle;
 public interface Partitions<T>
 {
 	/**
+	 * Get the local node.
+	 * 
+	 * @return
+	 */
+	Node<T> getLocal();
+	
+	/**
 	 * Get the total number of partitions.
 	 * 
 	 * @return

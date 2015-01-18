@@ -234,10 +234,12 @@ public class Raft
 			}
 			else if(event.getType() == NodeEvent.Type.INITIAL)
 			{
-				Channel<RaftMessage> channel = node.incoming().on(executor);
+				Channel<RaftMessage> channel = node.controlIncoming().on(executor);
 				channel.addListener(channelListener);
 				
-				Node<RaftMessage> transformed = new Node<>(node.getId(), channel, node.outgoing());
+				node.incoming().addListener(channelListener);
+				
+				Node<RaftMessage> transformed = new Node<>(node.getId(), channel, node.controlOutgoing(), node.incoming(), node.outgoing());
 				nodes.put(node.getId(), transformed);
 			}
 		}
@@ -320,7 +322,9 @@ public class Raft
 			long id = futureIds.incrementAndGet();
 			CompletableFuture<Void> future = new CompletableFuture<>();
 			futures.put(-id, future);
-			sendTo(leader, new ClientAddToLog(self.getId(), stateStorage.getCurrentTerm(), id, data));
+			
+			leader.outgoing().send(new ClientAddToLog(self.getId(), stateStorage.getCurrentTerm(), id, data));
+			
 			return future;
 		}
 		finally
@@ -331,8 +335,6 @@ public class Raft
 	
 	protected void handleClientAddToLog(Node<RaftMessage> node, ClientAddToLog message)
 	{
-		logger.info("Requested add from non leader " +  node + " with id " + message.getId());
-		
 		long id = message.getId();
 		requestAppendEntry(message.getData())
 			.whenComplete((r, ex) -> {
@@ -956,7 +958,7 @@ public class Raft
 		{
 			if(n != self)
 			{
-				n.outgoing().send(msg);
+				n.controlOutgoing().send(msg);
 			}
 		}
 	}
@@ -969,7 +971,7 @@ public class Raft
 	 */
 	private void sendTo(Node<RaftMessage> node, RaftMessage msg)
 	{
-		node.outgoing().send(msg);
+		node.controlOutgoing().send(msg);
 	}
 
 	enum Role

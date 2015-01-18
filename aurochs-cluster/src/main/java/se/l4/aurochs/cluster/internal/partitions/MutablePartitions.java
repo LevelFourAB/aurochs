@@ -25,6 +25,8 @@ public class MutablePartitions<T>
 	private final Lock lock;
 	private final MutableNodes<T>[] partitionToNode;
 	private final Set<NodeInfo<T>> nodes;
+	
+	private volatile Node<T> local;
 
 	@SuppressWarnings("unchecked")
 	public MutablePartitions(int total)
@@ -38,6 +40,17 @@ public class MutablePartitions<T>
 		{
 			partitionToNode[i] = new MutableNodes<>();
 		}
+	}
+	
+	@Override
+	public Node<T> getLocal()
+	{
+		return local;
+	}
+	
+	public void setLocal(Node<T> local)
+	{
+		this.local = local;
 	}
 	
 	@Override
@@ -147,6 +160,13 @@ public class MutablePartitions<T>
 		finally
 		{
 			lock.unlock();
+		}
+		
+		Node<T> local = this.local;
+		if(nodes.has(local.getId()))
+		{
+			action.accept(local);
+			return;
 		}
 		
 		Collection<Node<T>> all = nodes.list();

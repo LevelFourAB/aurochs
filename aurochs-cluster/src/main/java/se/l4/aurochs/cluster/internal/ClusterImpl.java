@@ -120,7 +120,7 @@ public class ClusterImpl
 		}
 		catch(URISyntaxException e)
 		{
-			throw new RuntimeException("Id of self must be in the form of a hostname and an optional IP");
+			throw new RuntimeException("Id of self must be in the form of a hostname and an optional port");
 		}
 		
 		
@@ -131,21 +131,40 @@ public class ClusterImpl
 			String id = uri.getHost() + ":" + (uri.getPort() == -1 ? ServerConnection.DEFAULT_PORT : uri.getPort());
 			if(! id.equals(self))
 			{
-				RemoteSession session = connections.get()
+				RemoteSession control = connections.get()
 					.setHost(event.getUri())
 					.setChannelInitializer(ch -> ch.transform(new NamedChannelCodec("cluster:joiner"))
-						.send(Bytes.create(out -> out.writeUTF(self))
+						.send(Bytes.create(out -> {
+							out.writeByte(1);
+							out.writeString(self);
+						})
 					))
 					.connect();
 				
-				CombiningChannel<ByteMessage> channel = new CombiningChannel<>();
-				channel.addChannel(session.getRawChannel());
-				coreNodes.addNode(new Node<>(id, channel, channel));
+				CombiningChannel<ByteMessage> controlChannel = new CombiningChannel<>();
+				controlChannel.addChannel(control.getRawChannel());
+				
+				RemoteSession data = connections.get()
+					.setHost(event.getUri())
+					.setChannelInitializer(ch -> ch.transform(new NamedChannelCodec("cluster:joiner"))
+						.send(Bytes.create(out -> {
+							out.writeByte(2);
+							out.writeString(self);
+						})
+					))
+//					.setMinConnections(4)
+					.connect();
+				
+				CombiningChannel<ByteMessage> dataChannel = new CombiningChannel<>();
+				dataChannel.addChannel(data.getRawChannel());
+				
+				coreNodes.addNode(new Node<>(id, controlChannel, controlChannel, dataChannel, dataChannel));
 			}
 			else
 			{
-				LocalChannel<ByteMessage> channel = LocalChannel.create();
-				coreNodes.addNode(new Node<>(id, channel.getIncoming(), channel.getOutgoing()));
+				LocalChannel<ByteMessage> control = LocalChannel.create();
+				LocalChannel<ByteMessage> data = LocalChannel.create();
+				coreNodes.addNode(new Node<>(id, control.getIncoming(), control.getOutgoing(), data.getIncoming(), data.getOutgoing()));
 			}
 		});
 		
@@ -162,6 +181,8 @@ public class ClusterImpl
 				partitions.join(i, node);
 			}
 		}
+		
+		partitions.setLocal(coreNodes.get(self));
 		
 		partitionCoordinator.start(self);
 	}
@@ -180,11 +201,19 @@ public class ClusterImpl
 		session.getNamedChannel("cluster:joiner").addListener(event -> {
 			try(ExtendedDataInput in = event.getMessage().asDataInput())
 			{
-				String id = in.readUTF();
+				int channel = in.readUnsignedByte();
+				String id = in.readString();
 				Node<ByteMessage> node = coreNodes.get(id);
 				if(node != null)
 				{
-					((CombiningChannel) node.incoming()).addChannel(session.getRawChannel());
+					if(channel == 1)
+					{
+						((CombiningChannel) node.controlIncoming()).addChannel(session.getRawChannel());
+					}
+					else if(channel == 2)
+					{
+						((CombiningChannel) node.incoming()).addChannel(session.getRawChannel());
+					}
 					sessionToNode.put(session, node);
 				}
 			}
@@ -201,6 +230,7 @@ public class ClusterImpl
 		Node<ByteMessage> node = sessionToNode.remove(session);
 		if(node == null) return;
 		
+		((CombiningChannel) node.controlIncoming()).removeChannel(session.getRawChannel());
 		((CombiningChannel) node.incoming()).removeChannel(session.getRawChannel());
 	}
 	

@@ -10,6 +10,7 @@ import se.l4.aurochs.cluster.partitions.PartitionChannel;
 import se.l4.aurochs.cluster.partitions.Partitioner;
 import se.l4.aurochs.core.channel.ChannelListener;
 import se.l4.aurochs.core.channel.MessageEvent;
+import se.l4.aurochs.core.channel.rpc.RPC;
 import se.l4.aurochs.core.channel.rpc.RPCHelper;
 import se.l4.aurochs.core.channel.rpc.RpcMessage;
 import se.l4.aurochs.core.events.EventHandle;
@@ -32,7 +33,7 @@ public class ServicePartitionChannel<T>
 	{
 		this.partitions = partitions;
 
-		rpc = new RPCHelper<>(this::handleRequest);
+		rpc = RPC.createHelper(this::handleRequest);
 		
 		nodeToListener = new ConcurrentHashMap<>();
 		

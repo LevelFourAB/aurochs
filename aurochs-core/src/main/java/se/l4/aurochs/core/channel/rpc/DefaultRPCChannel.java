@@ -15,7 +15,7 @@ public class DefaultRPCChannel<T>
 	{
 		this.parent = parent;
 		
-		helper = new RPCHelper<>(requestHandler);
+		helper = RPC.createHelper(requestHandler);
 		parent.addListener(e -> helper.accept(e.getMessage(), e.getChannel()::send));
 	}
 	

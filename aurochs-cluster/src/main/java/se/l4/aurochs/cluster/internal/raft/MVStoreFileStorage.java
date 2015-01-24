@@ -16,6 +16,7 @@ import org.h2.mvstore.type.ObjectDataType;
 import se.l4.aurochs.cluster.internal.raft.log.DefaultLogEntry;
 import se.l4.aurochs.cluster.internal.raft.log.Log;
 import se.l4.aurochs.cluster.internal.raft.log.LogEntry;
+import se.l4.aurochs.cluster.internal.raft.log.LogEntry.Type;
 import se.l4.aurochs.core.io.Bytes;
 
 import com.google.common.io.ByteStreams;
@@ -33,7 +34,10 @@ public class MVStoreFileStorage
 
 	public MVStoreFileStorage(File file)
 	{
-		store = MVStore.open(file.getAbsolutePath());
+		store = new MVStore.Builder()
+			.fileName(file.getAbsolutePath())
+			.compress()
+			.open();
 		
 		state = store.openMap("state");
 		loadState();

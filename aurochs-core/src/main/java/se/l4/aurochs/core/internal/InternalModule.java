@@ -9,6 +9,8 @@ import se.l4.aurochs.config.ConfigBuilder;
 import se.l4.aurochs.config.internal.FileSerializer;
 import se.l4.aurochs.core.SerializerRegistration;
 import se.l4.aurochs.core.hosts.HostsModule;
+import se.l4.aurochs.core.id.LongIdGenerator;
+import se.l4.aurochs.core.id.SimpleLongIdGenerator;
 import se.l4.aurochs.core.spi.Sessions;
 import se.l4.aurochs.serialization.DefaultSerializerCollection;
 import se.l4.aurochs.serialization.SerializerCollection;
@@ -46,6 +48,8 @@ public class InternalModule
 		bind(Sessions.class).to(SessionsImpl.class);
 		
 		bindContributions(SerializerRegistration.class);
+		
+		bind(LongIdGenerator.class).to(SimpleLongIdGenerator.class);
 	}
 	
 	@Provides

@@ -1,8 +1,6 @@
 package se.l4.aurochs.jobs;
 
-import java.io.IOException;
 import java.time.Instant;
-import java.util.concurrent.CompletableFuture;
 
 import se.l4.aurochs.serialization.Named;
 import se.l4.aurochs.serialization.SerializerCollection;
@@ -18,24 +16,12 @@ import se.l4.aurochs.serialization.SerializerCollection;
 public interface Jobs
 {
 	/**
-	 * Run a job, optionally returning a result. The job will be run as soon as possible.
+	 * Add a job that should be run.
 	 * 
 	 * @param jobData
 	 * @return
 	 */
-	<T> CompletableFuture<T> run(Object jobData);
-	
-	/**
-	 * Queue a job. The job will be placed in the work queue and
-	 * will be run at the earliest at the given time.
-	 * 
-	 * @param jobData
-	 *   the data of the job
-	 * @param whenToExecute
-	 *   earliest time to run this job
-	 * @throws IOException
-	 */
-	CompletableFuture<SubmittedJob> queue(Object jobData, When whenToRun);
+	JobBuilder add(Object jobData);
 	
 	/**
 	 * Marker for running a job as soon as possible.

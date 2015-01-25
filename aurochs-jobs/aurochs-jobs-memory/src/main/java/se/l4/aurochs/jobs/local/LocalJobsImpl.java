@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import se.l4.aurochs.jobs.AbstractLocalJobs;
 import se.l4.aurochs.jobs.Job;
+import se.l4.aurochs.jobs.JobBuilder;
 import se.l4.aurochs.jobs.JobRunner;
 import se.l4.aurochs.jobs.Jobs;
 import se.l4.aurochs.jobs.LocalJobs;
@@ -98,31 +99,40 @@ public class LocalJobsImpl
 			}
 		}
 	}
-
+	
 	@Override
-	public <T> CompletableFuture<T> run(Object jobData)
+	public JobBuilder add(Object jobData)
 	{
 		Objects.requireNonNull(jobData, "Job data must be supplied");
 		
-		CompletableFuture<T> future = new CompletableFuture<>();
-		queueJob(jobData, Jobs.now(), future);
-		return future;
+		return new JobBuilder()
+		{
+			private When when = Jobs.now();
+			private CompletableFuture<?> future;
+			
+			@Override
+			public JobBuilder delay(When when)
+			{
+				Objects.requireNonNull(when, "When to run must be supplied");
+				
+				this.when = when;
+				return this;
+			}
+			
+			@Override
+			public JobBuilder withResult()
+			{
+				future = new CompletableFuture<>();
+				return this;
+			}
+			
+			@Override
+			public <T> SubmittedJob<T> submit()
+			{
+				return queueJob(jobData, when, future);
+			}
+		};
 	}
-	
-	@Override
-	public CompletableFuture<SubmittedJob> queue(Object jobData, When whenToRun)
-	{
-		Objects.requireNonNull(jobData, "Job data must be supplied");
-		Objects.requireNonNull(whenToRun, "When to run must be supplied");
-		
-		CompletableFuture<SubmittedJob> future = new CompletableFuture<>();
-		
-		SubmittedJobImpl job = queueJob(jobData, whenToRun, null);
-		future.complete(job);
-		
-		return future;
-	}
-	
 	private SubmittedJobImpl queueJob(Object jobData, When whenToRun, CompletableFuture<?> resultFuture)
 	{
 		SubmittedJobImpl job = new SubmittedJobImpl(
@@ -157,6 +167,12 @@ public class LocalJobsImpl
 			this.whenToRun = whenToRun;
 			this.attempt = attempt;
 			this.future = future;
+		}
+		
+		@Override
+		public CompletableFuture result()
+		{
+			return future;
 		}
 		
 		@Override

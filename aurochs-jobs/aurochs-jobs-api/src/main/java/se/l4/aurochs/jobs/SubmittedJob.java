@@ -1,5 +1,7 @@
 package se.l4.aurochs.jobs;
 
+import java.util.concurrent.CompletableFuture;
+
 
 /**
  * Information about a submitted job.
@@ -7,6 +9,7 @@ package se.l4.aurochs.jobs;
  * @author Andreas Holstenson
  *
  */
-public interface SubmittedJob
+public interface SubmittedJob<T>
 {
+	CompletableFuture<T> result();
 }

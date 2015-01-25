@@ -1,17 +1,17 @@
 package se.l4.aurochs.cluster.internal.partitions;
 
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 
+import se.l4.aurochs.cluster.internal.MutableNodeStates;
 import se.l4.aurochs.cluster.internal.MutableNodes;
 import se.l4.aurochs.cluster.nodes.Node;
-import se.l4.aurochs.cluster.nodes.Nodes;
+import se.l4.aurochs.cluster.nodes.NodeSet;
+import se.l4.aurochs.cluster.nodes.NodeState;
+import se.l4.aurochs.cluster.nodes.NodeStates;
 import se.l4.aurochs.core.events.EventHandle;
 import se.l4.aurochs.core.events.EventHelper;
 
@@ -24,6 +24,7 @@ public class MutablePartitions<T>
 	
 	private final Lock lock;
 	private final MutableNodes<T>[] partitionToNode;
+	private final MutableNodeStates<T>[] partitionToNodeStates;
 	private final Set<NodeInfo<T>> nodes;
 	
 	private volatile Node<T> local;
@@ -36,9 +37,11 @@ public class MutablePartitions<T>
 		lock = new ReentrantLock();
 		nodes = new CopyOnWriteArraySet<>();
 		partitionToNode = new MutableNodes[total];
+		partitionToNodeStates = new MutableNodeStates[total];
 		for(int i=0; i<total; i++)
 		{
 			partitionToNode[i] = new MutableNodes<>();
+			partitionToNodeStates[i] = new MutableNodeStates<>();
 		}
 	}
 	
@@ -68,6 +71,9 @@ public class MutablePartitions<T>
 			{
 				partitionToNode[partition].addNode(node);
 				
+				// TODO: Track the node connectivity status
+				partitionToNodeStates[partition].setState(node, NodeState.ONLINE);
+				
 				PartitionEvent<T> event = new PartitionEvent<T>(PartitionEvent.Type.JOINED, partition, node);
 				events.forEach(l -> l.accept(event));
 			}
@@ -86,6 +92,7 @@ public class MutablePartitions<T>
 			if(nodes.remove(new NodeInfo<T>(partition, node)))
 			{
 				partitionToNode[partition].removeNode(node);
+				partitionToNodeStates[partition].removeNode(node);
 				
 				PartitionEvent<T> event = new PartitionEvent<T>(PartitionEvent.Type.LEFT, partition, node);
 				events.forEach(l -> l.accept(event));
@@ -115,12 +122,26 @@ public class MutablePartitions<T>
 	}
 	
 	@Override
-	public Nodes<T> getNodes(int partition)
+	public NodeSet<T> getNodes(int partition)
 	{
 		lock.lock();
 		try
 		{
 			return partitionToNode[partition];
+		}
+		finally
+		{
+			lock.unlock();
+		}
+	}
+	
+	@Override
+	public NodeStates<T> getNodeStates(int partition)
+	{
+		lock.lock();
+		try
+		{
+			return partitionToNodeStates[partition];
 		}
 		finally
 		{
@@ -151,11 +172,13 @@ public class MutablePartitions<T>
 	@Override
 	public void forOneIn(int partition, Consumer<Node<T>> action)
 	{
-		MutableNodes<T> nodes;
+		NodeSet<T> nodes;
+		NodeStates<T> states;
 		lock.lock();
 		try
 		{
 			nodes = partitionToNode[partition];
+			states = partitionToNodeStates[partition];
 		}
 		finally
 		{
@@ -169,14 +192,8 @@ public class MutablePartitions<T>
 			return;
 		}
 		
-		Collection<Node<T>> all = nodes.list();
-		if(all.isEmpty()) return;
-		
-		int select = ThreadLocalRandom.current().nextInt(all.size());
-		Iterator<Node<T>> it = all.iterator();
-		for(int i=0; i<select; i++) it.next();
-		
-		action.accept(it.next());
+		// TODO: What happens if no nodes are reachable?
+		action.accept(states.random());
 	}
 	
 	private static class NodeInfo<T>

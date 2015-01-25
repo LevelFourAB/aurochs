@@ -8,8 +8,12 @@ import java.util.function.Function;
 
 import se.l4.aurochs.cluster.StateLog;
 import se.l4.aurochs.cluster.StateLogBuilder;
+import se.l4.aurochs.cluster.internal.MutableNodeStates;
 import se.l4.aurochs.cluster.internal.raft.RaftBuilder;
-import se.l4.aurochs.cluster.nodes.Nodes;
+import se.l4.aurochs.cluster.nodes.Node;
+import se.l4.aurochs.cluster.nodes.NodeSet;
+import se.l4.aurochs.cluster.nodes.NodeState;
+import se.l4.aurochs.cluster.nodes.NodeStates;
 import se.l4.aurochs.cluster.partitions.PartitionChannel;
 import se.l4.aurochs.cluster.partitions.PartitionCreateEncounter;
 import se.l4.aurochs.cluster.partitions.PartitionService;
@@ -27,12 +31,11 @@ public class LocalPartition
 	
 	private final String self;
 	private final File dataRoot;
-	private final Nodes<ByteMessage> nodes;
+	private final NodeSet<ByteMessage> nodes;
 	
 	private final Map<String, PartitionServiceHandle> services;
 
 	private final Partitions<ByteMessage> partitions;
-
 	
 	public LocalPartition(
 			String self,
@@ -52,6 +55,7 @@ public class LocalPartition
 	{
 		Encounter<T> encounter = new Encounter<>(registration.getName(), registration.getChannel());
 		PartitionService<T> service = registration.getFactory().apply(encounter);
+		encounter.finish();
 		
 		services.put(registration.getName(), new PartitionServiceHandle(service, encounter.stateLogNodes, encounter.stateLog));
 	}
@@ -69,17 +73,27 @@ public class LocalPartition
 	{
 		private final File file;
 		private final String name;
-		private final PartitionChannel<T> channel;
+		private final ServicePartitionChannel<T> channel;
 		
-		private Nodes<Bytes> stateLogNodes;
+		private NodeSet<Bytes> stateLogNodes;
 		private StateLog<Bytes> stateLog;
+		private MutableNodeStates<?> nodeStates;
+		private LocalPartitionChannel<T> localChannel;
 
-		public Encounter(String name, PartitionChannel<T> channel)
+		public Encounter(String name, ServicePartitionChannel<T> channel)
 		{
 			this.name = name;
 			this.channel = channel;
 			file = new File(dataRoot, name);
 			getDataDir().mkdirs();
+			
+			nodeStates = new MutableNodeStates<>();
+		}
+		
+		@Override
+		public int partition()
+		{
+			return partition;
 		}
 		
 		@Override
@@ -89,9 +103,22 @@ public class LocalPartition
 		}
 		
 		@Override
+		public Node<?> localNode()
+		{
+			return channel.localNode();
+		}
+		
+		@Override
+		public NodeStates<?> nodes()
+		{
+			return nodeStates;
+		}
+		
+		@Override
 		public PartitionChannel<T> createChannel(Function<T, CompletableFuture<T>> messageHandler)
 		{
-			return ((ServicePartitionChannel<T>) channel).forPartition(partition, messageHandler);
+			localChannel = channel.forPartition(partition, messageHandler);
+			return localChannel;
 		}
 		
 		@Override
@@ -100,10 +127,27 @@ public class LocalPartition
 			stateLogNodes = nodes.transform(new NamedChannelCodec("p" + partition + ":" + name + ":state-log"));
 			return new DelegatingStateLogBuilder<>(
 				new RaftBuilder<Bytes>()
+					.withLeaderListener(new LeaderListener(channel.nodes(partition), nodeStates))
 					.withNodes(stateLogNodes, self)
 					.stateInFile(new File(file, "state-log")),
 				log -> stateLog = log
 			);
+		}
+		
+		@SuppressWarnings({ "rawtypes", "unchecked" })
+		public void finish()
+		{
+			if(localChannel == null)
+			{
+				createChannel(null);
+			}
+			
+			localChannel.nodeStates().listen(e -> {
+				if(nodeStates.get((Node) e.getNode()) != NodeState.LEADER)
+				{
+					nodeStates.setState((Node) e.getNode(), e.getState());
+				}
+			});
 		}
 	}
 	
@@ -120,7 +164,7 @@ public class LocalPartition
 		}
 		
 		@Override
-		public StateLogBuilder<T> withNodes(Nodes<Bytes> nodes, String selfId)
+		public StateLogBuilder<T> withNodes(NodeSet<Bytes> nodes, String selfId)
 		{
 			actualBuilder = actualBuilder.withNodes(nodes, selfId);
 			return this;
@@ -167,6 +211,42 @@ public class LocalPartition
 			StateLog<T> built = actualBuilder.build();
 			finisher.accept(built);
 			return built;
+		}
+	}
+	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private static class LeaderListener
+		implements Consumer<String>
+	{
+		private final NodeSet nodes;
+		private final MutableNodeStates states;
+		
+		private volatile Node currentLeader;
+
+		public LeaderListener(NodeSet<?> nodes, MutableNodeStates<?> states)
+		{
+			this.nodes = nodes;
+			this.states = states;
+		}
+
+		@Override
+		public void accept(String t)
+		{
+			if(currentLeader != null && currentLeader.getId().equals(t))
+			{
+				NodeState state = states.get(currentLeader);
+				if(state == NodeState.LEADER)
+				{
+					states.setState(currentLeader, NodeState.ONLINE);
+				}
+			}
+			
+			// No current leader
+			if(t == null) return;
+			
+			Node newLeader = nodes.get(t);
+			states.setState(newLeader, NodeState.LEADER);
+			currentLeader = newLeader;
 		}
 	}
 }

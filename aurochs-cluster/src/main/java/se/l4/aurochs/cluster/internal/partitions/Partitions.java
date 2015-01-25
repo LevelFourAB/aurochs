@@ -3,7 +3,8 @@ package se.l4.aurochs.cluster.internal.partitions;
 import java.util.function.Consumer;
 
 import se.l4.aurochs.cluster.nodes.Node;
-import se.l4.aurochs.cluster.nodes.Nodes;
+import se.l4.aurochs.cluster.nodes.NodeStates;
+import se.l4.aurochs.cluster.nodes.NodeSet;
 import se.l4.aurochs.core.events.EventHandle;
 
 public interface Partitions<T>
@@ -36,7 +37,15 @@ public interface Partitions<T>
 	 * @param partition
 	 * @return
 	 */
-	Nodes<T> getNodes(int partition);
+	NodeSet<T> getNodes(int partition);
+	
+	/**
+	 * Get all the nodes (with state) in the given partition.
+	 * 
+	 * @param partition
+	 * @return
+	 */
+	NodeStates<T> getNodeStates(int partition);
 	
 	/**
 	 * Fetch all nodes (with possible duplicates).

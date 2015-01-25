@@ -3,7 +3,7 @@ package se.l4.aurochs.cluster;
 import java.io.File;
 import java.util.function.Function;
 
-import se.l4.aurochs.cluster.nodes.Nodes;
+import se.l4.aurochs.cluster.nodes.NodeSet;
 import se.l4.aurochs.core.channel.ChannelCodec;
 import se.l4.aurochs.core.io.Bytes;
 import se.l4.aurochs.core.io.IoConsumer;
@@ -18,8 +18,14 @@ public interface StateLogBuilder<T>
 	 * @param selfId
 	 * @return
 	 */
-	StateLogBuilder<T> withNodes(Nodes<Bytes> nodes, String selfId);
+	StateLogBuilder<T> withNodes(NodeSet<Bytes> nodes, String selfId);
 	
+	/**
+	 * Transform the data the state log handles.
+	 * 
+	 * @param codec
+	 * @return
+	 */
 	<O> StateLogBuilder<O> transform(ChannelCodec<Bytes, O> codec);
 	
 	default <O> StateLogBuilder<O> transform(Function<Bytes, O> from, Function<O, Bytes> to)

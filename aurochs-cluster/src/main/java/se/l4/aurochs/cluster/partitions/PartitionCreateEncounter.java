@@ -5,10 +5,19 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
 import se.l4.aurochs.cluster.StateLogBuilder;
+import se.l4.aurochs.cluster.nodes.Node;
+import se.l4.aurochs.cluster.nodes.NodeStates;
 import se.l4.aurochs.core.io.Bytes;
 
 public interface PartitionCreateEncounter<T>
 {
+	/**
+	 * Get the partition this encounter is for.
+	 * 
+	 * @return
+	 */
+	int partition();
+	
 	/**
 	 * Get a data directory suitable for storing data for the service being created.
 	 * 
@@ -22,6 +31,21 @@ public interface PartitionCreateEncounter<T>
 	 * @return
 	 */
 	StateLogBuilder<Bytes> stateLog();
+	
+	/**
+	 * Get the local node. This node instance is not intended to be used for sending messages,
+	 * but it can be used together with {@link #nodes()} to check if we are the leader.
+	 * 
+	 * @return
+	 */
+	Node<?> localNode();
+	
+	/**
+	 * Get a {@link NodeStates} instance tracking the members of this partition.
+	 * 
+	 * @return
+	 */
+	NodeStates<?> nodes();
 	
 	/**
 	 * Create a channel for receiving and sending messages.

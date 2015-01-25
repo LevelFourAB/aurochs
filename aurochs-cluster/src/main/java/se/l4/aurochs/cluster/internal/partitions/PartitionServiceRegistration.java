@@ -2,17 +2,16 @@ package se.l4.aurochs.cluster.internal.partitions;
 
 import java.util.function.Function;
 
-import se.l4.aurochs.cluster.partitions.PartitionChannel;
 import se.l4.aurochs.cluster.partitions.PartitionCreateEncounter;
 import se.l4.aurochs.cluster.partitions.PartitionService;
 
 public class PartitionServiceRegistration<T>
 {
 	private final String name;
-	private final PartitionChannel<T> channel;
+	private final ServicePartitionChannel<T> channel;
 	private final Function<PartitionCreateEncounter<T>, PartitionService<T>> factory;
 
-	public PartitionServiceRegistration(String name, PartitionChannel<T> channel, Function<PartitionCreateEncounter<T>, PartitionService<T>> factory)
+	public PartitionServiceRegistration(String name, ServicePartitionChannel<T> channel, Function<PartitionCreateEncounter<T>, PartitionService<T>> factory)
 	{
 		this.name = name;
 		this.channel = channel;
@@ -24,7 +23,7 @@ public class PartitionServiceRegistration<T>
 		return name;
 	}
 	
-	public PartitionChannel<T> getChannel()
+	public ServicePartitionChannel<T> getChannel()
 	{
 		return channel;
 	}

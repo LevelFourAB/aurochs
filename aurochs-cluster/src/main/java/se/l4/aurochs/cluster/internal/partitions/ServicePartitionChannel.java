@@ -3,9 +3,13 @@ package se.l4.aurochs.cluster.internal.partitions;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Function;
+import java.util.function.IntFunction;
 
 import se.l4.aurochs.cluster.nodes.Node;
+import se.l4.aurochs.cluster.nodes.NodeSet;
+import se.l4.aurochs.cluster.nodes.NodeStates;
 import se.l4.aurochs.cluster.partitions.PartitionChannel;
 import se.l4.aurochs.cluster.partitions.Partitioner;
 import se.l4.aurochs.core.channel.ChannelListener;
@@ -65,10 +69,10 @@ public class ServicePartitionChannel<T>
 		requestHandlers = new Function[partitions.getTotal()];
 	}
 	
-	public ServicePartitionChannel<T> forPartition(int partition, Function<T, CompletableFuture<T>> handler)
+	public LocalPartitionChannel<T> forPartition(int partition, Function<T, CompletableFuture<T>> handler)
 	{
 		requestHandlers[partition] = handler;
-		return this;
+		return new LocalPartitionChannel<>(this, partition);
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -80,6 +84,21 @@ public class ServicePartitionChannel<T>
 		{
 			node.incoming().removeListener((ChannelListener) nodeToListener.remove(node));
 		}
+	}
+	
+	public Node<RpcMessage<PartitionMessage<T>>> localNode()
+	{
+		return partitions.getLocal();
+	}
+	
+	public NodeSet<RpcMessage<PartitionMessage<T>>> nodes(int partition)
+	{
+		return partitions.getNodes(partition);
+	}
+	
+	public NodeStates<RpcMessage<PartitionMessage<T>>> nodeStates(int partition)
+	{
+		return partitions.getNodeStates(partition);
 	}
 	
 	@Override
@@ -101,6 +120,20 @@ public class ServicePartitionChannel<T>
 	private void listener(Node<RpcMessage<PartitionMessage<T>>> node, MessageEvent<RpcMessage<PartitionMessage<T>>> event)
 	{
 		rpc.accept(event.getMessage(), msg -> node.outgoing().send(msg));
+	}
+	
+	@Override
+	public <R> R withRandomPartition(IntFunction<R> op)
+	{
+		int p = ThreadLocalRandom.current().nextInt(partitions.getTotal());
+		return op.apply(p);
+	}
+	
+	@Override
+	public <R extends T> CompletableFuture<R> sendToRandomPartition(T message)
+	{
+		int p = ThreadLocalRandom.current().nextInt(partitions.getTotal());
+		return sendToOneOf(p, message);
 	}
 	
 	@SuppressWarnings("unchecked")

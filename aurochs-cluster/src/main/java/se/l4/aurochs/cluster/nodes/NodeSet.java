@@ -6,7 +6,7 @@ import se.l4.aurochs.cluster.internal.TransformedNodes;
 import se.l4.aurochs.core.channel.ChannelCodec;
 import se.l4.aurochs.core.events.EventHandle;
 
-public interface Nodes<D>
+public interface NodeSet<D>
 {
 	/**
 	 * Start listening for changes to nodes. This listener will receive all the
@@ -31,7 +31,7 @@ public interface Nodes<D>
 		return get(node) != null;
 	}
 	
-	default <T> Nodes<T> transform(ChannelCodec<D, T> codec)
+	default <T> NodeSet<T> transform(ChannelCodec<D, T> codec)
 	{
 		return new TransformedNodes<>(this, codec);
 	}

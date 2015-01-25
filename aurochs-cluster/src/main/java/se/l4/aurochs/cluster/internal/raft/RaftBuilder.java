@@ -3,13 +3,14 @@ package se.l4.aurochs.cluster.internal.raft;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
 import se.l4.aurochs.cluster.StateLog;
 import se.l4.aurochs.cluster.StateLogBuilder;
 import se.l4.aurochs.cluster.internal.raft.log.InMemoryLog;
 import se.l4.aurochs.cluster.internal.raft.log.Log;
 import se.l4.aurochs.cluster.internal.raft.messages.RaftMessage;
-import se.l4.aurochs.cluster.nodes.Nodes;
+import se.l4.aurochs.cluster.nodes.NodeSet;
 import se.l4.aurochs.core.channel.ChannelCodec;
 import se.l4.aurochs.core.io.Bytes;
 import se.l4.aurochs.core.io.IoConsumer;
@@ -18,7 +19,7 @@ public class RaftBuilder<T>
 	implements StateLogBuilder<T>
 {
 	private String id;
-	private Nodes<RaftMessage> nodes;
+	private NodeSet<RaftMessage> nodes;
 	
 	private StateStorage stateStorage;
 	private Log log;
@@ -26,16 +27,30 @@ public class RaftBuilder<T>
 	private ChannelCodec<Bytes, T> codec;
 	private IoConsumer<T> applier;
 	private boolean applierVolatile;
+	private Consumer<String> leaderListener;
 	
 	public RaftBuilder()
 	{
 	}
 	
 	@Override
-	public StateLogBuilder<T> withNodes(Nodes<Bytes> nodes, String selfId)
+	public StateLogBuilder<T> withNodes(NodeSet<Bytes> nodes, String selfId)
 	{
 		this.nodes = nodes.transform(new RaftChannelCodec());
 		this.id = selfId;
+		
+		return this;
+	}
+	
+	/**
+	 * Add a new listener for who controls the state log.
+	 * 
+	 * @param leader
+	 * @return
+	 */
+	public StateLogBuilder<T> withLeaderListener(Consumer<String> listener)
+	{
+		this.leaderListener = listener;
 		
 		return this;
 	}
@@ -84,7 +99,7 @@ public class RaftBuilder<T>
 	public StateLog<T> build()
 	{
 		IoConsumer<Bytes> applier = createApplier();
-		Raft raft = new Raft(stateStorage, log, nodes, id, applier, applierVolatile, 75, 150, 300);
+		Raft raft = new Raft(stateStorage, log, nodes, id, applier, applierVolatile, leaderListener, 15, 180, 300);
 		
 		if(codec == null) return (StateLog) raft;
 		

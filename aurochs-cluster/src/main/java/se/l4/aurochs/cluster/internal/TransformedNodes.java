@@ -4,18 +4,18 @@ import java.util.function.Consumer;
 
 import se.l4.aurochs.cluster.nodes.Node;
 import se.l4.aurochs.cluster.nodes.NodeEvent;
-import se.l4.aurochs.cluster.nodes.Nodes;
+import se.l4.aurochs.cluster.nodes.NodeSet;
 import se.l4.aurochs.core.channel.ChannelCodec;
 import se.l4.aurochs.core.events.EventHandle;
 
 
 public class TransformedNodes<O, D>
-	implements Nodes<D>
+	implements NodeSet<D>
 {
-	private final Nodes<O> nodes;
+	private final NodeSet<O> nodes;
 	private final ChannelCodec<O, D> codec;
 
-	public TransformedNodes(Nodes<O> nodes, ChannelCodec<O, D> codec)
+	public TransformedNodes(NodeSet<O> nodes, ChannelCodec<O, D> codec)
 	{
 		this.nodes = nodes;
 		this.codec = codec;

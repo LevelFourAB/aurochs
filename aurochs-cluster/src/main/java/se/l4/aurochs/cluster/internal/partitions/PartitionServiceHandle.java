@@ -2,7 +2,7 @@ package se.l4.aurochs.cluster.internal.partitions;
 
 import se.l4.aurochs.cluster.StateLog;
 import se.l4.aurochs.cluster.internal.service.ServiceHandle;
-import se.l4.aurochs.cluster.nodes.Nodes;
+import se.l4.aurochs.cluster.nodes.NodeSet;
 import se.l4.aurochs.cluster.partitions.PartitionService;
 import se.l4.aurochs.core.io.Bytes;
 
@@ -10,11 +10,11 @@ public class PartitionServiceHandle
 	implements ServiceHandle
 {
 	private final PartitionService<?> service;
-	private final Nodes<Bytes> nodes;
+	private final NodeSet<Bytes> nodes;
 	private final StateLog<?> stateLog;
 
 	public PartitionServiceHandle(PartitionService<?> service,
-			Nodes<Bytes> nodes,
+			NodeSet<Bytes> nodes,
 			StateLog<?> stateLog)
 	{
 		this.service = service;
@@ -23,7 +23,7 @@ public class PartitionServiceHandle
 	}
 	
 	@Override
-	public Nodes<Bytes> getNodes()
+	public NodeSet<Bytes> getNodes()
 	{
 		return nodes;
 	}

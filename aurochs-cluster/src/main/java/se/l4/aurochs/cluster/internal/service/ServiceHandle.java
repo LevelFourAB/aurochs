@@ -1,6 +1,6 @@
 package se.l4.aurochs.cluster.internal.service;
 
-import se.l4.aurochs.cluster.nodes.Nodes;
+import se.l4.aurochs.cluster.nodes.NodeSet;
 import se.l4.aurochs.core.io.Bytes;
 
 public interface ServiceHandle
@@ -10,7 +10,7 @@ public interface ServiceHandle
 	 * 
 	 * @return
 	 */
-	Nodes<Bytes> getNodes();
+	NodeSet<Bytes> getNodes();
 	
 	/**
 	 * Stop this service, used for node shutdown.

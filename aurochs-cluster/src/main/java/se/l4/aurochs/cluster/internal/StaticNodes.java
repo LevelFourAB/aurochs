@@ -6,11 +6,11 @@ import java.util.function.Consumer;
 
 import se.l4.aurochs.cluster.nodes.Node;
 import se.l4.aurochs.cluster.nodes.NodeEvent;
-import se.l4.aurochs.cluster.nodes.Nodes;
+import se.l4.aurochs.cluster.nodes.NodeSet;
 import se.l4.aurochs.core.events.EventHandle;
 
 public class StaticNodes<T>
-	implements Nodes<T>
+	implements NodeSet<T>
 {
 	private final Collection<Node<T>> nodes;
 

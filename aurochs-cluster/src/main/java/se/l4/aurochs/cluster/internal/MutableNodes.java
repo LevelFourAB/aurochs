@@ -7,12 +7,12 @@ import java.util.function.Consumer;
 
 import se.l4.aurochs.cluster.nodes.Node;
 import se.l4.aurochs.cluster.nodes.NodeEvent;
-import se.l4.aurochs.cluster.nodes.Nodes;
+import se.l4.aurochs.cluster.nodes.NodeSet;
 import se.l4.aurochs.core.events.EventHandle;
 import se.l4.aurochs.core.events.EventHelper;
 
 public class MutableNodes<D>
-	implements Nodes<D>
+	implements NodeSet<D>
 {
 	private final EventHelper<Consumer<NodeEvent<D>>> events;
 	private final Set<Node<D>> nodes;

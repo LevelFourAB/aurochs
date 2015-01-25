@@ -17,6 +17,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +35,7 @@ import se.l4.aurochs.cluster.internal.raft.messages.RequestVote;
 import se.l4.aurochs.cluster.internal.raft.messages.RequestVoteReply;
 import se.l4.aurochs.cluster.nodes.Node;
 import se.l4.aurochs.cluster.nodes.NodeEvent;
-import se.l4.aurochs.cluster.nodes.Nodes;
+import se.l4.aurochs.cluster.nodes.NodeSet;
 import se.l4.aurochs.core.channel.Channel;
 import se.l4.aurochs.core.channel.ChannelListener;
 import se.l4.aurochs.core.channel.MessageEvent;
@@ -98,21 +99,25 @@ public class Raft
 	private final boolean applierVolatile;
 	
 	private final List<NodeEvent<RaftMessage>> nodeChanges;
+	private final Consumer<String> leaderListener;
 
 	private int heartbeatTime;
 	private int minTimeout;
 	private int maxTimeout;
+
 	
-	public Raft(StateStorage stateStorage, Log log, Nodes<RaftMessage> nodes, 
+	public Raft(StateStorage stateStorage, Log log, NodeSet<RaftMessage> nodes, 
 			String id,
 			IoConsumer<Bytes> applier,
 			boolean applierVolatile,
+			Consumer<String> leaderListener,
 			int heartbeat,
 			int minTimeout,
 			int maxTimeout)
 	{
 		this.applier = applier;
 		this.applierVolatile = applierVolatile;
+		this.leaderListener = leaderListener;
 		
 		this.heartbeatTime = heartbeat;
 		this.minTimeout = minTimeout;
@@ -455,6 +460,10 @@ public class Raft
 			
 			role = Role.LEADER;
 			leader = self;
+			if(leaderListener != null)
+			{
+				leaderListener.accept(leader.getId());
+			}
 			
 			logger.info("Term " + stateStorage.getCurrentTerm() + ": Became leader");
 			logger.debug("Had {} votes of {} total", votes.size(), nodes.size());
@@ -498,6 +507,10 @@ public class Raft
 				// And update our local leader
 				leader = node;
 				logger.info("Term " + stateStorage.getCurrentTerm() + ": " + node.getId() + " became leader");
+				if(leaderListener != null)
+				{
+					leaderListener.accept(leader.getId());
+				}
 				
 				term = message.getTerm();
 			}
@@ -750,6 +763,10 @@ public class Raft
 		role = Role.FOLLOWER;
 		
 		leader = null;
+		if(leaderListener != null)
+		{
+			leaderListener.accept(null);
+		}
 	}
 	
 	private LogEntry getLastLogEntry()

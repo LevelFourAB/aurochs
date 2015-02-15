@@ -95,7 +95,7 @@ public class Raft
 	private final LongObjectMap<CompletableFuture<Void>> futures;
 	private final AtomicLong futureIds;
 
-	private final IoConsumer<Bytes> applier;
+	private final IoConsumer<LogEntry> applier;
 	private final boolean applierVolatile;
 	
 	private final List<NodeEvent<RaftMessage>> nodeChanges;
@@ -108,7 +108,7 @@ public class Raft
 	
 	public Raft(StateStorage stateStorage, Log log, NodeSet<RaftMessage> nodes, 
 			String id,
-			IoConsumer<Bytes> applier,
+			IoConsumer<LogEntry> applier,
 			boolean applierVolatile,
 			Consumer<String> leaderListener,
 			int heartbeat,
@@ -726,7 +726,7 @@ public class Raft
 				logger.debug("Applying {}", l);
 				try
 				{
-					applier.accept(log.get(l).getData());
+					applier.accept(log.get(l));
 				}
 				catch(IOException e)
 				{

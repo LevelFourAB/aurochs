@@ -9,6 +9,7 @@ import se.l4.aurochs.cluster.StateLog;
 import se.l4.aurochs.cluster.StateLogBuilder;
 import se.l4.aurochs.cluster.internal.raft.log.InMemoryLog;
 import se.l4.aurochs.cluster.internal.raft.log.Log;
+import se.l4.aurochs.cluster.internal.raft.log.LogEntry;
 import se.l4.aurochs.cluster.internal.raft.messages.RaftMessage;
 import se.l4.aurochs.cluster.nodes.NodeSet;
 import se.l4.aurochs.core.channel.ChannelCodec;
@@ -28,6 +29,7 @@ public class RaftBuilder<T>
 	private IoConsumer<T> applier;
 	private boolean applierVolatile;
 	private Consumer<String> leaderListener;
+	private IoConsumer<LogEntry> rawApplier;
 	
 	public RaftBuilder()
 	{
@@ -95,10 +97,16 @@ public class RaftBuilder<T>
 		return this;
 	}
 	
+	public StateLogBuilder<T> withRawApplier(IoConsumer<LogEntry> applier)
+	{
+		this.rawApplier = applier;
+		return this;
+	}
+	
 	@Override
 	public StateLog<T> build()
 	{
-		IoConsumer<Bytes> applier = createApplier();
+		IoConsumer<LogEntry> applier = createApplier();
 		Raft raft = new Raft(stateStorage, log, nodes, id, applier, applierVolatile, leaderListener, 15, 180, 300);
 		
 		if(codec == null) return (StateLog) raft;
@@ -106,13 +114,20 @@ public class RaftBuilder<T>
 		return new StateLogImpl<>(codec, raft);
 	}
 
-	private IoConsumer<Bytes> createApplier()
+	@SuppressWarnings("unchecked")
+	private IoConsumer<LogEntry> createApplier()
 	{
+		if(rawApplier != null)
+		{
+			return rawApplier;
+		}
+		
 		if(applier == null) throw new IllegalStateException("Need to specify an applier of events");
 		
-		if(codec == null) return (IoConsumer) applier;
-		
-		return new IoConsumerImpl<>(codec, applier);
+		IoConsumer<Bytes> applier = codec == null
+			? (IoConsumer<Bytes>) this.applier
+			: new IoConsumerImpl<>(codec, this.applier);
+		return (in) -> applier.accept(in.getData());
 	}
 	
 	private static class IoConsumerImpl<T>

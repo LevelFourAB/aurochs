@@ -32,7 +32,15 @@ public class ByteMessageEncoder
 			}
 		}
 		
-		bm.getData().asChunks(out::writeBytes);
+		try
+		{
+			bm.getData().asChunks(out::writeBytes);
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+			throw e;
+		}
 	}
 
 }

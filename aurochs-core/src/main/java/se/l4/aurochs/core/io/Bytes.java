@@ -47,11 +47,28 @@ public interface Bytes
 		return new BytesOverByteArray(byteArray);
 	}
 	
-	static Bytes create(IoConsumer<ExtendedDataOutput> creator)
+	static Bytes lazyViaDataOutput(IoConsumer<ExtendedDataOutput> creator)
+	{
+		return BytesBuilder.createViaLazyDataOutput(creator);
+	}
+	
+	static Bytes lazyViaDataOutput(IoConsumer<ExtendedDataOutput> creator, int expectedSize)
+	{
+		return BytesBuilder.createViaLazyDataOutput(creator, expectedSize);
+	}
+	
+	static Bytes viaDataOutput(IoConsumer<ExtendedDataOutput> creator)
+		throws IOException
 	{
 		return BytesBuilder.createViaDataOutput(creator);
 	}
-
+	
+	static Bytes viaDataOutput(IoConsumer<ExtendedDataOutput> creator, int expectedSize)
+		throws IOException
+	{
+		return BytesBuilder.createViaDataOutput(creator, expectedSize);
+	}
+	
 	static BytesBuilder create()
 	{
 		return new BytesBuilder();

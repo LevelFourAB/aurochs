@@ -51,7 +51,7 @@ public class RPCChannelCodec<T>
 	@Override
 	public Bytes toSource(RpcMessage<T> object)
 	{
-		return Bytes.create(out -> {
+		return Bytes.lazyViaDataOutput(out -> {
 			if(object instanceof RpcRequest)
 			{
 				RpcRequest<T> req = (RpcRequest<T>) object;

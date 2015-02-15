@@ -43,7 +43,7 @@ public class PartitionMessageCodec<T>
 	@Override
 	public Bytes toSource(PartitionMessage<T> object)
 	{
-		return Bytes.create(out -> {
+		return Bytes.lazyViaDataOutput(out -> {
 			out.writeVInt(object.getPartition());
 			out.writeBytes(subCodec.toSource(object.getPayload()));
 		});

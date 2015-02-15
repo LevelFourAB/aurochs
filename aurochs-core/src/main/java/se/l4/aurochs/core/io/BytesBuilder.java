@@ -4,7 +4,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 
 public class BytesBuilder
 {
@@ -26,19 +25,43 @@ public class BytesBuilder
 		return Bytes.create(out.toByteArray());
 	}
 	
-	static Bytes createViaDataOutput(IoConsumer<ExtendedDataOutput> creator)
+	static Bytes createViaLazyDataOutput(IoConsumer<ExtendedDataOutput> creator)
 	{
-		return new DataOutputBytes(creator);
+		return createViaLazyDataOutput(creator, 8192);
+	}
+	
+	static Bytes createViaLazyDataOutput(IoConsumer<ExtendedDataOutput> creator, int expectedSize)
+	{
+		return new DataOutputBytes(creator, expectedSize);
+	}
+	
+	static Bytes createViaDataOutput(IoConsumer<ExtendedDataOutput> creator)
+			throws IOException
+	{
+		return createViaDataOutput(creator, 8192);
+	}
+	
+	static Bytes createViaDataOutput(IoConsumer<ExtendedDataOutput> creator, int expectedSize)
+		throws IOException
+	{
+		ByteArrayOutputStream out = new ByteArrayOutputStream(expectedSize);
+		try(ExtendedDataOutput dataOut = new ExtendedDataOutputStream(out))
+		{
+			creator.accept(dataOut);
+		}
+		return Bytes.create(out.toByteArray());
 	}
 	
 	private static class DataOutputBytes
 		implements Bytes
 	{
 		private final IoConsumer<ExtendedDataOutput> creator;
+		private final int expectedSize;
 
-		public DataOutputBytes(IoConsumer<ExtendedDataOutput> creator)
+		public DataOutputBytes(IoConsumer<ExtendedDataOutput> creator, int expectedSize)
 		{
 			this.creator = creator;
+			this.expectedSize = expectedSize;
 		}
 		
 		@Override
@@ -52,7 +75,7 @@ public class BytesBuilder
 		public byte[] toByteArray()
 			throws IOException
 		{
-			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			ByteArrayOutputStream out = new ByteArrayOutputStream(expectedSize);
 			try(ExtendedDataOutput dataOut = new ExtendedDataOutputStream(out))
 			{
 				creator.accept(dataOut);
@@ -68,49 +91,6 @@ public class BytesBuilder
 			{
 				creator.accept(dataOut);
 			}
-		}
-	}
-	
-	private static class ChunkOutputStream
-		extends OutputStream
-	{
-		private final ByteArrayConsumer out;
-		private final byte[] buffer;
-		private int len;
-	
-		public ChunkOutputStream(int size, ByteArrayConsumer out)
-		{
-			this.out = out;
-			buffer = new byte[size];
-		}
-		
-		@Override
-		public void write(int b)
-			throws IOException
-		{
-			buffer[len++] = (byte) b;
-			if(len == buffer.length)
-			{
-				onChunk(buffer, len);
-				len = 0;
-			}
-		}
-		
-		@Override
-		public void close()
-			throws IOException
-		{
-			if(len != 0)
-			{
-				onChunk(buffer, len);
-				len = 0;
-			}
-		}
-		
-		private void onChunk(byte[] data, int len)
-			throws IOException
-		{
-			out.consume(data, 0, len);
 		}
 	}
 }

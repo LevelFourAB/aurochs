@@ -88,7 +88,7 @@ public class RaftChannelCodec
 	@Override
 	public Bytes toSource(RaftMessage object)
 	{
-		return Bytes.create(out -> writeObject(out, object));
+		return Bytes.lazyViaDataOutput(out -> writeObject(out, object));
 	}
 	
 	private void writeObject(ExtendedDataOutput out, RaftMessage object)

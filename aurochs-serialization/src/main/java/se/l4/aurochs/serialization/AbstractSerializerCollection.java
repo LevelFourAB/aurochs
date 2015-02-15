@@ -121,17 +121,24 @@ public abstract class AbstractSerializerCollection
 	}
 	
 	@Override
-	public <T> Serializer<T> findVia(Class<? extends SerializerResolver<T>> resolver, Class<T> type, Annotation... hints)
+	public <T> Serializer<T> findVia(Class<? extends SerializerOrResolver<T>> resolver, Class<T> type, Annotation... hints)
 	{
 		return findVia(resolver, new TypeViaClass(type), hints);
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
-	public <T> Serializer<T> findVia(Class<? extends SerializerResolver<T>> resolver, Type type, Annotation... hints)
+	public <T> Serializer<T> findVia(Class<? extends SerializerOrResolver<T>> resolver, Type type, Annotation... hints)
 	{
-		SerializerResolver<?> instance = getInstanceFactory().create(resolver);
-		return (Serializer) createVia(instance, type, hints);
+		SerializerOrResolver<T> instance = getInstanceFactory().create(resolver);
+		if(instance instanceof Serializer)
+		{
+			return (Serializer<T>) instance;
+		}
+		else
+		{
+			return (Serializer) createVia((SerializerResolver) instance, type, hints);
+		}
 	}
 	
 	/**

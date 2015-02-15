@@ -22,7 +22,7 @@ import com.google.common.base.Throwables;
  * @param <T>
  */
 public interface Serializer<T>
-	extends SerializerOrResolver
+	extends SerializerOrResolver<T>
 {
 	/**
 	 * Read an object from the specified stream.

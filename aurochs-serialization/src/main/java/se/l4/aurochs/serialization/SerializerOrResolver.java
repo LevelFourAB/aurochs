@@ -1,6 +1,6 @@
 package se.l4.aurochs.serialization;
 
-public interface SerializerOrResolver
+public interface SerializerOrResolver<T>
 {
 
 }

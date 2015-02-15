@@ -107,7 +107,7 @@ public interface SerializerCollection
 	 * @param type
 	 * @return
 	 */
-	<T> Serializer<T> findVia(Class<? extends SerializerResolver<T>> resolver, Class<T> type, Annotation... hints);
+	<T> Serializer<T> findVia(Class<? extends SerializerOrResolver<T>> resolver, Class<T> type, Annotation... hints);
 	
 	/**
 	 * Find a serializer using a specific {@link SerializerResolver}.
@@ -116,7 +116,7 @@ public interface SerializerCollection
 	 * @param type
 	 * @return
 	 */
-	<T> Serializer<T> findVia(Class<? extends SerializerResolver<T>> resolver, Type type, Annotation... hints);
+	<T> Serializer<T> findVia(Class<? extends SerializerOrResolver<T>> resolver, Type type, Annotation... hints);
 	
 	/**
 	 * Get the resolver this collection would use to resolve a serializer

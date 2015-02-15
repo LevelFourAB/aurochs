@@ -10,7 +10,6 @@ import se.l4.aurochs.serialization.spi.SerializerResolver;
 import se.l4.aurochs.serialization.spi.Type;
 import se.l4.aurochs.serialization.spi.TypeEncounter;
 import se.l4.aurochs.serialization.spi.TypeViaClass;
-import se.l4.aurochs.serialization.standard.DynamicSerializer;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -24,7 +23,7 @@ public class MapSerializerResolver
 	implements SerializerResolver<Map<?, ?>>
 {
 	private static final Set<Class<? extends Annotation>> HINTS =
-		ImmutableSet.of(AllowAnyItem.class, StringKey.class);
+		ImmutableSet.of(AllowAnyItem.class, Item.class, StringKey.class);
 	
 	@Override
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -39,15 +38,10 @@ public class MapSerializerResolver
 			throw new SerializationException("Maps can only be serialized if they are declared as the interface Map");
 		}
 		
-		// Create the serializer, either a specific or dynamic
-		Serializer<?> itemSerializer =
-			encounter.getHint(AllowAnyItem.class) == null
-				? encounter.getCollection().find(type)
-				: new DynamicSerializer(encounter.getCollection());
-		
 		StringKey key = encounter.getHint(StringKey.class);
 		if(key != null)
 		{
+			Serializer<?> itemSerializer = CollectionSerializers.resolveSerializer(encounter, type);
 			return new MapAsObjectSerializer(itemSerializer);
 		}
 		

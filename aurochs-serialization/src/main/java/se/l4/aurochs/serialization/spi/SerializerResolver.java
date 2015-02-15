@@ -20,7 +20,7 @@ import se.l4.aurochs.serialization.SerializerOrResolver;
  * @param <T>
  */
 public interface SerializerResolver<T>
-	extends SerializerOrResolver
+	extends SerializerOrResolver<T>
 {
 	/**
 	 * Attempt to find a suitable serializer.

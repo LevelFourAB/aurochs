@@ -9,7 +9,6 @@ import se.l4.aurochs.serialization.spi.AbstractSerializerResolver;
 import se.l4.aurochs.serialization.spi.Type;
 import se.l4.aurochs.serialization.spi.TypeEncounter;
 import se.l4.aurochs.serialization.spi.TypeViaClass;
-import se.l4.aurochs.serialization.standard.DynamicSerializer;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -17,7 +16,7 @@ public class SetSerializerResolver
 	extends AbstractSerializerResolver<Set<?>>
 {
 	private static final Set<Class<? extends Annotation>> HINTS =
-		ImmutableSet.<Class<? extends Annotation>>of(AllowAnyItem.class);
+		ImmutableSet.<Class<? extends Annotation>>of(AllowAnyItem.class, Item.class);
 
 	@Override
 	@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -33,11 +32,7 @@ public class SetSerializerResolver
 			throw new SerializationException("Sets can only be serialized if they are declared as the interface Set");
 		}
 		
-		// Create the serializer, either a specific or dynamic
-		Serializer<?> itemSerializer =
-			encounter.getHint(AllowAnyItem.class) == null
-				? encounter.getCollection().find(type)
-				: new DynamicSerializer(encounter.getCollection());
+		Serializer<?> itemSerializer = CollectionSerializers.resolveSerializer(encounter, type);
 			
 		return new SetSerializer(itemSerializer);
 	}

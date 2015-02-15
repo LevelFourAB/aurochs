@@ -112,12 +112,12 @@ public class JsonInput
 			limit = 0;
 		}
 		
-		int read = in.read(buffer, limit, buffer.length - limit);
+		int read = read(buffer, limit, buffer.length - limit);
 		
 		position = 0;
 		limit += read;
 		
-		if(read == -1)
+		if(read == 0)
 		{
 			return false;
 		}
@@ -128,6 +128,20 @@ public class JsonInput
 		}
 		
 		return true;
+	}
+	
+	private int read(char[] buffer, int offset, int length)
+		throws IOException
+	{
+		int result = 0;
+		while(result < length)
+		{
+			int l = in.read(buffer, offset + result, length - result);
+			if(l == -1) break;
+			result += l;
+		}
+		
+		return result;
 	}
 	
 	private Token toToken(char c)

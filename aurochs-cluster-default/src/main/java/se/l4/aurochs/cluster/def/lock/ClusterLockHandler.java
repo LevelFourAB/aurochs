@@ -72,7 +72,7 @@ public class ClusterLockHandler
 	
 	private Bytes fromLogObject(LockState state)
 	{
-		return Bytes.create(out -> {
+		return Bytes.lazyViaDataOutput(out -> {
 			out.writeUTF(state.name);
 			out.writeVLong(state.expiration);
 		});

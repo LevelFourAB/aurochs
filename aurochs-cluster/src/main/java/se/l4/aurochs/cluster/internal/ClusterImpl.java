@@ -134,7 +134,7 @@ public class ClusterImpl
 				RemoteSession control = connections.get()
 					.setHost(event.getUri())
 					.setChannelInitializer(ch -> ch.transform(new NamedChannelCodec("cluster:joiner"))
-						.send(Bytes.create(out -> {
+						.send(Bytes.lazyViaDataOutput(out -> {
 							out.writeByte(1);
 							out.writeString(self);
 						})
@@ -147,7 +147,7 @@ public class ClusterImpl
 				RemoteSession data = connections.get()
 					.setHost(event.getUri())
 					.setChannelInitializer(ch -> ch.transform(new NamedChannelCodec("cluster:joiner"))
-						.send(Bytes.create(out -> {
+						.send(Bytes.lazyViaDataOutput(out -> {
 							out.writeByte(2);
 							out.writeString(self);
 						})

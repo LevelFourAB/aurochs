@@ -7,9 +7,9 @@ import se.l4.aurochs.serialization.ReflectionSerializer;
 import se.l4.aurochs.serialization.Serializer;
 import se.l4.aurochs.serialization.SerializerFormatDefinition;
 import se.l4.aurochs.serialization.format.StreamingInput;
+import se.l4.aurochs.serialization.format.StreamingInput.Token;
 import se.l4.aurochs.serialization.format.StreamingOutput;
 import se.l4.aurochs.serialization.format.ValueType;
-import se.l4.aurochs.serialization.format.StreamingInput.Token;
 
 /**
  * A configuration key, represents the path of the config object that has been

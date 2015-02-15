@@ -1,7 +1,6 @@
 package se.l4.aurochs.config.internal;
 
 import java.io.File;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -28,6 +27,7 @@ import se.l4.aurochs.serialization.format.StreamingInput;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Collections2;
+import com.google.common.collect.Lists;
 
 /**
  * Default implementation of {@link Config}.
@@ -57,6 +57,14 @@ public class DefaultConfig
 	
 	private static final Pattern LIST_GET = Pattern.compile("(.+)(?:\\[([0-9]+)\\])+");
 	
+	private String get(String path, int start, int end)
+	{
+		if(path.charAt(start) == '"') start += 1;
+		if(path.charAt(end - 1) == '"') end -= 1;
+		
+		return path.substring(start, end);
+	}
+	
 	private Object get(String path)
 	{
 		if(path == null || path.equals(""))
@@ -64,11 +72,31 @@ public class DefaultConfig
 			return data;
 		}
 		
-		String[] parts = path.split("\\.");
-		Map<String, Object> current = data;
-		for(int i=0, n=parts.length; i<n; i++)
+		List<String> parts = Lists.newArrayList();
+		boolean quoted = false;
+		int lastIndex = 0;
+		for(int i=0, n=path.length(); i<n; i++)
 		{
-			Matcher listGetMatcher = LIST_GET.matcher(parts[i]);
+			char c = path.charAt(i);
+			if(! quoted && c == '.')
+			{
+				parts.add(get(path, lastIndex, i));
+				lastIndex = i + 1;
+			}
+			
+			if(c == '"')
+			{
+				quoted = ! quoted;
+			}
+		}
+		
+		parts.add(get(path, lastIndex, path.length()));
+		
+		Map<String, Object> current = data;
+		for(int i=0, n=parts.size(); i<n; i++)
+		{
+			String part = parts.get(i);
+			Matcher listGetMatcher = LIST_GET.matcher(part);
 			if(listGetMatcher.matches())
 			{
 				String name = listGetMatcher.group(1);
@@ -82,7 +110,7 @@ public class DefaultConfig
 				{
 					String subPath = Joiner
 						.on('.')
-						.join(Arrays.copyOf(parts, i+1));
+						.join(parts.subList(i+1, parts.size()));
 					
 					throw new ConfigException("Expected list at `" + subPath + "` but got: " + o);
 				}
@@ -97,7 +125,7 @@ public class DefaultConfig
 					{
 						String subPath = Joiner
 							.on('.')
-							.join(Arrays.copyOf(parts, i+1));
+							.join(parts.subList(i+1, parts.size()));
 						
 						throw new ConfigException("Expected list at `" + subPath + "` to contain at least " + (idx+1) + " values");
 					}
@@ -121,20 +149,20 @@ public class DefaultConfig
 				{
 					String subPath = Joiner
 						.on('.')
-						.join(Arrays.copyOf(parts, i+1));
+						.join(parts.subList(i+1, parts.size()));
 					
 					throw new ConfigException("Expected several values at `" + subPath + "` but only got a single value: " + o);
 				}
 			}
-			else if(current.containsKey(parts[i]))
+			else if(current.containsKey(part))
 			{
 				if(i == n-1)
 				{
 					// Last part of path, return the value
-					return current.get(parts[i]);
+					return current.get(part);
 				}
 				
-				Object o = current.get(parts[i]);
+				Object o = current.get(part);
 				if(o instanceof Map)
 				{
 					current = (Map) o;
@@ -144,7 +172,7 @@ public class DefaultConfig
 					// TODO: Proper error message
 					String subPath = Joiner
 						.on('.')
-						.join(Arrays.copyOf(parts, i+1));
+						.join(parts.subList(i+1, parts.size()));
 					
 					throw new ConfigException("Expected several values at `" + subPath + "` but only got a single value: " + o);
 				}
@@ -155,7 +183,7 @@ public class DefaultConfig
 			}
 		}
 		
-		return current.get(parts[parts.length - 1]);
+		return current.get(parts.get(parts.size() - 1));
 	}
 
 	@Override

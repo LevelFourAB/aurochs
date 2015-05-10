@@ -22,7 +22,6 @@ import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import se.l4.aurochs.cluster.StateLog;
 import se.l4.aurochs.cluster.internal.raft.log.DefaultLogEntry;
 import se.l4.aurochs.cluster.internal.raft.log.Log;
 import se.l4.aurochs.cluster.internal.raft.log.LogEntry;
@@ -41,6 +40,7 @@ import se.l4.aurochs.core.channel.ChannelListener;
 import se.l4.aurochs.core.channel.MessageEvent;
 import se.l4.aurochs.core.io.Bytes;
 import se.l4.aurochs.core.io.IoConsumer;
+import se.l4.aurochs.core.log.StateLog;
 
 import com.carrotsearch.hppc.LongObjectMap;
 import com.carrotsearch.hppc.LongObjectOpenHashMap;

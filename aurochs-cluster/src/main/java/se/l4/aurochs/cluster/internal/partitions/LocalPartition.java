@@ -6,8 +6,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import se.l4.aurochs.cluster.StateLog;
-import se.l4.aurochs.cluster.StateLogBuilder;
+import se.l4.aurochs.cluster.ClusteredStateLogBuilder;
 import se.l4.aurochs.cluster.internal.MutableNodeStates;
 import se.l4.aurochs.cluster.internal.raft.RaftBuilder;
 import se.l4.aurochs.cluster.nodes.Node;
@@ -22,6 +21,8 @@ import se.l4.aurochs.core.internal.NamedChannelCodec;
 import se.l4.aurochs.core.io.ByteMessage;
 import se.l4.aurochs.core.io.Bytes;
 import se.l4.aurochs.core.io.IoConsumer;
+import se.l4.aurochs.core.log.StateLog;
+import se.l4.aurochs.core.log.StateLogBuilder;
 
 import com.google.common.collect.Maps;
 
@@ -152,40 +153,44 @@ public class LocalPartition
 	}
 	
 	private static class DelegatingStateLogBuilder<T>
-		implements StateLogBuilder<T>
+		implements ClusteredStateLogBuilder<T>
 	{
 		private Consumer<StateLog<T>> finisher;
 		private StateLogBuilder<T> actualBuilder;
 
-		public DelegatingStateLogBuilder(StateLogBuilder<T> actualBuilder, Consumer<StateLog<T>> finisher)
+		public DelegatingStateLogBuilder(ClusteredStateLogBuilder<T> actualBuilder, Consumer<StateLog<T>> finisher)
 		{
 			this.actualBuilder = actualBuilder;
 			this.finisher = finisher;
 		}
 		
 		@Override
-		public StateLogBuilder<T> withNodes(NodeSet<Bytes> nodes, String selfId)
+		@SuppressWarnings({ "unchecked", "rawtypes" })
+		public ClusteredStateLogBuilder<T> withNodes(NodeSet<Bytes> nodes, String selfId)
 		{
-			actualBuilder = actualBuilder.withNodes(nodes, selfId);
+			actualBuilder = ((ClusteredStateLogBuilder) actualBuilder).withNodes(nodes, selfId);
 			return this;
 		}
 		
 		@Override
-		public StateLogBuilder<T> stateInFile(File file)
+		@SuppressWarnings({ "unchecked", "rawtypes" })
+		public ClusteredStateLogBuilder<T> stateInFile(File file)
 		{
-			actualBuilder = actualBuilder.stateInFile(file);
+			actualBuilder = ((ClusteredStateLogBuilder) actualBuilder).stateInFile(file);
 			return this;
 		}
 		
 		@Override
-		public StateLogBuilder<T> inMemory()
+		@SuppressWarnings({ "unchecked", "rawtypes" })
+		public ClusteredStateLogBuilder<T> inMemory()
 		{
-			actualBuilder = actualBuilder.inMemory();
+			actualBuilder = ((ClusteredStateLogBuilder) actualBuilder).inMemory();
 			return this;
 		}
 		
 		@Override
-		public <O> StateLogBuilder<O> transform(ChannelCodec<Bytes, O> codec)
+		@SuppressWarnings({ "unchecked", "rawtypes" })
+		public <O> StateLogBuilder<O> transform(ChannelCodec<T, O> codec)
 		{
 			actualBuilder = (StateLogBuilder) actualBuilder.transform(codec);
 			return (StateLogBuilder) this;

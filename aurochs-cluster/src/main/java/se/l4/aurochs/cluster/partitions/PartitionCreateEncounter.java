@@ -4,10 +4,10 @@ import java.io.File;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
-import se.l4.aurochs.cluster.StateLogBuilder;
 import se.l4.aurochs.cluster.nodes.Node;
 import se.l4.aurochs.cluster.nodes.NodeStates;
 import se.l4.aurochs.core.io.Bytes;
+import se.l4.aurochs.core.log.StateLogBuilder;
 
 public interface PartitionCreateEncounter<T>
 {

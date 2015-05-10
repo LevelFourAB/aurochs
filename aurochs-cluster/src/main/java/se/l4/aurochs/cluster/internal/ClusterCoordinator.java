@@ -2,12 +2,12 @@ package se.l4.aurochs.cluster.internal;
 
 import java.io.File;
 
-import se.l4.aurochs.cluster.StateLog;
 import se.l4.aurochs.cluster.internal.raft.RaftBuilder;
 import se.l4.aurochs.cluster.nodes.NodeSet;
 import se.l4.aurochs.core.internal.NamedChannelCodec;
 import se.l4.aurochs.core.io.ByteMessage;
 import se.l4.aurochs.core.io.Bytes;
+import se.l4.aurochs.core.log.StateLog;
 
 /**
  * Coordinator of core activities in the cluster.

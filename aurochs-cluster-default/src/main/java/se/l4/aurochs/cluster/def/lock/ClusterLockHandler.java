@@ -4,12 +4,12 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import se.l4.aurochs.cluster.StateLog;
 import se.l4.aurochs.cluster.partitions.PartitionCreateEncounter;
 import se.l4.aurochs.cluster.partitions.PartitionService;
 import se.l4.aurochs.core.channel.MessageEvent;
 import se.l4.aurochs.core.io.Bytes;
 import se.l4.aurochs.core.io.ExtendedDataInput;
+import se.l4.aurochs.core.log.StateLog;
 
 import com.google.common.base.Throwables;
 

@@ -1,13 +1,20 @@
-package se.l4.aurochs.cluster;
+package se.l4.aurochs.core.log;
 
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * 
+ * @author Andreas Holstenson
+ *
+ * @param <T>
+ */
 public interface StateLog<T>
 	extends AutoCloseable
 {
 	/**
 	 * Submit an entry to this state log. This method will return a future
-	 * that will trigger when submitted entry has been committed to the log.
+	 * that will trigger when the submitted entry has been committed to the
+	 * log.
 	 * 
 	 * @param entry
 	 * @return
@@ -18,5 +25,5 @@ public interface StateLog<T>
 	 * Close this state log.
 	 */
 	@Override
-	public void close();
+	void close();
 }

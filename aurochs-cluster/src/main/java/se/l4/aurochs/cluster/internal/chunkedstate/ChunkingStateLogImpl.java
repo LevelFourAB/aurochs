@@ -10,7 +10,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import se.l4.aurochs.cluster.StateLog;
 import se.l4.aurochs.cluster.internal.raft.RaftBuilder;
 import se.l4.aurochs.cluster.internal.raft.log.LogEntry;
 import se.l4.aurochs.cluster.statelog.ChunkingStateLog;
@@ -20,6 +19,7 @@ import se.l4.aurochs.core.io.Bytes;
 import se.l4.aurochs.core.io.ChunkOutputStream;
 import se.l4.aurochs.core.io.ExtendedDataInput;
 import se.l4.aurochs.core.io.IoConsumer;
+import se.l4.aurochs.core.log.StateLog;
 
 /**
  * Implementation of {@link ChunkingStateLog}.

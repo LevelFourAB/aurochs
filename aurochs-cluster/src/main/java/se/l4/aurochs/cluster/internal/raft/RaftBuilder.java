@@ -5,8 +5,7 @@ import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
-import se.l4.aurochs.cluster.StateLog;
-import se.l4.aurochs.cluster.StateLogBuilder;
+import se.l4.aurochs.cluster.ClusteredStateLogBuilder;
 import se.l4.aurochs.cluster.internal.raft.log.InMemoryLog;
 import se.l4.aurochs.cluster.internal.raft.log.Log;
 import se.l4.aurochs.cluster.internal.raft.log.LogEntry;
@@ -15,9 +14,11 @@ import se.l4.aurochs.cluster.nodes.NodeSet;
 import se.l4.aurochs.core.channel.ChannelCodec;
 import se.l4.aurochs.core.io.Bytes;
 import se.l4.aurochs.core.io.IoConsumer;
+import se.l4.aurochs.core.log.StateLog;
+import se.l4.aurochs.core.log.StateLogBuilder;
 
 public class RaftBuilder<T>
-	implements StateLogBuilder<T>
+	implements ClusteredStateLogBuilder<T>
 {
 	private String id;
 	private NodeSet<RaftMessage> nodes;
@@ -36,7 +37,7 @@ public class RaftBuilder<T>
 	}
 	
 	@Override
-	public StateLogBuilder<T> withNodes(NodeSet<Bytes> nodes, String selfId)
+	public RaftBuilder<T> withNodes(NodeSet<Bytes> nodes, String selfId)
 	{
 		this.nodes = nodes.transform(new RaftChannelCodec());
 		this.id = selfId;
@@ -50,7 +51,7 @@ public class RaftBuilder<T>
 	 * @param leader
 	 * @return
 	 */
-	public StateLogBuilder<T> withLeaderListener(Consumer<String> listener)
+	public RaftBuilder<T> withLeaderListener(Consumer<String> listener)
 	{
 		this.leaderListener = listener;
 		
@@ -58,14 +59,7 @@ public class RaftBuilder<T>
 	}
 	
 	@Override
-	public <O> StateLogBuilder<O> transform(ChannelCodec<Bytes, O> codec)
-	{
-		this.codec = (ChannelCodec) codec;
-		return (StateLogBuilder) this;
-	}
-	
-	@Override
-	public StateLogBuilder<T> inMemory()
+	public RaftBuilder<T> inMemory()
 	{
 		stateStorage = new InMemoryStateStorage();
 		log = new InMemoryLog();
@@ -73,7 +67,7 @@ public class RaftBuilder<T>
 	}
 	
 	@Override
-	public StateLogBuilder<T> stateInFile(File file)
+	public RaftBuilder<T> stateInFile(File file)
 	{
 		MVStoreFileStorage storage = new MVStoreFileStorage(file);
 		stateStorage = storage;

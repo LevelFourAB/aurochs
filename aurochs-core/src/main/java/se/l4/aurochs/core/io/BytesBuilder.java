@@ -14,6 +14,11 @@ public class BytesBuilder
 		out = new ByteArrayOutputStream(8192);
 	}
 	
+	public BytesBuilder addChunk(byte[] buffer)
+	{
+		return addChunk(buffer, 0, buffer.length);
+	}
+	
 	public BytesBuilder addChunk(byte[] buffer, int off, int len)
 	{
 		out.write(buffer, off, len);

@@ -12,6 +12,13 @@ public interface StateLog<T>
 	extends AutoCloseable
 {
 	/**
+	 * Get the data stored in this log.
+	 * 
+	 * @return
+	 */
+	LogData<T> data();
+	
+	/**
 	 * Submit an entry to this state log. This method will return a future
 	 * that will trigger when the submitted entry has been committed to the
 	 * log.

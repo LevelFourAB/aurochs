@@ -40,6 +40,7 @@ import se.l4.aurochs.core.channel.ChannelListener;
 import se.l4.aurochs.core.channel.MessageEvent;
 import se.l4.aurochs.core.io.Bytes;
 import se.l4.aurochs.core.io.IoConsumer;
+import se.l4.aurochs.core.log.LogData;
 import se.l4.aurochs.core.log.StateLog;
 
 import com.carrotsearch.hppc.LongObjectMap;
@@ -281,6 +282,12 @@ public class Raft
 		{
 			stateLock.unlock();
 		}
+	}
+	
+	@Override
+	public LogData<Bytes> data()
+	{
+		throw new UnsupportedOperationException();
 	}
 	
 	private CompletableFuture<Void> requestAppendEntry(Bytes data)

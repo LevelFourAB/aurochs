@@ -14,6 +14,7 @@ import se.l4.aurochs.cluster.nodes.NodeSet;
 import se.l4.aurochs.core.channel.ChannelCodec;
 import se.l4.aurochs.core.io.Bytes;
 import se.l4.aurochs.core.io.IoConsumer;
+import se.l4.aurochs.core.log.LogData;
 import se.l4.aurochs.core.log.StateLog;
 import se.l4.aurochs.core.log.StateLogBuilder;
 
@@ -154,6 +155,12 @@ public class RaftBuilder<T>
 		{
 			this.codec = codec;
 			this.log = log;
+		}
+		
+		@Override
+		public LogData<T> data()
+		{
+			throw new UnsupportedOperationException();
 		}
 		
 		@Override

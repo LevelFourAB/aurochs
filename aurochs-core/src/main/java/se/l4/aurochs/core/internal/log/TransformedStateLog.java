@@ -3,6 +3,7 @@ package se.l4.aurochs.core.internal.log;
 import java.util.concurrent.CompletableFuture;
 
 import se.l4.aurochs.core.channel.ChannelCodec;
+import se.l4.aurochs.core.log.LogData;
 import se.l4.aurochs.core.log.StateLog;
 
 public class TransformedStateLog<T, O>
@@ -10,11 +11,19 @@ public class TransformedStateLog<T, O>
 {
 	private final StateLog<O> log;
 	private final ChannelCodec<O, T> codec;
+	private final TransformedLogData<T, O> data;
 
 	public TransformedStateLog(StateLog<O> log, ChannelCodec<O, T> codec)
 	{
 		this.log = log;
 		this.codec = codec;
+		this.data = new TransformedLogData<>(log.data(), codec);
+	}
+	
+	@Override
+	public LogData<T> data()
+	{
+		return data;
 	}
 
 	@Override

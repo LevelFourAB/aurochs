@@ -4,7 +4,6 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.List;
 
-import se.l4.aurochs.cluster.internal.raft.Raft;
 import se.l4.aurochs.core.io.Bytes;
 
 import com.google.common.collect.Lists;

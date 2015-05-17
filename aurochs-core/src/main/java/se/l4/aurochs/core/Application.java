@@ -212,6 +212,17 @@ public class Application
 		
 		return this;
 	}
+	
+	private void withPackageFromClass(Class<?> c)
+	{
+		Package pkg = c.getPackage();
+		if(pkg == null)
+		{
+			return;
+		}
+		
+		withPackage(pkg.getName());
+	}
 
 	/**
 	 * Add a new module to the application.
@@ -222,6 +233,8 @@ public class Application
 	public Application add(Module instance)
 	{
 		configurator.add(instance);
+		
+		withPackageFromClass(instance.getClass());
 		
 		return this;
 	}
@@ -236,6 +249,8 @@ public class Application
 	public Application add(Class<? extends Module> module)
 	{
 		configurator.add(module);
+		
+		withPackageFromClass(module);
 		
 		return this;
 	}

@@ -37,7 +37,7 @@ public interface Log
 	 * @param id
 	 * @return
 	 */
-	LogEntry get(long index)
+	StoredLogEntry get(long index)
 		throws IOException;
 	
 	/**
@@ -46,7 +46,7 @@ public interface Log
 	 * @param data
 	 * @return
 	 */
-	long store(long term, LogEntry.Type type, Bytes data)
+	long store(long term, StoredLogEntry.Type type, Bytes data)
 		throws IOException;
 	
 	/**
@@ -84,10 +84,10 @@ public interface Log
 	 * @return
 	 * @throws IOException
 	 */
-	default List<LogEntry> get(long[] ids)
+	default List<StoredLogEntry> get(long[] ids)
 		throws IOException
 	{
-		List<LogEntry> result = Lists.newArrayListWithCapacity(ids.length);
+		List<StoredLogEntry> result = Lists.newArrayListWithCapacity(ids.length);
 		for(long id : ids)
 		{
 			result.add(get(id));

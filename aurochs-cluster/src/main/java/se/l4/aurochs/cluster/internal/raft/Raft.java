@@ -22,9 +22,9 @@ import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import se.l4.aurochs.cluster.internal.raft.log.DefaultLogEntry;
+import se.l4.aurochs.cluster.internal.raft.log.DefaultStoredLogEntry;
 import se.l4.aurochs.cluster.internal.raft.log.Log;
-import se.l4.aurochs.cluster.internal.raft.log.LogEntry;
+import se.l4.aurochs.cluster.internal.raft.log.StoredLogEntry;
 import se.l4.aurochs.cluster.internal.raft.messages.AppendEntries;
 import se.l4.aurochs.cluster.internal.raft.messages.AppendEntriesReply;
 import se.l4.aurochs.cluster.internal.raft.messages.ClientAddToLog;
@@ -40,7 +40,9 @@ import se.l4.aurochs.core.channel.ChannelListener;
 import se.l4.aurochs.core.channel.MessageEvent;
 import se.l4.aurochs.core.io.Bytes;
 import se.l4.aurochs.core.io.IoConsumer;
+import se.l4.aurochs.core.log.DefaultLogEntry;
 import se.l4.aurochs.core.log.LogData;
+import se.l4.aurochs.core.log.LogEntry;
 import se.l4.aurochs.core.log.StateLog;
 
 import com.carrotsearch.hppc.LongObjectMap;
@@ -55,7 +57,7 @@ public class Raft
 {
 	private static final long LOG_CACHE_SIZE = 10;
 
-	private static final LogEntry LOG_HEAD = new DefaultLogEntry(0, 0, null, null);
+	private static final StoredLogEntry LOG_HEAD = new DefaultStoredLogEntry(0, 0, null, null);
 
 	private final Logger logger;
 	
@@ -93,10 +95,10 @@ public class Raft
 	private final Thread applierThread;
 	private final Condition commitIndexUpdated;
 	
-	private final LongObjectMap<CompletableFuture<Void>> futures;
+	private final LongObjectMap<CompletableFuture<LogEntry<Bytes>>> futures;
 	private final AtomicLong futureIds;
 
-	private final IoConsumer<LogEntry> applier;
+	private final IoConsumer<StoredLogEntry> applier;
 	private final boolean applierVolatile;
 	
 	private final List<NodeEvent<RaftMessage>> nodeChanges;
@@ -109,7 +111,7 @@ public class Raft
 	
 	public Raft(StateStorage stateStorage, Log log, NodeSet<RaftMessage> nodes, 
 			String id,
-			IoConsumer<LogEntry> applier,
+			IoConsumer<StoredLogEntry> applier,
 			boolean applierVolatile,
 			Consumer<String> leaderListener,
 			int heartbeat,
@@ -264,7 +266,7 @@ public class Raft
 	}
 	
 	@Override
-	public CompletableFuture<Void> submit(Bytes entry)
+	public CompletableFuture<LogEntry<Bytes>> submit(Bytes entry)
 	{
 		stateLock.lock();
 		try
@@ -290,15 +292,15 @@ public class Raft
 		throw new UnsupportedOperationException();
 	}
 	
-	private CompletableFuture<Void> requestAppendEntry(Bytes data)
+	private CompletableFuture<LogEntry<Bytes>> requestAppendEntry(Bytes data)
 	{
 		stateLock.lock();
 		try
 		{
-			long id = log.store(stateStorage.getCurrentTerm(), LogEntry.Type.DATA, data);
+			long id = log.store(stateStorage.getCurrentTerm(), StoredLogEntry.Type.DATA, data);
 			logger.debug("New log entry with index {}", id);
 			
-			CompletableFuture<Void> future = new CompletableFuture<>();
+			CompletableFuture<LogEntry<Bytes>> future = new CompletableFuture<>();
 			futures.put(id, future);
 			
 			NodeState state = nodeStates.get(self.getId());
@@ -320,7 +322,7 @@ public class Raft
 		}
 	}
 	
-	private CompletableFuture<Void> forwardAppendEntryToLeader(Bytes data)
+	private CompletableFuture<LogEntry<Bytes>> forwardAppendEntryToLeader(Bytes data)
 	{
 		stateLock.lock();
 		try
@@ -332,7 +334,7 @@ public class Raft
 			}
 			
 			long id = futureIds.incrementAndGet();
-			CompletableFuture<Void> future = new CompletableFuture<>();
+			CompletableFuture<LogEntry<Bytes>> future = new CompletableFuture<>();
 			futures.put(-id, future);
 			
 			leader.outgoing().send(new ClientAddToLog(self.getId(), stateStorage.getCurrentTerm(), id, data));
@@ -352,7 +354,7 @@ public class Raft
 			.whenComplete((r, ex) -> {
 				if(ex == null)
 				{
-					sendTo(node, new ClientAddToLogReply(self.getId(), stateStorage.getCurrentTerm(), id));
+					sendTo(node, new ClientAddToLogReply(self.getId(), stateStorage.getCurrentTerm(), id, r.id()));
 				}
 				
 				// TODO: Do we need to handle the exception?
@@ -362,10 +364,10 @@ public class Raft
 	protected void handleClientAddToLogReply(Node<RaftMessage> node, ClientAddToLogReply message)
 	{
 		Long fid = -message.getId();
-		CompletableFuture<Void> future = futures.get(fid);
+		CompletableFuture<LogEntry<Bytes>> future = futures.get(fid);
 		if(future != null)
 		{
-			future.complete(null);
+			future.complete(new DefaultLogEntry<Bytes>(message.getIndex(), LogEntry.Type.DATA, null));
 			futures.remove(fid);
 		}
 	}
@@ -402,7 +404,7 @@ public class Raft
 			stateStorage.updateCurrentTerm(newTerm);
 			
 			String vote = stateStorage.getVote(newTerm);
-			LogEntry lastLogEntry = getLastLogEntry();
+			StoredLogEntry lastLogEntry = getLastLogEntry();
 			boolean upToDate = lastLogEntry.getIndex() <= message.getLastLogIndex();
 			if((vote == null || vote.equals(node.getId())) && upToDate)
 			{
@@ -475,7 +477,7 @@ public class Raft
 			logger.info("Term " + stateStorage.getCurrentTerm() + ": Became leader");
 			logger.debug("Had {} votes of {} total", votes.size(), nodes.size());
 			
-			LogEntry lastLogEntry = getLastLogEntry();
+			StoredLogEntry lastLogEntry = getLastLogEntry();
 			for(Node<RaftMessage> n : nodes.values())
 			{
 				nodeStates.put(n.getId(), new NodeState(lastLogEntry.getIndex() + 1));
@@ -535,7 +537,7 @@ public class Raft
 			// Always schedule a new election
 			scheduleHearbeatElection();
 			
-			LogEntry prevLog = getLogEntry(message.getPrevLogIndex());
+			StoredLogEntry prevLog = getLogEntry(message.getPrevLogIndex());
 			if(prevLog == null || prevLog.getTerm() != message.getPrevLogTerm())
 			{
 				if(logger.isDebugEnabled())
@@ -557,9 +559,9 @@ public class Raft
 			logger.debug("About to append {} entries", message.getEntries().size());
 			
 			// Store all of the new entries
-			for(LogEntry e : message.getEntries())
+			for(StoredLogEntry e : message.getEntries())
 			{
-				LogEntry previous = getLogEntry(e.getIndex());
+				StoredLogEntry previous = getLogEntry(e.getIndex());
 				if(previous != null)
 				{
 					// This entry is already stored
@@ -618,7 +620,7 @@ public class Raft
 				return;
 			}
 			
-			LogEntry lastLogEntry = getLastLogEntry();
+			StoredLogEntry lastLogEntry = getLastLogEntry();
 			NodeState state = nodeStates.get(node.getId());
 			if(message.isSuccess())
 			{
@@ -689,7 +691,8 @@ public class Raft
 			{
 				long ci = l;
 				executor.execute(() -> {
-					futures.get(ci).complete(null);
+					CompletableFuture<LogEntry<Bytes>> future = futures.get(ci);
+					future.complete(new DefaultLogEntry<Bytes>(ci, LogEntry.Type.DATA, null));
 					futures.remove(ci);
 				});
 			}
@@ -776,7 +779,7 @@ public class Raft
 		}
 	}
 	
-	private LogEntry getLastLogEntry()
+	private StoredLogEntry getLastLogEntry()
 	{
 		if(log.last() == 0) return LOG_HEAD;
 		
@@ -790,7 +793,7 @@ public class Raft
 		}
 	}
 	
-	private LogEntry getLogEntry(long id)
+	private StoredLogEntry getLogEntry(long id)
 	{
 		if(id <= 0) return LOG_HEAD;
 		if(id > log.last()) return null;
@@ -824,7 +827,7 @@ public class Raft
 			}
 			
 			long term = stateStorage.getCurrentTerm();
-			LogEntry lastLogEntry = getLastLogEntry();
+			StoredLogEntry lastLogEntry = getLastLogEntry();
 			for(Node<RaftMessage> node : nodes.values())
 			{
 				if(node == self) continue;
@@ -853,7 +856,7 @@ public class Raft
 			}
 			
 			long term = stateStorage.getCurrentTerm();
-			LogEntry lastLogEntry = getLastLogEntry();
+			StoredLogEntry lastLogEntry = getLastLogEntry();
 			sendAppendEntries(node, term, lastLogEntry);
 		}
 		catch(IOException e)
@@ -866,7 +869,7 @@ public class Raft
 		}
 	}
 
-	private void sendAppendEntries(Node<RaftMessage> node, long term, LogEntry lastLogEntry)
+	private void sendAppendEntries(Node<RaftMessage> node, long term, StoredLogEntry lastLogEntry)
 		throws IOException
 	{
 		NodeState state = nodeStates.get(node.getId());
@@ -876,7 +879,7 @@ public class Raft
 		}
 		else
 		{
-			LogEntry entry = getLogEntry(state.nextIndex - 1);
+			StoredLogEntry entry = getLogEntry(state.nextIndex - 1);
 			
 			// Send a maximum of five entries at a time
 			// TODO: We should really look at the size of the entries instead of just counting
@@ -885,7 +888,7 @@ public class Raft
 			{
 				entriesToSend[i] = entry.getIndex() + 1;
 			}
-			List<LogEntry> entries = log.get(entriesToSend);
+			List<StoredLogEntry> entries = log.get(entriesToSend);
 			sendTo(node, new AppendEntries(id, term, entry.getIndex(), entry.getTerm(), entries, commitIndex));
 		}
 	}
@@ -910,7 +913,7 @@ public class Raft
 			votes.clear();
 			votes.add(id);
 			
-			LogEntry last = getLastLogEntry();
+			StoredLogEntry last = getLastLogEntry();
 			sendToAll(new RequestVote(term, id, last.getIndex(), last.getTerm()));
 			
 			scheduleElectionTimeout();

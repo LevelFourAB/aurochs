@@ -19,10 +19,10 @@ import com.google.common.collect.Lists;
 public class MemoryStateLog<T>
 	implements StateLog<T>
 {
-	private final IoConsumer<T> applier;
+	private final IoConsumer<LogEntry<T>> applier;
 	private final MemoryLogData<T> logData;
 
-	public MemoryStateLog(IoConsumer<T> applier)
+	public MemoryStateLog(IoConsumer<LogEntry<T>> applier)
 	{
 		this.applier = applier;
 		logData = new MemoryLogData<>();
@@ -35,16 +35,16 @@ public class MemoryStateLog<T>
 	}
 
 	@Override
-	public synchronized CompletableFuture<Void> submit(T entry)
+	public synchronized CompletableFuture<LogEntry<T>> submit(T entry)
 	{
-		CompletableFuture<Void> future = new CompletableFuture<>();
+		CompletableFuture<LogEntry<T>> future = new CompletableFuture<>();
 		try
 		{
-			logData.data.add(entry);
-			applier.accept(entry);
-			future.complete(null);
+			LogEntry<T> logEntry = logData.add(entry);
+			applier.accept(logEntry);
+			future.complete(logEntry);
 		}
-		catch (IOException e)
+		catch(IOException e)
 		{
 			future.completeExceptionally(e);
 		}
@@ -86,23 +86,30 @@ public class MemoryStateLog<T>
 			T data = this.data.get((int) index);
 			return new DefaultLogEntry<>(index, LogEntry.Type.DATA, data);
 		}
+		
+		public LogEntry<T> add(T data)
+		{
+			int index = this.data.size() + 1;
+			this.data.add(data);
+			return new DefaultLogEntry<>(index, LogEntry.Type.DATA, data);
+		}
 	}
 
 	public static <T> StateLogBuilder<T> create()
 	{
 		return new StateLogBuilder<T>()
 		{
-			private IoConsumer<T> applier;
+			private IoConsumer<LogEntry<T>> applier;
 
 			@Override
-			public StateLogBuilder<T> withApplier(IoConsumer<T> applier)
+			public StateLogBuilder<T> withApplier(IoConsumer<LogEntry<T>> applier)
 			{
 				this.applier = applier;
 				return this;
 			}
 			
 			@Override
-			public StateLogBuilder<T> withVolatileApplier(IoConsumer<T> applier)
+			public StateLogBuilder<T> withVolatileApplier(IoConsumer<LogEntry<T>> applier)
 			{
 				return withApplier(applier);
 			}

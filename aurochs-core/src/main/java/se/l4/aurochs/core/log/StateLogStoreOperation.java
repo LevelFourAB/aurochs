@@ -1,7 +1,6 @@
-package se.l4.aurochs.cluster.statelog;
+package se.l4.aurochs.core.log;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -10,14 +9,15 @@ import java.util.concurrent.CompletableFuture;
  * @author Andreas Holstenson
  *
  */
-public interface StateStoreOperation
+public interface StateLogStoreOperation<T>
 {
 	/**
-	 * Get the stream to write data to.
+	 * Store the specified item.
 	 * 
-	 * @return
+	 * @param item
 	 */
-	OutputStream stream();
+	void store(T item)
+		throws IOException;
 	
 	/**
 	 * Abort this operation.

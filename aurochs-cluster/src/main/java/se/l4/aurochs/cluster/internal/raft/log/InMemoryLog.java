@@ -10,7 +10,7 @@ import com.google.common.collect.Lists;
 public class InMemoryLog
 	implements Log
 {
-	private final List<LogEntry> entries;
+	private final List<StoredLogEntry> entries;
 	
 	public InMemoryLog()
 	{
@@ -37,7 +37,7 @@ public class InMemoryLog
 	}
 	
 	@Override
-	public LogEntry get(long index)
+	public StoredLogEntry get(long index)
 		throws IOException
 	{
 		if(index > entries.size() || index < 1)
@@ -59,10 +59,10 @@ public class InMemoryLog
 	}
 	
 	@Override
-	public long store(long term, LogEntry.Type type, Bytes data)
+	public long store(long term, StoredLogEntry.Type type, Bytes data)
 		throws IOException
 	{
-		entries.add(new DefaultLogEntry(entries.size() + 1, term, type, Bytes.create(data.toByteArray())));
+		entries.add(new DefaultStoredLogEntry(entries.size() + 1, term, type, Bytes.create(data.toByteArray())));
 		return entries.size();
 	}
 }

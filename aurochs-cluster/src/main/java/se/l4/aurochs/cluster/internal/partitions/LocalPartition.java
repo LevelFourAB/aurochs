@@ -21,6 +21,7 @@ import se.l4.aurochs.core.internal.NamedChannelCodec;
 import se.l4.aurochs.core.io.ByteMessage;
 import se.l4.aurochs.core.io.Bytes;
 import se.l4.aurochs.core.io.IoConsumer;
+import se.l4.aurochs.core.log.LogEntry;
 import se.l4.aurochs.core.log.StateLog;
 import se.l4.aurochs.core.log.StateLogBuilder;
 
@@ -127,7 +128,7 @@ public class LocalPartition
 		{
 			stateLogNodes = nodes.transform(new NamedChannelCodec("p" + partition + ":" + name + ":state-log"));
 			return new DelegatingStateLogBuilder<>(
-				new RaftBuilder<Bytes>()
+				new RaftBuilder()
 					.withLeaderListener(new LeaderListener(channel.nodes(partition), nodeStates))
 					.withNodes(stateLogNodes, self)
 					.stateInFile(new File(file, "state-log")),
@@ -197,14 +198,14 @@ public class LocalPartition
 		}
 		
 		@Override
-		public StateLogBuilder<T> withApplier(IoConsumer<T> applier)
+		public StateLogBuilder<T> withApplier(IoConsumer<LogEntry<T>> applier)
 		{
 			actualBuilder = actualBuilder.withApplier(applier);
 			return this;
 		}
 		
 		@Override
-		public StateLogBuilder<T> withVolatileApplier(IoConsumer<T> applier)
+		public StateLogBuilder<T> withVolatileApplier(IoConsumer<LogEntry<T>> applier)
 		{
 			actualBuilder = actualBuilder.withVolatileApplier(applier);
 			return this;

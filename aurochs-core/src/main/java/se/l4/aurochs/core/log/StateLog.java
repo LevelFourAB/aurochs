@@ -23,10 +23,14 @@ public interface StateLog<T>
 	 * that will trigger when the submitted entry has been committed to the
 	 * log.
 	 * 
+	 * <p>
+	 * The returned log entry can not be used to retrieve data and is only
+	 * intended to be used for retrieving metadata such as the log entry id.
+	 * 
 	 * @param entry
 	 * @return
 	 */
-	CompletableFuture<Void> submit(T entry);
+	CompletableFuture<LogEntry<T>> submit(T entry);
 	
 	/**
 	 * Close this state log.

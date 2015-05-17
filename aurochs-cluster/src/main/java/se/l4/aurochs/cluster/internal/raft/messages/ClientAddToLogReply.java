@@ -6,17 +6,24 @@ public class ClientAddToLogReply
 	private final String sender;
 	private final long term;
 	private final long id;
+	private final long index;
 
-	public ClientAddToLogReply(String sender, long term, long id)
+	public ClientAddToLogReply(String sender, long term, long id, long index)
 	{
 		this.sender = sender;
 		this.term = term;
 		this.id = id;
+		this.index = index;
 	}
 	
 	public long getId()
 	{
 		return id;
+	}
+	
+	public long getIndex()
+	{
+		return index;
 	}
 	
 	@Override

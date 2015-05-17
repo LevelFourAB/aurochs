@@ -4,6 +4,7 @@ import java.util.concurrent.CompletableFuture;
 
 import se.l4.aurochs.core.channel.ChannelCodec;
 import se.l4.aurochs.core.log.LogData;
+import se.l4.aurochs.core.log.LogEntry;
 import se.l4.aurochs.core.log.StateLog;
 
 public class TransformedStateLog<T, O>
@@ -27,9 +28,10 @@ public class TransformedStateLog<T, O>
 	}
 
 	@Override
-	public CompletableFuture<Void> submit(T entry)
+	public CompletableFuture<LogEntry<T>> submit(T entry)
 	{
-		return log.submit(codec.toSource(entry));
+		return log.submit(codec.toSource(entry))
+			.thenApply(e -> new TransformedLogEntry<>(e, this.codec));
 	}
 
 	@Override

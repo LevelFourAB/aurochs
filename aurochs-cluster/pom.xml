@@ -22,12 +22,6 @@
 		</dependency>
 		
 		<dependency>
-			<groupId>com.carrotsearch</groupId>
-			<artifactId>hppc</artifactId>
-			<version>0.6.1</version>
-		</dependency>
-		
-		<dependency>
 		    <groupId>com.h2database</groupId>
 		    <artifactId>h2</artifactId>
 		    <version>1.4.184</version>

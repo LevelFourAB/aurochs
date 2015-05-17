@@ -13,10 +13,10 @@ import org.h2.mvstore.WriteBuffer;
 import org.h2.mvstore.type.DataType;
 import org.h2.mvstore.type.ObjectDataType;
 
-import se.l4.aurochs.cluster.internal.raft.log.DefaultLogEntry;
+import se.l4.aurochs.cluster.internal.raft.log.DefaultStoredLogEntry;
 import se.l4.aurochs.cluster.internal.raft.log.Log;
-import se.l4.aurochs.cluster.internal.raft.log.LogEntry;
-import se.l4.aurochs.cluster.internal.raft.log.LogEntry.Type;
+import se.l4.aurochs.cluster.internal.raft.log.StoredLogEntry;
+import se.l4.aurochs.cluster.internal.raft.log.StoredLogEntry.Type;
 import se.l4.aurochs.core.io.Bytes;
 
 import com.google.common.io.ByteStreams;
@@ -127,16 +127,16 @@ public class MVStoreFileStorage
 	}
 	
 	@Override
-	public LogEntry get(long index)
+	public StoredLogEntry get(long index)
 		throws IOException
 	{
 		LogEntryData data = log.get(index);
 		if(data == null) return null;
-		return new DefaultLogEntry(data.index, data.term, data.type, new BytesImpl(data.data));
+		return new DefaultStoredLogEntry(data.index, data.term, data.type, new BytesImpl(data.data));
 	}
 	
 	@Override
-	public long store(long term, LogEntry.Type type, Bytes data)
+	public long store(long term, StoredLogEntry.Type type, Bytes data)
 		throws IOException
 	{
 		byte[] dataId;
@@ -194,10 +194,10 @@ public class MVStoreFileStorage
 	{
 		private final long index;
 		private final long term;
-		private final LogEntry.Type type;
+		private final StoredLogEntry.Type type;
 		private final byte[] data;
 		
-		public LogEntryData(long index, long term, LogEntry.Type type, byte[] data)
+		public LogEntryData(long index, long term, StoredLogEntry.Type type, byte[] data)
 		{
 			this.index = index;
 			this.term = term;
@@ -227,7 +227,7 @@ public class MVStoreFileStorage
 		{
 			long index = buff.getLong();
 			long term = buff.getLong();
-			LogEntry.Type type = LogEntry.Type.values()[buff.get()];
+			StoredLogEntry.Type type = StoredLogEntry.Type.values()[buff.get()];
 			int len = buff.getInt();
 			byte[] data = new byte[len];
 			buff.get(data);

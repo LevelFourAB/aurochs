@@ -2,7 +2,7 @@ package se.l4.aurochs.cluster.internal.raft.messages;
 
 import java.util.List;
 
-import se.l4.aurochs.cluster.internal.raft.log.LogEntry;
+import se.l4.aurochs.cluster.internal.raft.log.StoredLogEntry;
 
 public class AppendEntries
 	implements RaftMessage
@@ -11,10 +11,10 @@ public class AppendEntries
 	private final long term;
 	private final long prevLogIndex;
 	private final long prevLogTerm;
-	private final List<LogEntry> entries;
+	private final List<StoredLogEntry> entries;
 	private final long leaderCommit;
 
-	public AppendEntries(String sender, long term, long prevLogIndex, long prevLogTerm, List<LogEntry> entries, long leaderCommit)
+	public AppendEntries(String sender, long term, long prevLogIndex, long prevLogTerm, List<StoredLogEntry> entries, long leaderCommit)
 	{
 		this.sender = sender;
 		this.term = term;
@@ -46,7 +46,7 @@ public class AppendEntries
 		return prevLogTerm;
 	}
 	
-	public List<LogEntry> getEntries()
+	public List<StoredLogEntry> getEntries()
 	{
 		return entries;
 	}

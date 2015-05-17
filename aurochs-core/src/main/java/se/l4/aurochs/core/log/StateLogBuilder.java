@@ -43,7 +43,28 @@ public interface StateLogBuilder<T>
 	 * @param applier
 	 * @return
 	 */
-	StateLogBuilder<T> withApplier(IoConsumer<T> applier);
+	StateLogBuilder<T> withApplier(IoConsumer<LogEntry<T>> applier);
+	
+	/**
+	 * Set the consumer that is used to commit entries in the log, optionally specifying
+	 * that it should be volatile. This method will call either {@link #withApplier(IoConsumer)}
+	 * or {@link #withVolatileApplier(IoConsumer)}.
+	 * 
+	 * @param applier
+	 * @param isVolatile
+	 * @return
+	 */
+	default StateLogBuilder<T> withApplier(IoConsumer<LogEntry<T>> applier, boolean isVolatile)
+	{
+		if(isVolatile)
+		{
+			return withVolatileApplier(applier);
+		}
+		else
+		{
+			return withApplier(applier);
+		}
+	}
 	
 	/**
 	 * Set the consumer that is used to commit entries in the log. This is
@@ -54,7 +75,7 @@ public interface StateLogBuilder<T>
 	 * @param applier
 	 * @return
 	 */
-	StateLogBuilder<T> withVolatileApplier(IoConsumer<T> applier);
+	StateLogBuilder<T> withVolatileApplier(IoConsumer<LogEntry<T>> applier);
 	
 	StateLog<T> build();
 }

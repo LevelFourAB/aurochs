@@ -171,8 +171,6 @@ public class ClusterImpl
 		File storage = config.getStorage();
 		storage.mkdirs();
 		
-		new ClusterCoordinator(coreNodes, self, storage);
-		
 		// Fire up a static partition table
 		for(int i=0, n=partitions.getTotal(); i<n; i++)
 		{

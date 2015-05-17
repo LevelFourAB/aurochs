@@ -1,25 +1,23 @@
 package se.l4.aurochs.cluster.internal.raft;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 import se.l4.aurochs.cluster.ClusteredStateLogBuilder;
 import se.l4.aurochs.cluster.internal.raft.log.InMemoryLog;
 import se.l4.aurochs.cluster.internal.raft.log.Log;
-import se.l4.aurochs.cluster.internal.raft.log.LogEntry;
+import se.l4.aurochs.cluster.internal.raft.log.StoredLogEntry;
 import se.l4.aurochs.cluster.internal.raft.messages.RaftMessage;
 import se.l4.aurochs.cluster.nodes.NodeSet;
-import se.l4.aurochs.core.channel.ChannelCodec;
 import se.l4.aurochs.core.io.Bytes;
 import se.l4.aurochs.core.io.IoConsumer;
-import se.l4.aurochs.core.log.LogData;
+import se.l4.aurochs.core.log.DefaultLogEntry;
+import se.l4.aurochs.core.log.LogEntry;
 import se.l4.aurochs.core.log.StateLog;
 import se.l4.aurochs.core.log.StateLogBuilder;
 
-public class RaftBuilder<T>
-	implements ClusteredStateLogBuilder<T>
+public class RaftBuilder
+	implements ClusteredStateLogBuilder<Bytes>
 {
 	private String id;
 	private NodeSet<RaftMessage> nodes;
@@ -27,18 +25,17 @@ public class RaftBuilder<T>
 	private StateStorage stateStorage;
 	private Log log;
 	
-	private ChannelCodec<Bytes, T> codec;
-	private IoConsumer<T> applier;
+	private IoConsumer<LogEntry<Bytes>> applier;
 	private boolean applierVolatile;
 	private Consumer<String> leaderListener;
-	private IoConsumer<LogEntry> rawApplier;
+	private IoConsumer<StoredLogEntry> rawApplier;
 	
 	public RaftBuilder()
 	{
 	}
 	
 	@Override
-	public RaftBuilder<T> withNodes(NodeSet<Bytes> nodes, String selfId)
+	public RaftBuilder withNodes(NodeSet<Bytes> nodes, String selfId)
 	{
 		this.nodes = nodes.transform(new RaftChannelCodec());
 		this.id = selfId;
@@ -52,7 +49,7 @@ public class RaftBuilder<T>
 	 * @param leader
 	 * @return
 	 */
-	public RaftBuilder<T> withLeaderListener(Consumer<String> listener)
+	public RaftBuilder withLeaderListener(Consumer<String> listener)
 	{
 		this.leaderListener = listener;
 		
@@ -60,7 +57,7 @@ public class RaftBuilder<T>
 	}
 	
 	@Override
-	public RaftBuilder<T> inMemory()
+	public RaftBuilder inMemory()
 	{
 		stateStorage = new InMemoryStateStorage();
 		log = new InMemoryLog();
@@ -68,7 +65,7 @@ public class RaftBuilder<T>
 	}
 	
 	@Override
-	public RaftBuilder<T> stateInFile(File file)
+	public RaftBuilder stateInFile(File file)
 	{
 		MVStoreFileStorage storage = new MVStoreFileStorage(file);
 		stateStorage = storage;
@@ -77,7 +74,7 @@ public class RaftBuilder<T>
 	}
 	
 	@Override
-	public StateLogBuilder<T> withApplier(IoConsumer<T> applier)
+	public StateLogBuilder<Bytes> withApplier(IoConsumer<LogEntry<Bytes>> applier)
 	{
 		this.applier = applier;
 		this.applierVolatile = false;
@@ -85,32 +82,29 @@ public class RaftBuilder<T>
 	}
 	
 	@Override
-	public StateLogBuilder<T> withVolatileApplier(IoConsumer<T> applier)
+	public StateLogBuilder<Bytes> withVolatileApplier(IoConsumer<LogEntry<Bytes>> applier)
 	{
 		this.applier = applier;
 		this.applierVolatile = true;
 		return this;
 	}
 	
-	public StateLogBuilder<T> withRawApplier(IoConsumer<LogEntry> applier)
+	public RaftBuilder withRawApplier(IoConsumer<StoredLogEntry> applier)
 	{
 		this.rawApplier = applier;
 		return this;
 	}
 	
 	@Override
-	public StateLog<T> build()
+	public StateLog<Bytes> build()
 	{
-		IoConsumer<LogEntry> applier = createApplier();
+		IoConsumer<StoredLogEntry> applier = createApplier();
 		Raft raft = new Raft(stateStorage, log, nodes, id, applier, applierVolatile, leaderListener, 15, 180, 300);
 		
-		if(codec == null) return (StateLog) raft;
-		
-		return new StateLogImpl<>(codec, raft);
+		return raft;
 	}
 
-	@SuppressWarnings("unchecked")
-	private IoConsumer<LogEntry> createApplier()
+	private IoConsumer<StoredLogEntry> createApplier()
 	{
 		if(rawApplier != null)
 		{
@@ -119,60 +113,7 @@ public class RaftBuilder<T>
 		
 		if(applier == null) throw new IllegalStateException("Need to specify an applier of events");
 		
-		IoConsumer<Bytes> applier = codec == null
-			? (IoConsumer<Bytes>) this.applier
-			: new IoConsumerImpl<>(codec, this.applier);
-		return (in) -> applier.accept(in.getData());
-	}
-	
-	private static class IoConsumerImpl<T>
-		implements IoConsumer<Bytes>
-	{
-		private final ChannelCodec<Bytes, T> codec;
-		private final IoConsumer<T> consumer;
-		
-		public IoConsumerImpl(ChannelCodec<Bytes, T> codec, IoConsumer<T> consumer)
-		{
-			this.codec = codec;
-			this.consumer = consumer;
-		}
-		
-		@Override
-		public void accept(Bytes item)
-			throws IOException
-		{
-			consumer.accept(codec.fromSource(item));
-		}
-	}
-	
-	private static class StateLogImpl<T>
-		implements StateLog<T>
-	{
-		private final ChannelCodec<Bytes, T> codec;
-		private final StateLog<Bytes> log;
-
-		public StateLogImpl(ChannelCodec<Bytes, T> codec, StateLog<Bytes> log)
-		{
-			this.codec = codec;
-			this.log = log;
-		}
-		
-		@Override
-		public LogData<T> data()
-		{
-			throw new UnsupportedOperationException();
-		}
-		
-		@Override
-		public CompletableFuture<Void> submit(T entry)
-		{
-			return log.submit(codec.toSource(entry));
-		}
-		
-		@Override
-		public void close()
-		{
-			log.close();
-		}
+		IoConsumer<LogEntry<Bytes>> applier = this.applier;
+		return (in) -> applier.accept(new DefaultLogEntry<Bytes>(in.getIndex(), LogEntry.Type.DATA, in.getData()));
 	}
 }

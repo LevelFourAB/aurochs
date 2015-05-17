@@ -3,8 +3,8 @@ package se.l4.aurochs.cluster.internal.raft;
 import java.io.IOException;
 import java.util.List;
 
-import se.l4.aurochs.cluster.internal.raft.log.DefaultLogEntry;
-import se.l4.aurochs.cluster.internal.raft.log.LogEntry;
+import se.l4.aurochs.cluster.internal.raft.log.DefaultStoredLogEntry;
+import se.l4.aurochs.cluster.internal.raft.log.StoredLogEntry;
 import se.l4.aurochs.cluster.internal.raft.messages.AppendEntries;
 import se.l4.aurochs.cluster.internal.raft.messages.AppendEntriesReply;
 import se.l4.aurochs.cluster.internal.raft.messages.ClientAddToLog;
@@ -54,14 +54,14 @@ public class RaftChannelCodec
 					long leaderCommit = in.readVLong();
 					int entryCount = in.readVInt();
 					
-					List<LogEntry> entries = Lists.newArrayListWithCapacity(entryCount);
+					List<StoredLogEntry> entries = Lists.newArrayListWithCapacity(entryCount);
 					for(int i=0; i<entryCount; i++)
 					{
 						long entryIndex = in.readVLong();
 						long entryTerm = in.readVLong();
 						int type = in.readUnsignedByte();
 						Bytes bytes = in.readBytes();
-						entries.add(new DefaultLogEntry(entryIndex, entryTerm, LogEntry.Type.values()[type], bytes));
+						entries.add(new DefaultStoredLogEntry(entryIndex, entryTerm, StoredLogEntry.Type.values()[type], bytes));
 					}
 					
 					return new AppendEntries(sender, term, prevLogIndex, prevLogTerm, entries, leaderCommit);
@@ -74,7 +74,7 @@ public class RaftChannelCodec
 				case 5:
 					return new ClientAddToLog(sender, term, in.readVLong(), in.readBytes());
 				case 6:
-					return new ClientAddToLogReply(sender, term, in.readVLong());
+					return new ClientAddToLogReply(sender, term, in.readVLong(), in.readVLong());
 				default:
 					throw new RaftException("Unable to read message with tag " + tag);
 			}
@@ -122,7 +122,7 @@ public class RaftChannelCodec
 			out.writeVLong(msg.getLeaderCommit());
 			
 			out.writeVInt(msg.getEntries().size());
-			for(LogEntry e : msg.getEntries())
+			for(StoredLogEntry e : msg.getEntries())
 			{
 				out.writeVLong(e.getIndex());
 				out.writeVLong(e.getTerm());
@@ -154,6 +154,7 @@ public class RaftChannelCodec
 			out.writeUTF(object.getSenderId());
 			out.writeVLong(object.getTerm());
 			out.writeVLong(((ClientAddToLogReply) object).getId());
+			out.writeVLong(((ClientAddToLogReply) object).getIndex());
 		}
 	}
 }

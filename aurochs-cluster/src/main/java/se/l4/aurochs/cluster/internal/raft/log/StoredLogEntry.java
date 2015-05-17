@@ -2,7 +2,7 @@ package se.l4.aurochs.cluster.internal.raft.log;
 
 import se.l4.aurochs.core.io.Bytes;
 
-public interface LogEntry
+public interface StoredLogEntry
 {
 	/**
 	 * Type of the log entry, used to support log keeping of internal data.

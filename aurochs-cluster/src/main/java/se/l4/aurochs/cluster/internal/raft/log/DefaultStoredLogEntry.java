@@ -2,15 +2,15 @@ package se.l4.aurochs.cluster.internal.raft.log;
 
 import se.l4.aurochs.core.io.Bytes;
 
-public class DefaultLogEntry
-	implements LogEntry
+public class DefaultStoredLogEntry
+	implements StoredLogEntry
 {
 	private final long id;
 	private final long term;
 	private final Type type;
 	private final Bytes data;
 
-	public DefaultLogEntry(long id, long term, Type type, Bytes data)
+	public DefaultStoredLogEntry(long id, long term, Type type, Bytes data)
 	{
 		this.id = id;
 		this.term = term;

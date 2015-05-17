@@ -7,7 +7,8 @@ public interface Config
 {
 	/**
 	 * Resolve values as the given path as an object. This is equivalent
-	 * to call {@link #get(String, Class)} and then {@link Value#get()}.
+	 * to call {@link #get(String, Class)} and then {@link Value#getOrDefault()}
+	 * with the value {@code null}.
 	 * 
 	 * @param path
 	 * @param type

@@ -189,7 +189,7 @@ public class DefaultConfig
 	@Override
 	public <T> T asObject(String path, Class<T> type)
 	{
-		return get(path, type).get();
+		return get(path, type).getOrDefault(null);
 	}
 	
 	@Override
@@ -283,7 +283,7 @@ public class DefaultConfig
 		Object data = get(path);
 		if(data == null)
 		{
-			return new ValueImpl<T>(false, null);
+			return new ValueImpl<T>(path, false, null);
 		}
 		
 		StreamingInput input = MapInput.resolveInput(path, data);
@@ -293,7 +293,7 @@ public class DefaultConfig
 			
 			validateInstance(path, instance);
 			
-			return new ValueImpl<T>(true, instance);
+			return new ValueImpl<T>(path, true, instance);
 		}
 		catch(ConfigException e)
 		{
@@ -308,11 +308,13 @@ public class DefaultConfig
 	private static class ValueImpl<T>
 		implements Value<T>
 	{
+		private final String path;
 		private final boolean exists;
 		private final T instance;
 
-		public ValueImpl(boolean exists, T instance)
+		public ValueImpl(String path, boolean exists, T instance)
 		{
+			this.path = path;
 			this.exists = exists;
 			this.instance = instance;
 		}
@@ -320,6 +322,10 @@ public class DefaultConfig
 		@Override
 		public T get()
 		{
+			if(! exists)
+			{
+				throw new ConfigException("Unable to get config value at `" + path + "`");
+			}
 			return instance;
 		}
 		

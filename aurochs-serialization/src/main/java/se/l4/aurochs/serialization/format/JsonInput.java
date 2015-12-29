@@ -50,7 +50,7 @@ public class JsonInput
 		{
 			if(limit - position < 1)
 			{
-				readAhead(1);
+				if(! readAhead(1)) return;
 			}
 			
 			char c = buffer[position];

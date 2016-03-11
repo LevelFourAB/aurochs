@@ -41,6 +41,13 @@ public class JsonInput
 		buffer = new char[1024];
 	}
 	
+	@Override
+	public void close()
+		throws IOException
+	{
+		in.close();
+	}
+	
 	private void readWhitespace()
 		throws IOException
 	{

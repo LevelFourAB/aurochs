@@ -16,6 +16,13 @@ public class ValueInput
 		this.key = key;
 		this.value = value;
 	}
+	
+	@Override
+	public void close()
+		throws IOException
+	{
+		// Nothing to close
+	}
 
 	@Override
 	public Token peek()

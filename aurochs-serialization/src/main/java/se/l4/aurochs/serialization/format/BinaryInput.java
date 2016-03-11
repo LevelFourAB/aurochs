@@ -36,6 +36,13 @@ public class BinaryInput
 		
 		peekedByte = -2;
 	}
+	
+	@Override
+	public void close()
+		throws IOException
+	{
+		in.close();
+	}
 
 	@Override
 	public Token peek()

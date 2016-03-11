@@ -42,6 +42,13 @@ public class ListInput
 	}
 	
 	@Override
+	public void close()
+		throws IOException
+	{
+		// Nothing to close
+	}
+	
+	@Override
 	protected IOException raiseException(String message)
 	{
 		return new IOException(key + ": " + message);

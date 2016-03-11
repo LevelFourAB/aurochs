@@ -1,5 +1,6 @@
 package se.l4.aurochs.serialization.format;
 
+import java.io.Closeable;
 import java.io.IOException;
 
 /**
@@ -9,6 +10,7 @@ import java.io.IOException;
  *
  */
 public interface StreamingInput
+	extends Closeable
 {
 	/**
 	 * Tokens that the input can return.

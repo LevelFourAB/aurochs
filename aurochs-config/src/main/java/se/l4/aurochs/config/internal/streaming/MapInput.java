@@ -44,6 +44,13 @@ public class MapInput
 		iterator = root.entrySet().iterator();
 	}
 	
+	@Override
+	public void close()
+		throws IOException
+	{
+		// Nothing to close
+	}
+	
 	public static StreamingInput resolveInput(String key, Object data)
 	{
 		if(data instanceof Map)

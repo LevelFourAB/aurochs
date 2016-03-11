@@ -16,6 +16,13 @@ public class NullInput
 	}
 	
 	@Override
+	public void close()
+		throws IOException
+	{
+		// Nothing to close
+	}
+	
+	@Override
 	public Token peek()
 		throws IOException
 	{

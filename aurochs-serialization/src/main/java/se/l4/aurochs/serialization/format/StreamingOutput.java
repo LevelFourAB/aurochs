@@ -1,5 +1,6 @@
 package se.l4.aurochs.serialization.format;
 
+import java.io.Closeable;
 import java.io.Flushable;
 import java.io.IOException;
 
@@ -10,7 +11,7 @@ import java.io.IOException;
  *
  */
 public interface StreamingOutput
-	extends Flushable
+	extends Flushable, Closeable
 {
 	/**
 	 * Write the start of an object.

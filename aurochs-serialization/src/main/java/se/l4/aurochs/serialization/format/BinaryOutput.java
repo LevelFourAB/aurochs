@@ -50,6 +50,13 @@ public class BinaryOutput
 		hasData = new boolean[LEVELS];
 	}
 	
+	@Override
+	public void close()
+		throws IOException
+	{
+		out.close();
+	}
+	
 	/**
 	 * Increase the level by one.
 	 * 

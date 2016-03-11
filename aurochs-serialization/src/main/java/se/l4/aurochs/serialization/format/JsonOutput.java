@@ -92,6 +92,13 @@ public class JsonOutput
 		encoded = new char[4];
 	}
 	
+	@Override
+	public void close()
+		throws IOException
+	{
+		writer.close();
+	}
+	
 	/**
 	 * Escape and write the given string.
 	 * 

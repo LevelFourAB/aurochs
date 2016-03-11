@@ -96,6 +96,7 @@ public class JsonOutput
 	public void close()
 		throws IOException
 	{
+		flush();
 		writer.close();
 	}
 	

@@ -3,6 +3,15 @@ package se.l4.aurochs.serialization;
 import java.lang.reflect.Field;
 import java.util.List;
 
+import com.fasterxml.classmate.MemberResolver;
+import com.fasterxml.classmate.ResolvedType;
+import com.fasterxml.classmate.ResolvedTypeWithMembers;
+import com.fasterxml.classmate.TypeResolver;
+import com.fasterxml.classmate.members.ResolvedConstructor;
+import com.fasterxml.classmate.members.ResolvedField;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
+
 import se.l4.aurochs.serialization.internal.TypeViaResolvedType;
 import se.l4.aurochs.serialization.internal.reflection.FactoryDefinition;
 import se.l4.aurochs.serialization.internal.reflection.FieldDefinition;
@@ -15,15 +24,7 @@ import se.l4.aurochs.serialization.spi.Type;
 import se.l4.aurochs.serialization.spi.TypeEncounter;
 import se.l4.aurochs.serialization.standard.CompactDynamicSerializer;
 import se.l4.aurochs.serialization.standard.DynamicSerializer;
-
-import com.fasterxml.classmate.MemberResolver;
-import com.fasterxml.classmate.ResolvedType;
-import com.fasterxml.classmate.ResolvedTypeWithMembers;
-import com.fasterxml.classmate.TypeResolver;
-import com.fasterxml.classmate.members.ResolvedConstructor;
-import com.fasterxml.classmate.members.ResolvedField;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
+import se.l4.aurochs.serialization.standard.SimpleTypeSerializer;
 
 /**
  * Serializer that will use reflection to access fields and methods in a
@@ -111,6 +112,10 @@ public class ReflectionSerializer<T>
 				serializer = allowAny.compact()
 					? new CompactDynamicSerializer(collection)
 					: new DynamicSerializer(collection);
+			}
+			else if(reflectiveField.isAnnotationPresent(AllowSimpleTypes.class))
+			{
+				serializer = new SimpleTypeSerializer();
 			}
 			else
 			{

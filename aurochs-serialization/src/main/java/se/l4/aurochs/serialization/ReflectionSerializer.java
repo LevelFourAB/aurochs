@@ -134,13 +134,15 @@ public class ReflectionSerializer<T>
 			{
 				throw new SerializationException("Could not resolve " + field.getName() + " for " + type.getErasedType() + "; No serializer found");
 			}
+			
+			boolean skipIfDefault = reflectiveField.isAnnotationPresent(SkipDefaultValue.class);
 
 			// Force the field to be accessible
 			reflectiveField.setAccessible(true);
 			
 			// Define how we access this field
 			String name = getName(reflectiveField);
-			FieldDefinition def = new FieldDefinition(reflectiveField, name, serializer, fieldType.getErasedType());
+			FieldDefinition def = new FieldDefinition(reflectiveField, name, serializer, fieldType.getErasedType(), skipIfDefault);
 			builder.put(name, def);
 			nonRenamedFields.put(reflectiveField.getName(), def);
 		}

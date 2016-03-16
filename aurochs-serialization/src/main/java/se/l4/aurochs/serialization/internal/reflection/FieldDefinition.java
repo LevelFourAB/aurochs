@@ -4,15 +4,16 @@ import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.Objects;
+
+import com.google.common.base.Defaults;
+import com.google.common.base.Throwables;
 
 import se.l4.aurochs.serialization.SerializationException;
 import se.l4.aurochs.serialization.Serializer;
 import se.l4.aurochs.serialization.format.StreamingInput;
 import se.l4.aurochs.serialization.format.StreamingInput.Token;
 import se.l4.aurochs.serialization.format.StreamingOutput;
-
-import com.google.common.base.Defaults;
-import com.google.common.base.Throwables;
 
 /**
  * Definition of a field within a reflection serializer.
@@ -28,13 +29,15 @@ public class FieldDefinition
 	private final String name;
 	private final Class<?> type;
 	private final boolean readOnly;
+	private final boolean skipIfDefault;
 
-	public FieldDefinition(Field field, String name, Serializer serializer, Class type)
+	public FieldDefinition(Field field, String name, Serializer serializer, Class type, boolean skipIfDefault)
 	{
 		this.field = field;
 		this.name = name;
 		this.serializer = serializer;
 		this.type = type;
+		this.skipIfDefault = skipIfDefault;
 		readOnly = Modifier.isFinal(field.getModifiers());
 	}
 	
@@ -46,6 +49,11 @@ public class FieldDefinition
 	public Serializer getSerializer()
 	{
 		return serializer;
+	}
+	
+	public boolean isSkipIfDefault()
+	{
+		return skipIfDefault;
 	}
 	
 	public boolean isReadOnly()
@@ -119,6 +127,16 @@ public class FieldDefinition
 		throws IOException
 	{
 		Object value = getValue(target);
+		
+		if(skipIfDefault)
+		{
+			Object defaultValue = Defaults.defaultValue(type);
+			if(Objects.equals(defaultValue, value))
+			{
+				// Write nothing as the default value and our value matches
+				return;
+			}
+		}
 		
 		if(value == null)
 		{

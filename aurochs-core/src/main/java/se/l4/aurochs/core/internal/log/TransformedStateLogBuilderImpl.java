@@ -3,11 +3,11 @@ package se.l4.aurochs.core.internal.log;
 import java.io.IOException;
 
 import se.l4.aurochs.core.channel.ChannelCodec;
-import se.l4.aurochs.core.io.IoConsumer;
 import se.l4.aurochs.core.log.LogEntry;
 import se.l4.aurochs.core.log.StateLog;
 import se.l4.aurochs.core.log.StateLogBuilder;
 import se.l4.aurochs.core.log.TransformedStateLogBuilder;
+import se.l4.commons.io.IoConsumer;
 
 /**
  * Implementation of {@link TransformedStateLogBuilder≈.

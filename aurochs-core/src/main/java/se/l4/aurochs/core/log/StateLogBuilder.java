@@ -3,7 +3,7 @@ package se.l4.aurochs.core.log;
 import java.util.function.Function;
 
 import se.l4.aurochs.core.channel.ChannelCodec;
-import se.l4.aurochs.core.io.IoConsumer;
+import se.l4.commons.io.IoConsumer;
 
 public interface StateLogBuilder<T>
 {

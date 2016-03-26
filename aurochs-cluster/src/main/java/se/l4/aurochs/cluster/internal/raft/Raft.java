@@ -45,12 +45,12 @@ import se.l4.aurochs.cluster.nodes.NodeSet;
 import se.l4.aurochs.core.channel.Channel;
 import se.l4.aurochs.core.channel.ChannelListener;
 import se.l4.aurochs.core.channel.MessageEvent;
-import se.l4.aurochs.core.io.Bytes;
-import se.l4.aurochs.core.io.IoConsumer;
 import se.l4.aurochs.core.log.DefaultLogEntry;
 import se.l4.aurochs.core.log.LogData;
 import se.l4.aurochs.core.log.LogEntry;
 import se.l4.aurochs.core.log.StateLog;
+import se.l4.commons.io.Bytes;
+import se.l4.commons.io.IoConsumer;
 
 public class Raft
 	implements StateLog<Bytes>

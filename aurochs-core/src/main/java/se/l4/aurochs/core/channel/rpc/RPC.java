@@ -7,11 +7,11 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
 import se.l4.aurochs.core.channel.Channel;
 import se.l4.aurochs.core.channel.ChannelCodec;
-import se.l4.aurochs.core.io.Bytes;
-
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import se.l4.commons.io.Bytes;
 
 public class RPC
 {

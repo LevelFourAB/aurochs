@@ -1,12 +1,12 @@
 package se.l4.aurochs.core.spi;
 
+import com.google.inject.Injector;
+import com.google.inject.Key;
+
 import se.l4.aurochs.core.Session;
 import se.l4.aurochs.core.channel.Channel;
 import se.l4.aurochs.core.internal.NamedChannelCodec;
-import se.l4.aurochs.core.io.Bytes;
-
-import com.google.inject.Injector;
-import com.google.inject.Key;
+import se.l4.commons.io.Bytes;
 
 /**
  * Abstract implementation of {@link Session}.

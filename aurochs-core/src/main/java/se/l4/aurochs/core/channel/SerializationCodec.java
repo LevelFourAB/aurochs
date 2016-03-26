@@ -5,7 +5,7 @@ import java.io.InputStream;
 
 import com.google.common.base.Throwables;
 
-import se.l4.aurochs.core.io.Bytes;
+import se.l4.commons.io.Bytes;
 import se.l4.commons.serialization.Serializer;
 import se.l4.commons.serialization.SerializerCollection;
 import se.l4.commons.serialization.format.BinaryInput;

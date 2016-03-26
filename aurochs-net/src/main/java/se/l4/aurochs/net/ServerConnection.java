@@ -8,7 +8,7 @@ import javax.net.ssl.X509TrustManager;
 
 import se.l4.aurochs.core.channel.Channel;
 import se.l4.aurochs.core.hosts.Hosts;
-import se.l4.aurochs.core.io.ByteMessage;
+import se.l4.commons.io.ByteMessage;
 
 /**
  * Creator of a connection to a server.

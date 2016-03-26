@@ -6,8 +6,8 @@ import java.util.function.Function;
 
 import se.l4.aurochs.cluster.nodes.Node;
 import se.l4.aurochs.cluster.nodes.NodeStates;
-import se.l4.aurochs.core.io.Bytes;
 import se.l4.aurochs.core.log.StateLogBuilder;
+import se.l4.commons.io.Bytes;
 
 public interface PartitionCreateEncounter<T>
 {

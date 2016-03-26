@@ -3,13 +3,13 @@ package se.l4.aurochs.core.internal;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
-import se.l4.aurochs.core.channel.ChannelCodec;
-import se.l4.aurochs.core.io.ByteMessage;
-import se.l4.aurochs.core.io.Bytes;
-import se.l4.aurochs.core.io.DefaultByteMessage;
-
 import com.google.common.collect.Maps;
 import com.google.common.hash.Hashing;
+
+import se.l4.aurochs.core.channel.ChannelCodec;
+import se.l4.commons.io.ByteMessage;
+import se.l4.commons.io.Bytes;
+import se.l4.commons.io.DefaultByteMessage;
 
 public class NamedChannelCodec
 	implements ChannelCodec<ByteMessage, Bytes>

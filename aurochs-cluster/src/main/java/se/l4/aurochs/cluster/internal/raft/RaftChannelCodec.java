@@ -3,6 +3,8 @@ package se.l4.aurochs.cluster.internal.raft;
 import java.io.IOException;
 import java.util.List;
 
+import com.google.common.collect.Lists;
+
 import se.l4.aurochs.cluster.internal.raft.log.DefaultStoredLogEntry;
 import se.l4.aurochs.cluster.internal.raft.log.StoredLogEntry;
 import se.l4.aurochs.cluster.internal.raft.messages.AppendEntries;
@@ -13,11 +15,9 @@ import se.l4.aurochs.cluster.internal.raft.messages.RaftMessage;
 import se.l4.aurochs.cluster.internal.raft.messages.RequestVote;
 import se.l4.aurochs.cluster.internal.raft.messages.RequestVoteReply;
 import se.l4.aurochs.core.channel.ChannelCodec;
-import se.l4.aurochs.core.io.Bytes;
-import se.l4.aurochs.core.io.ExtendedDataInput;
-import se.l4.aurochs.core.io.ExtendedDataOutput;
-
-import com.google.common.collect.Lists;
+import se.l4.commons.io.Bytes;
+import se.l4.commons.io.ExtendedDataInput;
+import se.l4.commons.io.ExtendedDataOutput;
 
 /**
  * {@link ChannelCodec} for decoding/encoding {@link RaftMessage}s.

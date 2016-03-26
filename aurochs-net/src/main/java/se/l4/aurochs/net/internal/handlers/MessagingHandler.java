@@ -1,16 +1,15 @@
 package se.l4.aurochs.net.internal.handlers;
 
+import java.util.concurrent.Executor;
+import java.util.function.Consumer;
+
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
-
-import java.util.concurrent.Executor;
-import java.util.function.Consumer;
-
-import se.l4.aurochs.core.io.ByteMessage;
-import se.l4.aurochs.core.io.Bytes;
-import se.l4.aurochs.core.io.DefaultByteMessage;
+import se.l4.commons.io.ByteMessage;
+import se.l4.commons.io.Bytes;
+import se.l4.commons.io.DefaultByteMessage;
 
 /**
  * Handler that receives messages and queues them on the specified executor.

@@ -3,7 +3,7 @@ package se.l4.aurochs.cluster.partitions;
 import java.util.function.Function;
 
 import se.l4.aurochs.core.channel.ChannelCodec;
-import se.l4.aurochs.core.io.Bytes;
+import se.l4.commons.io.Bytes;
 
 public interface PartitionedServiceBuilder<T>
 {

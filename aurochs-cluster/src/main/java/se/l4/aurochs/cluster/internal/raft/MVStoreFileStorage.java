@@ -13,13 +13,12 @@ import org.h2.mvstore.WriteBuffer;
 import org.h2.mvstore.type.DataType;
 import org.h2.mvstore.type.ObjectDataType;
 
+import com.google.common.io.ByteStreams;
+
 import se.l4.aurochs.cluster.internal.raft.log.DefaultStoredLogEntry;
 import se.l4.aurochs.cluster.internal.raft.log.Log;
 import se.l4.aurochs.cluster.internal.raft.log.StoredLogEntry;
-import se.l4.aurochs.cluster.internal.raft.log.StoredLogEntry.Type;
-import se.l4.aurochs.core.io.Bytes;
-
-import com.google.common.io.ByteStreams;
+import se.l4.commons.io.Bytes;
 
 public class MVStoreFileStorage
 	implements StateStorage, Log

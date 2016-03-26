@@ -3,9 +3,9 @@ package se.l4.aurochs.core.channel;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-import se.l4.aurochs.core.io.Bytes;
-
 import com.google.common.base.Throwables;
+
+import se.l4.commons.io.Bytes;
 
 public class StringCodec
 	implements ChannelCodec<Bytes, String>

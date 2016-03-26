@@ -3,8 +3,8 @@ package se.l4.aurochs.core;
 import com.google.inject.Key;
 
 import se.l4.aurochs.core.channel.Channel;
-import se.l4.aurochs.core.io.ByteMessage;
-import se.l4.aurochs.core.io.Bytes;
+import se.l4.commons.io.ByteMessage;
+import se.l4.commons.io.Bytes;
 import se.l4.commons.serialization.Named;
 import se.l4.commons.serialization.SerializerCollection;
 

@@ -1,10 +1,5 @@
 package se.l4.aurochs.net.internal.handlers;
 
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.handler.ssl.SslHandler;
-
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +9,12 @@ import java.util.function.Consumer;
 
 import javax.net.ssl.TrustManager;
 
-import se.l4.aurochs.core.io.ByteMessage;
+import com.google.common.base.Throwables;
+
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.handler.ssl.SslHandler;
 import se.l4.aurochs.net.ConnectionException;
 import se.l4.aurochs.net.ServerConnection.TLSMode;
 import se.l4.aurochs.net.internal.SslHelper;
@@ -26,8 +26,7 @@ import se.l4.aurochs.net.internal.handshake.Ok;
 import se.l4.aurochs.net.internal.handshake.Reject;
 import se.l4.aurochs.net.internal.handshake.SelectCapabilities;
 import se.l4.aurochs.net.internal.handshake.SessionStatus;
-
-import com.google.common.base.Throwables;
+import se.l4.commons.io.ByteMessage;
 
 public class ClientHandshakeHandler
 	extends ChannelInboundHandlerAdapter

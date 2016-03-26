@@ -1,17 +1,5 @@
 package se.l4.aurochs.net.internal;
 
-import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.ChannelPipeline;
-import io.netty.channel.EventLoopGroup;
-import io.netty.channel.group.ChannelGroup;
-import io.netty.channel.group.DefaultChannelGroup;
-import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.util.concurrent.GlobalEventExecutor;
-
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.util.Arrays;
@@ -30,14 +18,25 @@ import javax.net.ssl.TrustManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.netty.bootstrap.Bootstrap;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.ChannelPipeline;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.group.ChannelGroup;
+import io.netty.channel.group.DefaultChannelGroup;
+import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.util.concurrent.GlobalEventExecutor;
 import se.l4.aurochs.core.channel.MessageEvent;
-import se.l4.aurochs.core.io.ByteMessage;
 import se.l4.aurochs.core.spi.AbstractChannel;
 import se.l4.aurochs.net.ServerConnection;
 import se.l4.aurochs.net.ServerConnection.TLSMode;
 import se.l4.aurochs.net.internal.handlers.ClientHandshakeHandler;
 import se.l4.aurochs.net.internal.handlers.HandshakeDecoder;
 import se.l4.aurochs.net.internal.handlers.HandshakeEncoder;
+import se.l4.commons.io.ByteMessage;
 
 public class NettyClientChannel
 	extends AbstractChannel<ByteMessage>

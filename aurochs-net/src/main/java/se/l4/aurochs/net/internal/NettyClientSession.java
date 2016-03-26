@@ -2,12 +2,12 @@ package se.l4.aurochs.net.internal;
 
 import java.util.concurrent.CompletableFuture;
 
+import com.google.inject.Injector;
+
 import se.l4.aurochs.core.channel.Channel;
-import se.l4.aurochs.core.io.ByteMessage;
 import se.l4.aurochs.core.spi.AbstractSession;
 import se.l4.aurochs.net.RemoteSession;
-
-import com.google.inject.Injector;
+import se.l4.commons.io.ByteMessage;
 
 public class NettyClientSession
 	extends AbstractSession

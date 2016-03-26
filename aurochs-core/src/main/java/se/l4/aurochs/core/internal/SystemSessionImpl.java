@@ -1,11 +1,11 @@
 package se.l4.aurochs.core.internal;
 
+import com.google.inject.Injector;
+
 import se.l4.aurochs.core.SystemSession;
 import se.l4.aurochs.core.channel.Channel;
-import se.l4.aurochs.core.io.ByteMessage;
 import se.l4.aurochs.core.spi.AbstractSession;
-
-import com.google.inject.Injector;
+import se.l4.commons.io.ByteMessage;
 
 /**
  * Implementation of {@link SystemSession}.

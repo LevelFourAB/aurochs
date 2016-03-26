@@ -12,8 +12,8 @@ import se.l4.aurochs.core.channel.SerializationCodec;
 import se.l4.aurochs.core.channel.rpc.RPCChannelCodec;
 import se.l4.aurochs.core.channel.rpc.RpcMessage;
 import se.l4.aurochs.core.internal.NamedChannelCodec;
-import se.l4.aurochs.core.io.ByteMessage;
-import se.l4.aurochs.core.io.Bytes;
+import se.l4.commons.io.ByteMessage;
+import se.l4.commons.io.Bytes;
 import se.l4.commons.serialization.SerializerCollection;
 
 public class PartitionedServiceBuilderImpl<T>

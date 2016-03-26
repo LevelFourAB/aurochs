@@ -9,12 +9,12 @@ import se.l4.aurochs.cluster.internal.raft.log.Log;
 import se.l4.aurochs.cluster.internal.raft.log.StoredLogEntry;
 import se.l4.aurochs.cluster.internal.raft.messages.RaftMessage;
 import se.l4.aurochs.cluster.nodes.NodeSet;
-import se.l4.aurochs.core.io.Bytes;
-import se.l4.aurochs.core.io.IoConsumer;
 import se.l4.aurochs.core.log.DefaultLogEntry;
 import se.l4.aurochs.core.log.LogEntry;
 import se.l4.aurochs.core.log.StateLog;
 import se.l4.aurochs.core.log.StateLogBuilder;
+import se.l4.commons.io.Bytes;
+import se.l4.commons.io.IoConsumer;
 
 public class RaftBuilder
 	implements ClusteredStateLogBuilder<Bytes>

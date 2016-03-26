@@ -2,11 +2,11 @@ package se.l4.aurochs.core.channel.rpc;
 
 import java.io.IOException;
 
-import se.l4.aurochs.core.channel.ChannelCodec;
-import se.l4.aurochs.core.io.Bytes;
-import se.l4.aurochs.core.io.ExtendedDataInput;
-
 import com.google.common.base.Throwables;
+
+import se.l4.aurochs.core.channel.ChannelCodec;
+import se.l4.commons.io.Bytes;
+import se.l4.commons.io.ExtendedDataInput;
 
 public class RPCChannelCodec<T>
 	implements ChannelCodec<Bytes, RpcMessage<T>>

@@ -8,7 +8,7 @@ import com.carrotsearch.hppc.IntObjectHashMap;
 import com.carrotsearch.hppc.IntObjectMap;
 
 import se.l4.aurochs.cluster.partitions.PartitionMessage;
-import se.l4.aurochs.core.io.ByteMessage;
+import se.l4.commons.io.ByteMessage;
 import se.l4.commons.serialization.SerializerCollection;
 
 

@@ -3,7 +3,7 @@ package se.l4.aurochs.net.internal.handlers;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
-import se.l4.aurochs.core.io.ByteMessage;
+import se.l4.commons.io.ByteMessage;
 
 public class ByteMessageEncoder
 	extends MessageToByteEncoder<ByteMessage>

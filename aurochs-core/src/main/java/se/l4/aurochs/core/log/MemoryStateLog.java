@@ -4,9 +4,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.CompletableFuture;
 
-import se.l4.aurochs.core.io.IoConsumer;
-
 import com.google.common.collect.Lists;
+
+import se.l4.commons.io.IoConsumer;
 
 /**
  * A {@link StateLog} that stores its data in memory. This is useful for

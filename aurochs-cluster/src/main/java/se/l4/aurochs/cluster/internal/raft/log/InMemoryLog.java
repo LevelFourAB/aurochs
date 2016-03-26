@@ -3,9 +3,9 @@ package se.l4.aurochs.cluster.internal.raft.log;
 import java.io.IOException;
 import java.util.List;
 
-import se.l4.aurochs.core.io.Bytes;
-
 import com.google.common.collect.Lists;
+
+import se.l4.commons.io.Bytes;
 
 public class InMemoryLog
 	implements Log

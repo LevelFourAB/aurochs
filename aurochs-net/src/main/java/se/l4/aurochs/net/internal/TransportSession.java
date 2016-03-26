@@ -8,11 +8,11 @@ import com.google.inject.Injector;
 
 import io.netty.channel.Channel;
 import se.l4.aurochs.core.channel.MessageEvent;
-import se.l4.aurochs.core.io.ByteMessage;
-import se.l4.aurochs.core.io.Bytes;
-import se.l4.aurochs.core.io.DefaultByteMessage;
 import se.l4.aurochs.core.spi.AbstractChannel;
 import se.l4.aurochs.core.spi.AbstractSession;
+import se.l4.commons.io.ByteMessage;
+import se.l4.commons.io.Bytes;
+import se.l4.commons.io.DefaultByteMessage;
 import se.l4.commons.serialization.standard.CompactDynamicSerializer;
 
 public class TransportSession

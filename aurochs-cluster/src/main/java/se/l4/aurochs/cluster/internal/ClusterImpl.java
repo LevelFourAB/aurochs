@@ -25,14 +25,14 @@ import se.l4.aurochs.core.channel.CombiningChannel;
 import se.l4.aurochs.core.channel.LocalChannel;
 import se.l4.aurochs.core.hosts.Hosts;
 import se.l4.aurochs.core.internal.NamedChannelCodec;
-import se.l4.aurochs.core.io.ByteMessage;
-import se.l4.aurochs.core.io.Bytes;
-import se.l4.aurochs.core.io.ExtendedDataInput;
 import se.l4.aurochs.net.RemoteSession;
 import se.l4.aurochs.net.Server;
 import se.l4.aurochs.net.ServerBuilder;
 import se.l4.aurochs.net.ServerConnection;
 import se.l4.commons.config.Config;
+import se.l4.commons.io.ByteMessage;
+import se.l4.commons.io.Bytes;
+import se.l4.commons.io.ExtendedDataInput;
 import se.l4.commons.serialization.SerializerCollection;
 import se.l4.crayon.services.ManagedService;
 

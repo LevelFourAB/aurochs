@@ -1,6 +1,6 @@
 package se.l4.aurochs.cluster.internal.raft.log;
 
-import se.l4.aurochs.core.io.Bytes;
+import se.l4.commons.io.Bytes;
 
 public class DefaultStoredLogEntry
 	implements StoredLogEntry

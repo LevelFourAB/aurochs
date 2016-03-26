@@ -3,8 +3,8 @@ package se.l4.aurochs.cluster.internal.partitions;
 import se.l4.aurochs.cluster.internal.service.ServiceHandle;
 import se.l4.aurochs.cluster.nodes.NodeSet;
 import se.l4.aurochs.cluster.partitions.PartitionService;
-import se.l4.aurochs.core.io.Bytes;
 import se.l4.aurochs.core.log.StateLog;
+import se.l4.commons.io.Bytes;
 
 public class PartitionServiceHandle
 	implements ServiceHandle

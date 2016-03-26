@@ -1,7 +1,7 @@
 package se.l4.aurochs.cluster.internal.service;
 
 import se.l4.aurochs.cluster.nodes.NodeSet;
-import se.l4.aurochs.core.io.Bytes;
+import se.l4.commons.io.Bytes;
 
 public interface ServiceHandle
 {

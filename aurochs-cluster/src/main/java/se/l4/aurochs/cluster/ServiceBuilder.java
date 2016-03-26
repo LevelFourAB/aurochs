@@ -4,7 +4,7 @@ import se.l4.aurochs.cluster.partitions.PartitionMessage;
 import se.l4.aurochs.cluster.partitions.PartitionedServiceBuilder;
 import se.l4.aurochs.core.channel.ChannelCodec;
 import se.l4.aurochs.core.channel.ChannelListener;
-import se.l4.aurochs.core.io.Bytes;
+import se.l4.commons.io.Bytes;
 
 public interface ServiceBuilder<T>
 {

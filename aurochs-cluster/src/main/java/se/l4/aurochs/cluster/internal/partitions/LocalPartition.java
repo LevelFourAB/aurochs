@@ -6,6 +6,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import com.google.common.collect.Maps;
+
 import se.l4.aurochs.cluster.ClusteredStateLogBuilder;
 import se.l4.aurochs.cluster.internal.MutableNodeStates;
 import se.l4.aurochs.cluster.internal.raft.RaftBuilder;
@@ -18,14 +20,12 @@ import se.l4.aurochs.cluster.partitions.PartitionCreateEncounter;
 import se.l4.aurochs.cluster.partitions.PartitionService;
 import se.l4.aurochs.core.channel.ChannelCodec;
 import se.l4.aurochs.core.internal.NamedChannelCodec;
-import se.l4.aurochs.core.io.ByteMessage;
-import se.l4.aurochs.core.io.Bytes;
-import se.l4.aurochs.core.io.IoConsumer;
 import se.l4.aurochs.core.log.LogEntry;
 import se.l4.aurochs.core.log.StateLog;
 import se.l4.aurochs.core.log.StateLogBuilder;
-
-import com.google.common.collect.Maps;
+import se.l4.commons.io.ByteMessage;
+import se.l4.commons.io.Bytes;
+import se.l4.commons.io.IoConsumer;
 
 public class LocalPartition
 {

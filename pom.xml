@@ -33,7 +33,6 @@
 		<module>aurochs-net</module>
 
 		<module>aurochs-cluster</module>
-		<module>aurochs-cluster-default</module>
 	</modules>
 	
 	<!-- License -->

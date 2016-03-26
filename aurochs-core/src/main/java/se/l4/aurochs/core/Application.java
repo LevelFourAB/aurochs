@@ -16,20 +16,20 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 import org.slf4j.helpers.NOPLogger;
 
-import se.l4.aurochs.config.ConfigException;
-import se.l4.aurochs.core.internal.AutoLoaderModule;
-import se.l4.aurochs.core.internal.InternalModule;
-import se.l4.aurochs.core.internal.SystemSessionImpl;
-import se.l4.crayon.Configurator;
-import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.joran.JoranConfigurator;
-import ch.qos.logback.core.joran.spi.JoranException;
-
 import com.google.common.base.Joiner;
 import com.google.common.base.Throwables;
 import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.google.inject.Stage;
+
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.joran.JoranConfigurator;
+import ch.qos.logback.core.joran.spi.JoranException;
+import se.l4.aurochs.core.internal.AutoLoaderModule;
+import se.l4.aurochs.core.internal.InternalModule;
+import se.l4.aurochs.core.internal.SystemSessionImpl;
+import se.l4.commons.config.ConfigException;
+import se.l4.crayon.Configurator;
 
 /**
  * Application startup, uses Guice {@link Module modules}, configures them

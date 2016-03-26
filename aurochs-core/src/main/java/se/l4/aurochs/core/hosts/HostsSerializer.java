@@ -4,12 +4,12 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 
-import se.l4.aurochs.serialization.Serializer;
-import se.l4.aurochs.serialization.format.StreamingInput;
-import se.l4.aurochs.serialization.format.StreamingInput.Token;
-import se.l4.aurochs.serialization.format.StreamingOutput;
-
 import com.google.common.collect.Lists;
+
+import se.l4.commons.serialization.Serializer;
+import se.l4.commons.serialization.format.StreamingInput;
+import se.l4.commons.serialization.format.StreamingOutput;
+import se.l4.commons.serialization.format.Token;
 
 public class HostsSerializer
 	implements Serializer<Hosts>

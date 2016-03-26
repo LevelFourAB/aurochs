@@ -4,12 +4,12 @@ import java.io.File;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import com.carrotsearch.hppc.IntObjectHashMap;
+import com.carrotsearch.hppc.IntObjectMap;
+
 import se.l4.aurochs.cluster.partitions.PartitionMessage;
 import se.l4.aurochs.core.io.ByteMessage;
-import se.l4.aurochs.serialization.SerializerCollection;
-
-import com.carrotsearch.hppc.IntObjectMap;
-import com.carrotsearch.hppc.IntObjectOpenHashMap;
+import se.l4.commons.serialization.SerializerCollection;
 
 
 /**
@@ -38,7 +38,7 @@ public class LocalPartitionsCoordinator
 		
 		registrations = new CopyOnWriteArrayList<>();
 		
-		local = new IntObjectOpenHashMap<>();
+		local = new IntObjectHashMap<>();
 	}
 	
 	public <T extends PartitionMessage> PartitionedServiceBuilderImpl<T> newBuilder(String name)

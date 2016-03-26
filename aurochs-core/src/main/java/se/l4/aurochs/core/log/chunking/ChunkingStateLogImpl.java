@@ -7,7 +7,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import se.l4.aurochs.core.id.LongIdGenerator;
+import com.carrotsearch.hppc.LongArrayList;
+import com.google.common.base.Throwables;
+
 import se.l4.aurochs.core.io.Bytes;
 import se.l4.aurochs.core.io.ExtendedDataInput;
 import se.l4.aurochs.core.io.IoConsumer;
@@ -18,9 +20,7 @@ import se.l4.aurochs.core.log.StateLog;
 import se.l4.aurochs.core.log.StateLogBuilder;
 import se.l4.aurochs.core.log.StateLogStoreOperation;
 import se.l4.aurochs.core.log.StreamingStateLog;
-
-import com.carrotsearch.hppc.LongArrayList;
-import com.google.common.base.Throwables;
+import se.l4.commons.id.LongIdGenerator;
 
 /**
  * Implementation of {@link StreamingStateLog}.

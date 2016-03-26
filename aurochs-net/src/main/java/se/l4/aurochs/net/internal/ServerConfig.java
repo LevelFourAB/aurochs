@@ -8,9 +8,9 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import se.l4.aurochs.net.ServerConnection;
-import se.l4.aurochs.serialization.Expose;
-import se.l4.aurochs.serialization.ReflectionSerializer;
-import se.l4.aurochs.serialization.Use;
+import se.l4.commons.serialization.Expose;
+import se.l4.commons.serialization.ReflectionSerializer;
+import se.l4.commons.serialization.Use;
 
 /**
  * Configuration values for the server.

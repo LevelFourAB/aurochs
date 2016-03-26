@@ -1,7 +1,7 @@
 package se.l4.aurochs.core.hosts;
 
 import se.l4.aurochs.core.SerializerRegistration;
-import se.l4.aurochs.serialization.SerializerCollection;
+import se.l4.commons.serialization.SerializerCollection;
 import se.l4.crayon.CrayonModule;
 
 /**

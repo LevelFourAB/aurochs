@@ -22,6 +22,13 @@ import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.carrotsearch.hppc.LongObjectHashMap;
+import com.carrotsearch.hppc.LongObjectMap;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
 import se.l4.aurochs.cluster.internal.raft.log.DefaultStoredLogEntry;
 import se.l4.aurochs.cluster.internal.raft.log.Log;
 import se.l4.aurochs.cluster.internal.raft.log.StoredLogEntry;
@@ -44,13 +51,6 @@ import se.l4.aurochs.core.log.DefaultLogEntry;
 import se.l4.aurochs.core.log.LogData;
 import se.l4.aurochs.core.log.LogEntry;
 import se.l4.aurochs.core.log.StateLog;
-
-import com.carrotsearch.hppc.LongObjectMap;
-import com.carrotsearch.hppc.LongObjectOpenHashMap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 public class Raft
 	implements StateLog<Bytes>
@@ -133,7 +133,7 @@ public class Raft
 		
 		this.id = id;
 		
-		futures = new LongObjectOpenHashMap<>();
+		futures = new LongObjectHashMap<>();
 		futureIds = new AtomicLong();
 		
 		ThreadFactory threadFactory = new ThreadFactoryBuilder()

@@ -6,15 +6,16 @@ import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.inject.Module;
+
 import se.l4.aurochs.core.AutoLoad;
 import se.l4.aurochs.core.AutoLoader;
 import se.l4.aurochs.core.SerializerRegistration;
-import se.l4.aurochs.serialization.SerializerCollection;
-import se.l4.aurochs.serialization.Use;
+import se.l4.commons.serialization.SerializationException;
+import se.l4.commons.serialization.SerializerCollection;
+import se.l4.commons.serialization.Use;
 import se.l4.crayon.CrayonModule;
 import se.l4.crayon.annotation.Order;
-
-import com.google.inject.Module;
 
 /**
  * Module for plugin support.
@@ -64,13 +65,20 @@ public class AutoLoaderModule
 	@Order("last")
 	public void autoRegisterSerializer(AutoLoader plugins, SerializerCollection collection)
 	{
-		Set<Class<?>> types = plugins.getClassesAnnotatedWith(Use.class);
+		Set<Class<?>> types = plugins.getTypesAnnotatedWith(Use.class);
 		for(Class<?> c : types)
 		{
 			if(c.getTypeParameters().length == 0)
 			{
 				// Only register those classes that do not have any type params
-				collection.bind(c);
+				try
+				{
+					collection.bind(c);
+				}
+				catch(SerializationException e)
+				{
+					throw new SerializationException("Unable to register " + c + "; " + e.getMessage(), e);
+				}
 			}
 		}
 	}

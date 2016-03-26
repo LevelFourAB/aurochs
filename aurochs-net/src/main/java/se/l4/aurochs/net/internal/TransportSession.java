@@ -1,20 +1,19 @@
 package se.l4.aurochs.net.internal;
 
-import io.netty.channel.Channel;
-
 import java.io.IOException;
 
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Throwables;
+import com.google.inject.Injector;
+
+import io.netty.channel.Channel;
 import se.l4.aurochs.core.channel.MessageEvent;
 import se.l4.aurochs.core.io.ByteMessage;
 import se.l4.aurochs.core.io.Bytes;
 import se.l4.aurochs.core.io.DefaultByteMessage;
 import se.l4.aurochs.core.spi.AbstractChannel;
 import se.l4.aurochs.core.spi.AbstractSession;
-import se.l4.aurochs.serialization.standard.CompactDynamicSerializer;
-
-import com.google.common.base.Objects;
-import com.google.common.base.Throwables;
-import com.google.inject.Injector;
+import se.l4.commons.serialization.standard.CompactDynamicSerializer;
 
 public class TransportSession
 	extends AbstractSession
@@ -64,7 +63,7 @@ public class TransportSession
 	@Override
 	public String toString()
 	{
-		return Objects.toStringHelper(this)
+		return MoreObjects.toStringHelper(this)
 			.add("connection", nettyChannel.remoteAddress())
 			.toString();
 	}

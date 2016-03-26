@@ -2,14 +2,14 @@ package se.l4.aurochs.net.internal;
 
 import java.util.function.Consumer;
 
-import se.l4.aurochs.config.Config;
+import com.google.inject.Inject;
+import com.google.inject.Provider;
+
 import se.l4.aurochs.core.Session;
 import se.l4.aurochs.core.spi.Sessions;
 import se.l4.aurochs.net.Server;
 import se.l4.aurochs.net.ServerBuilder;
-
-import com.google.inject.Inject;
-import com.google.inject.Provider;
+import se.l4.commons.config.Config;
 
 public class ServerBuilderImpl
 	implements ServerBuilder

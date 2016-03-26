@@ -10,13 +10,16 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.inject.Inject;
+import com.google.inject.Provider;
+import com.google.inject.Singleton;
+
 import se.l4.aurochs.cluster.Cluster;
 import se.l4.aurochs.cluster.ServiceBuilder;
 import se.l4.aurochs.cluster.internal.partitions.LocalPartitionsCoordinator;
 import se.l4.aurochs.cluster.internal.partitions.MutablePartitions;
 import se.l4.aurochs.cluster.internal.service.ServiceBuilderImpl;
 import se.l4.aurochs.cluster.nodes.Node;
-import se.l4.aurochs.config.Config;
 import se.l4.aurochs.core.Session;
 import se.l4.aurochs.core.channel.CombiningChannel;
 import se.l4.aurochs.core.channel.LocalChannel;
@@ -29,12 +32,9 @@ import se.l4.aurochs.net.RemoteSession;
 import se.l4.aurochs.net.Server;
 import se.l4.aurochs.net.ServerBuilder;
 import se.l4.aurochs.net.ServerConnection;
-import se.l4.aurochs.serialization.SerializerCollection;
+import se.l4.commons.config.Config;
+import se.l4.commons.serialization.SerializerCollection;
 import se.l4.crayon.services.ManagedService;
-
-import com.google.inject.Inject;
-import com.google.inject.Provider;
-import com.google.inject.Singleton;
 
 @Singleton
 public class ClusterImpl

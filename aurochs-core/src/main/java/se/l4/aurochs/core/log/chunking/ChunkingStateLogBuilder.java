@@ -2,13 +2,13 @@ package se.l4.aurochs.core.log.chunking;
 
 import java.util.Iterator;
 
-import se.l4.aurochs.core.id.SimpleLongIdGenerator;
 import se.l4.aurochs.core.io.Bytes;
 import se.l4.aurochs.core.io.IoConsumer;
 import se.l4.aurochs.core.log.LogEntry;
 import se.l4.aurochs.core.log.StateLogBuilder;
 import se.l4.aurochs.core.log.StreamingStateLog;
 import se.l4.aurochs.core.log.StreamingStateLogBuilder;
+import se.l4.commons.id.SimpleLongIdGenerator;
 
 public class ChunkingStateLogBuilder
 	implements StreamingStateLogBuilder<Bytes>

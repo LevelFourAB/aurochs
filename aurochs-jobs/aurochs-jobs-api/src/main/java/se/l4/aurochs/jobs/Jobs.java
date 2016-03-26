@@ -2,8 +2,8 @@ package se.l4.aurochs.jobs;
 
 import java.time.Instant;
 
-import se.l4.aurochs.serialization.Named;
-import se.l4.aurochs.serialization.SerializerCollection;
+import se.l4.commons.serialization.Named;
+import se.l4.commons.serialization.SerializerCollection;
 
 /**
  * Jobs interface, for submitting and scheduling jobs. Jobs are represented

@@ -4,24 +4,26 @@ import java.io.File;
 import java.lang.annotation.Annotation;
 import java.util.List;
 
-import se.l4.aurochs.config.Config;
-import se.l4.aurochs.config.ConfigBuilder;
-import se.l4.aurochs.config.internal.FileSerializer;
-import se.l4.aurochs.core.SerializerRegistration;
-import se.l4.aurochs.core.hosts.HostsModule;
-import se.l4.aurochs.core.id.LongIdGenerator;
-import se.l4.aurochs.core.id.SimpleLongIdGenerator;
-import se.l4.aurochs.core.spi.Sessions;
-import se.l4.aurochs.serialization.DefaultSerializerCollection;
-import se.l4.aurochs.serialization.SerializerCollection;
-import se.l4.aurochs.serialization.spi.InstanceFactory;
-import se.l4.crayon.Contributions;
-import se.l4.crayon.CrayonModule;
-import se.l4.crayon.services.ServicesModule;
+import javax.validation.Validation;
 
 import com.google.inject.Injector;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
+
+import se.l4.aurochs.core.SerializerRegistration;
+import se.l4.aurochs.core.hosts.HostsModule;
+import se.l4.aurochs.core.spi.Sessions;
+import se.l4.commons.config.Config;
+import se.l4.commons.config.ConfigBuilder;
+import se.l4.commons.config.internal.FileSerializer;
+import se.l4.commons.id.LongIdGenerator;
+import se.l4.commons.id.SimpleLongIdGenerator;
+import se.l4.commons.serialization.DefaultSerializerCollection;
+import se.l4.commons.serialization.SerializerCollection;
+import se.l4.commons.types.InstanceFactory;
+import se.l4.crayon.Contributions;
+import se.l4.crayon.CrayonModule;
+import se.l4.crayon.services.ServicesModule;
 
 /**
  * Module that binds up internal services.
@@ -83,7 +85,10 @@ public class InternalModule
 	{
 		contributions.run();
 		
-		ConfigBuilder builder = ConfigBuilder.with(collection);
+		ConfigBuilder builder = Config.builder()
+			.withSerializerCollection(collection)
+			.withValidatorFactory(Validation.buildDefaultValidatorFactory());
+		
 		for(File f : configFiles)
 		{
 			builder.addFile(f);

@@ -3,14 +3,14 @@ package se.l4.aurochs.core;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 
-import se.l4.aurochs.config.Config;
-import se.l4.aurochs.config.Value;
-
 import com.google.inject.Binder;
 import com.google.inject.Key;
 import com.google.inject.Provider;
 import com.google.inject.Scopes;
 import com.google.inject.util.Types;
+
+import se.l4.commons.config.Config;
+import se.l4.commons.config.Value;
 
 /**
  * Binder to help with binding configuration values.

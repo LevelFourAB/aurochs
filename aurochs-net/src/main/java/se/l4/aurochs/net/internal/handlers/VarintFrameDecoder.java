@@ -1,13 +1,12 @@
 package se.l4.aurochs.net.internal.handlers;
 
+import java.util.List;
+
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.handler.codec.CorruptedFrameException;
-
-import java.util.List;
-
-import se.l4.aurochs.serialization.format.BinaryInput;
+import se.l4.commons.serialization.format.BinaryInput;
 
 /**
  * Decoder that will read a variable integer (as used in {@link BinaryInput})

@@ -14,7 +14,7 @@ import se.l4.aurochs.core.channel.rpc.RpcMessage;
 import se.l4.aurochs.core.internal.NamedChannelCodec;
 import se.l4.aurochs.core.io.ByteMessage;
 import se.l4.aurochs.core.io.Bytes;
-import se.l4.aurochs.serialization.SerializerCollection;
+import se.l4.commons.serialization.SerializerCollection;
 
 public class PartitionedServiceBuilderImpl<T>
 	implements PartitionedServiceBuilder<T>

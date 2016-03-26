@@ -3,13 +3,13 @@ package se.l4.aurochs.core.channel;
 import java.io.IOException;
 import java.io.InputStream;
 
-import se.l4.aurochs.core.io.Bytes;
-import se.l4.aurochs.serialization.Serializer;
-import se.l4.aurochs.serialization.SerializerCollection;
-import se.l4.aurochs.serialization.format.BinaryInput;
-import se.l4.aurochs.serialization.standard.CompactDynamicSerializer;
-
 import com.google.common.base.Throwables;
+
+import se.l4.aurochs.core.io.Bytes;
+import se.l4.commons.serialization.Serializer;
+import se.l4.commons.serialization.SerializerCollection;
+import se.l4.commons.serialization.format.BinaryInput;
+import se.l4.commons.serialization.standard.CompactDynamicSerializer;
 
 public class SerializationCodec<T>
 	implements ChannelCodec<Bytes, T>

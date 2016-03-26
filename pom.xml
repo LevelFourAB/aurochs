@@ -29,8 +29,6 @@
 	</properties>
 
 	<modules>
-		<module>aurochs-serialization</module>
-		<module>aurochs-config</module>
 		<module>aurochs-core</module>
 		<module>aurochs-net</module>
 
@@ -63,9 +61,9 @@
 			</dependency>
 			
 			<dependency>
-				<groupId>com.google.guava</groupId>
-				<artifactId>guava</artifactId>
-				<version>18.0</version>
+				<groupId>se.l4.commons</groupId>
+				<artifactId>commons-main</artifactId>
+				<version>0.2</version>
 			</dependency>
 			
 			<dependency>

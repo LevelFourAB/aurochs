@@ -1,13 +1,16 @@
 package se.l4.aurochs.net.internal;
 
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelPipeline;
-import io.netty.handler.timeout.IdleStateHandler;
-
 import java.io.IOException;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 
+import com.google.common.base.Throwables;
+import com.google.inject.Inject;
+import com.google.inject.Injector;
+
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelPipeline;
+import io.netty.handler.timeout.IdleStateHandler;
 import se.l4.aurochs.core.Session;
 import se.l4.aurochs.core.io.ByteMessage;
 import se.l4.aurochs.core.io.Bytes;
@@ -18,12 +21,8 @@ import se.l4.aurochs.net.internal.handlers.ByteMessageEncoder;
 import se.l4.aurochs.net.internal.handlers.MessagingHandler;
 import se.l4.aurochs.net.internal.handlers.VarintFrameDecoder;
 import se.l4.aurochs.net.internal.handlers.VarintLengthPrepender;
-import se.l4.aurochs.serialization.SerializerCollection;
-import se.l4.aurochs.serialization.standard.CompactDynamicSerializer;
-
-import com.google.common.base.Throwables;
-import com.google.inject.Inject;
-import com.google.inject.Injector;
+import se.l4.commons.serialization.SerializerCollection;
+import se.l4.commons.serialization.standard.CompactDynamicSerializer;
 
 /**
  * Default implementation of {@link TransportFunctions}.

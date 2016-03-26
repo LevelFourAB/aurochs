@@ -10,11 +10,11 @@ import org.apache.bval.constraints.NotEmpty;
 import se.l4.aurochs.cluster.Cluster;
 import se.l4.aurochs.core.hosts.Hosts;
 import se.l4.aurochs.net.internal.ServerConfig;
-import se.l4.aurochs.serialization.Expose;
-import se.l4.aurochs.serialization.ReflectionSerializer;
-import se.l4.aurochs.serialization.Use;
-import se.l4.aurochs.serialization.enums.IgnoreCaseNameTranslator;
-import se.l4.aurochs.serialization.enums.MapEnumVia;
+import se.l4.commons.serialization.Expose;
+import se.l4.commons.serialization.ReflectionSerializer;
+import se.l4.commons.serialization.Use;
+import se.l4.commons.serialization.enums.IgnoreCaseNameTranslator;
+import se.l4.commons.serialization.enums.MapEnumVia;
 
 @Use(ReflectionSerializer.class)
 public class ClusterConfig

@@ -16,9 +16,8 @@
 	
 	<dependencies>
 		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>aurochs-config</artifactId>
-			<version>${project.version}</version>
+			<groupId>se.l4.commons</groupId>
+			<artifactId>commons-main</artifactId>
 		</dependency>
 		
 		<dependency>
@@ -34,7 +33,7 @@
 		<dependency>
 			<groupId>com.google.inject</groupId>
 			<artifactId>guice</artifactId>
-			<version>4.0-beta5</version>
+			<version>4.0</version>
 		</dependency>
 
 		<dependency>
@@ -50,38 +49,22 @@
 		</dependency>
 		
 		<dependency>
-			<groupId>com.carrotsearch</groupId>
-			<artifactId>hppc</artifactId>
-			<version>0.6.1</version>
+		    <groupId>org.apache.bval</groupId>
+		    <artifactId>bval-core</artifactId>
+		    <version>1.1.1</version>
 		</dependency>
 
 		<dependency>
-			<groupId>org.reflections</groupId>
-			<artifactId>reflections</artifactId>
-			<version>0.9.9</version>
-			
-			<exclusions>
-				<exclusion>
-					<groupId>javassist</groupId>
-					<artifactId>javassist</artifactId>
-				</exclusion>
-				
-				<exclusion>
-					<groupId>com.google.guava</groupId>
-  					<artifactId>guava</artifactId>
-				</exclusion>
-			</exclusions>
+		    <groupId>org.apache.bval</groupId>
+		    <artifactId>bval-jsr</artifactId>
+		    <version>1.1.1</version>
 		</dependency>
 		
-		<!--
-			Temporary dependency while Reflections uses an older version. This Javassist
-			supports Java 8.
-		-->
 		<dependency>
-			<groupId>org.javassist</groupId>
-			<artifactId>javassist</artifactId>
-			<version>3.19.0-GA</version>
-		</dependency>
+		    <groupId>com.carrotsearch</groupId>
+		    <artifactId>hppc</artifactId>
+		    <version>0.7.1</version>
+		</dependency>	
 		
 		<dependency>
 			<groupId>junit</groupId>

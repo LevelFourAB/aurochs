@@ -26,10 +26,10 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openssl.PEMReader;
 import org.bouncycastle.openssl.PasswordFinder;
 
-import se.l4.aurochs.config.ConfigException;
-
 import com.google.common.io.Closeables;
 import com.google.inject.Provider;
+
+import se.l4.commons.config.ConfigException;
 
 /**
  * Helper functions for SSL/TLS support.
@@ -41,15 +41,18 @@ public class SslHelper
 {
 	public static final X509TrustManager TRUSTING = new X509TrustManager()
 		{
+			@Override
 			public X509Certificate[] getAcceptedIssuers()
 			{
 				return null;
 			}
 	
+			@Override
 			public void checkClientTrusted(X509Certificate[] certs, String authType)
 			{
 			}
 	
+			@Override
 			public void checkServerTrusted(X509Certificate[] certs, String authType)
 			{
 			}

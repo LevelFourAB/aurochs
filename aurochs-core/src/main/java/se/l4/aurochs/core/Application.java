@@ -255,6 +255,14 @@ public class Application
 		return this;
 	}
 	
+	public Application noAutoLoad()
+	{
+		packages.clear();
+		packages.add("se.l4.aurochs");
+		
+		return this;
+	}
+	
 	/**
 	 * Start the application and return the system session.
 	 * 

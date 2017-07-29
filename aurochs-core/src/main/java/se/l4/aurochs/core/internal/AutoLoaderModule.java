@@ -15,11 +15,11 @@ import se.l4.commons.serialization.SerializationException;
 import se.l4.commons.serialization.SerializerCollection;
 import se.l4.commons.serialization.Use;
 import se.l4.crayon.CrayonModule;
-import se.l4.crayon.annotation.Order;
+import se.l4.crayon.Order;
 
 /**
  * Module for plugin support.
- * 
+ *
  * @author Andreas Holstenson
  *
  */
@@ -39,10 +39,10 @@ public class AutoLoaderModule
 		Logger logger = LoggerFactory.getLogger(AutoLoaderModule.class);
 
 		bind(AutoLoader.class).to(AutoLoaderImpl.class);
-		
+
 		Reflections reflections = new Reflections(packageNames.toArray());
 		bind(Reflections.class).toInstance(reflections);
-		
+
 		for(Class<?> c : reflections.getTypesAnnotatedWith(AutoLoad.class))
 		{
 			if(Module.class.isAssignableFrom(c))
@@ -60,7 +60,7 @@ public class AutoLoaderModule
 			}
 		}
 	}
-	
+
 	@SerializerRegistration(name="internal-serializers")
 	@Order("last")
 	public void autoRegisterSerializer(AutoLoader plugins, SerializerCollection collection)

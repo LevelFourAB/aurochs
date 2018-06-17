@@ -2,7 +2,7 @@ package se.l4.aurochs.net;
 
 import java.util.concurrent.CompletableFuture;
 
-import se.l4.aurochs.core.Session;
+import se.l4.aurochs.sessions.Session;
 
 /**
  * Extension to {@link Session} for those session that are remote.

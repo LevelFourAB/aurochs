@@ -1,6 +1,6 @@
 package se.l4.aurochs.net;
 
-import se.l4.aurochs.core.AutoLoad;
+import se.l4.aurochs.AutoLoad;
 import se.l4.aurochs.net.internal.DefaultTransportFunctions;
 import se.l4.aurochs.net.internal.ServerBuilderImpl;
 import se.l4.aurochs.net.internal.ServerConnectionImpl;

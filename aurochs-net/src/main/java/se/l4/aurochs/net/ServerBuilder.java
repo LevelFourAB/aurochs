@@ -2,9 +2,9 @@ package se.l4.aurochs.net;
 
 import java.util.function.Consumer;
 
-import se.l4.aurochs.core.Session;
-import se.l4.aurochs.core.spi.Sessions;
-import se.l4.aurochs.net.internal.ServerConfig;
+import se.l4.aurochs.net.ServerConfig;
+import se.l4.aurochs.sessions.Session;
+import se.l4.aurochs.sessions.Sessions;
 
 /**
  * Builder for creating instances of {@link Server}.

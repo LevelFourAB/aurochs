@@ -1,5 +1,15 @@
 package se.l4.aurochs.net.internal;
 
+import java.net.InetSocketAddress;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
+import javax.net.ssl.SSLEngine;
+
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.google.inject.Provider;
+
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -12,23 +22,13 @@ import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.util.concurrent.GlobalEventExecutor;
-
-import java.net.InetSocketAddress;
-import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
-import javax.net.ssl.SSLEngine;
-
-import se.l4.aurochs.core.spi.Sessions;
 import se.l4.aurochs.net.Server;
+import se.l4.aurochs.net.ServerConfig;
 import se.l4.aurochs.net.internal.handlers.HandshakeDecoder;
 import se.l4.aurochs.net.internal.handlers.HandshakeEncoder;
 import se.l4.aurochs.net.internal.handlers.ServerHandler;
 import se.l4.aurochs.net.internal.handlers.ServerHandshakeHandler;
-
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.google.inject.Provider;
+import se.l4.aurochs.sessions.Sessions;
 
 /**
  * Server implementation.

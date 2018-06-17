@@ -1,6 +1,6 @@
 package se.l4.aurochs.net.internal;
 
-import se.l4.aurochs.core.Session;
+import se.l4.aurochs.sessions.Session;
 
 /**
  * Result for a connection attempt.

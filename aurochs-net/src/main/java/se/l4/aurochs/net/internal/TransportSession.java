@@ -7,9 +7,9 @@ import com.google.common.base.Throwables;
 import com.google.inject.Injector;
 
 import io.netty.channel.Channel;
-import se.l4.aurochs.core.channel.MessageEvent;
-import se.l4.aurochs.core.spi.AbstractChannel;
-import se.l4.aurochs.core.spi.AbstractSession;
+import se.l4.aurochs.channels.AbstractChannel;
+import se.l4.aurochs.channels.MessageEvent;
+import se.l4.aurochs.sessions.AbstractSession;
 import se.l4.commons.io.ByteMessage;
 import se.l4.commons.io.Bytes;
 import se.l4.commons.io.DefaultByteMessage;
@@ -20,7 +20,7 @@ public class TransportSession
 {
 	private final Channel nettyChannel;
 	private final ByteMessageChannel rawChannel;
-	private se.l4.aurochs.core.channel.Channel<Object> objectChannel;
+	private se.l4.aurochs.channels.Channel<Object> objectChannel;
 
 	public TransportSession(Injector injector, Channel nettyChannel, CompactDynamicSerializer serializer)
 	{
@@ -49,13 +49,13 @@ public class TransportSession
 	}
 	
 	@Override
-	public se.l4.aurochs.core.channel.Channel<ByteMessage> getRawChannel()
+	public se.l4.aurochs.channels.Channel<ByteMessage> getRawChannel()
 	{
 		return rawChannel;
 	}
 	
 	@Override
-	public se.l4.aurochs.core.channel.Channel<Object> getObjectChannel()
+	public se.l4.aurochs.channels.Channel<Object> getObjectChannel()
 	{
 		return objectChannel;
 	}

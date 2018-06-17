@@ -29,8 +29,8 @@ import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.concurrent.GlobalEventExecutor;
-import se.l4.aurochs.core.channel.MessageEvent;
-import se.l4.aurochs.core.spi.AbstractChannel;
+import se.l4.aurochs.channels.AbstractChannel;
+import se.l4.aurochs.channels.MessageEvent;
 import se.l4.aurochs.net.ServerConnection;
 import se.l4.aurochs.net.ServerConnection.TLSMode;
 import se.l4.aurochs.net.internal.handlers.ClientHandshakeHandler;
@@ -59,7 +59,7 @@ public class NettyClientChannel
 
 	private final ScheduledExecutorService scheduler;
 
-	private final Consumer<se.l4.aurochs.core.channel.Channel<ByteMessage>> initializer;
+	private final Consumer<se.l4.aurochs.channels.Channel<ByteMessage>> initializer;
 	
 	public NettyClientChannel(EventLoopGroup group, 
 			TransportFunctions functions,
@@ -68,7 +68,7 @@ public class NettyClientChannel
 			TrustManager trustManager,
 			Collection<URI> hosts,
 			int minConnections,
-			Consumer<se.l4.aurochs.core.channel.Channel<ByteMessage>> initializer)
+			Consumer<se.l4.aurochs.channels.Channel<ByteMessage>> initializer)
 	{
 		this.group = group;
 		this.functions = functions;

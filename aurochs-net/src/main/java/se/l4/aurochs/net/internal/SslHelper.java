@@ -29,6 +29,7 @@ import org.bouncycastle.openssl.PasswordFinder;
 import com.google.common.io.Closeables;
 import com.google.inject.Provider;
 
+import se.l4.aurochs.net.ServerConfig;
 import se.l4.commons.config.ConfigException;
 
 /**

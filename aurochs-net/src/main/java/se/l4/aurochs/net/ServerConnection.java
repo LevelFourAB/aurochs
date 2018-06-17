@@ -6,8 +6,8 @@ import java.util.function.Consumer;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
-import se.l4.aurochs.core.channel.Channel;
-import se.l4.aurochs.core.hosts.Hosts;
+import se.l4.aurochs.channels.Channel;
+import se.l4.aurochs.hosts.Hosts;
 import se.l4.commons.io.ByteMessage;
 
 /**

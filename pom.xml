@@ -26,13 +26,20 @@
 	
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<h2-version>1.4.197</h2-version>
 	</properties>
 
 	<modules>
 		<module>aurochs-core</module>
+		<module>aurochs-channels</module>
+		<module>aurochs-channels-rpc</module>
+		<module>aurochs-sessions</module>
+
+		<module>aurochs-statelog</module>
+		
 		<module>aurochs-net</module>
 
-		<module>aurochs-cluster</module>
+		<module>aurochs-app</module>
 	</modules>
 	
 	<!-- License -->
@@ -43,6 +50,20 @@
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
+
+	<dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>  
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
 	
 	<!-- Managed dependencies used by several projects -->
 	<dependencyManagement>
@@ -62,7 +83,7 @@
 			<dependency>
 				<groupId>se.l4.commons</groupId>
 				<artifactId>commons-main</artifactId>
-				<version>0.4</version>
+				<version>0.4.1</version>
 			</dependency>
 			
 			<dependency>

@@ -11,13 +11,13 @@ import com.google.inject.Injector;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.timeout.IdleStateHandler;
-import se.l4.aurochs.core.Session;
-import se.l4.aurochs.core.spi.Sessions;
 import se.l4.aurochs.net.internal.handlers.ByteMessageDecoder;
 import se.l4.aurochs.net.internal.handlers.ByteMessageEncoder;
 import se.l4.aurochs.net.internal.handlers.MessagingHandler;
 import se.l4.aurochs.net.internal.handlers.VarintFrameDecoder;
 import se.l4.aurochs.net.internal.handlers.VarintLengthPrepender;
+import se.l4.aurochs.sessions.Session;
+import se.l4.aurochs.sessions.Sessions;
 import se.l4.commons.io.ByteMessage;
 import se.l4.commons.io.Bytes;
 import se.l4.commons.io.DefaultByteMessage;
@@ -55,7 +55,7 @@ public class DefaultTransportFunctions
 	}
 	
 	@Override
-	public se.l4.aurochs.core.channel.Channel<Object> createObjectChannel(se.l4.aurochs.core.channel.Channel<ByteMessage> raw)
+	public se.l4.aurochs.channels.Channel<Object> createObjectChannel(se.l4.aurochs.channels.Channel<ByteMessage> raw)
 	{
 		return raw
 			.filter(ByteMessage.tag(1))

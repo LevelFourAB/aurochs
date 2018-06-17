@@ -4,9 +4,9 @@ import java.util.concurrent.CompletableFuture;
 
 import com.google.inject.Injector;
 
-import se.l4.aurochs.core.channel.Channel;
-import se.l4.aurochs.core.spi.AbstractSession;
+import se.l4.aurochs.channels.Channel;
 import se.l4.aurochs.net.RemoteSession;
+import se.l4.aurochs.sessions.AbstractSession;
 import se.l4.commons.io.ByteMessage;
 
 public class NettyClientSession

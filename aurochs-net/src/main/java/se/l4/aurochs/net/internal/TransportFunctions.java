@@ -3,8 +3,8 @@ package se.l4.aurochs.net.internal;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 
-import se.l4.aurochs.core.Session;
-import se.l4.aurochs.core.channel.Channel;
+import se.l4.aurochs.channels.Channel;
+import se.l4.aurochs.sessions.Session;
 import se.l4.commons.io.ByteMessage;
 
 /**

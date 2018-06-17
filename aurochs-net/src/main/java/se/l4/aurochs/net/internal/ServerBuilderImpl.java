@@ -5,10 +5,11 @@ import java.util.function.Consumer;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 
-import se.l4.aurochs.core.Session;
-import se.l4.aurochs.core.spi.Sessions;
 import se.l4.aurochs.net.Server;
 import se.l4.aurochs.net.ServerBuilder;
+import se.l4.aurochs.net.ServerConfig;
+import se.l4.aurochs.sessions.Session;
+import se.l4.aurochs.sessions.Sessions;
 import se.l4.commons.config.Config;
 
 public class ServerBuilderImpl

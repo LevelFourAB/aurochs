@@ -1,14 +1,12 @@
 package se.l4.aurochs.internal;
 
-import java.lang.annotation.Annotation;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.reflections.Reflections;
-
 import com.google.inject.Inject;
-import com.google.inject.Injector;
 import com.google.inject.Singleton;
+
+import org.reflections.Reflections;
 
 import se.l4.aurochs.AutoLoad;
 import se.l4.aurochs.AutoLoader;
@@ -21,27 +19,9 @@ public class AutoLoaderImpl
 	implements AutoLoader
 {
 	@Inject
-	public AutoLoaderImpl(Injector injector, Reflections reflections)
+	public AutoLoaderImpl(InstanceFactory instanceFactory, Reflections reflections)
 	{
-		super(createInstanceFactory(injector), reflections);
-	}
-	
-	private static InstanceFactory createInstanceFactory(Injector injector)
-	{
-		return new InstanceFactory()
-		{
-			@Override
-			public <T> T create(Class<T> type, Annotation[] annotations)
-			{
-				throw new UnsupportedOperationException();
-			}
-			
-			@Override
-			public <T> T create(Class<T> type)
-			{
-				return injector.getInstance(type);
-			}
-		};
+		super(instanceFactory, reflections);
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })

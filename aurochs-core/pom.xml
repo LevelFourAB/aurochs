@@ -17,7 +17,22 @@
 	<dependencies>
 		<dependency>
 			<groupId>se.l4.commons</groupId>
-			<artifactId>commons-main</artifactId>
+			<artifactId>commons-types</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>se.l4.commons</groupId>
+			<artifactId>commons-config</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>se.l4.commons</groupId>
+			<artifactId>commons-io</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>se.l4.commons</groupId>
+			<artifactId>commons-id</artifactId>
 		</dependency>
 		
 		<dependency>
@@ -28,12 +43,6 @@
 		<dependency>
 			<groupId>se.l4.crayon</groupId>
 			<artifactId>crayon-lib-services</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>com.google.inject</groupId>
-			<artifactId>guice</artifactId>
-			<version>4.1.0</version>
 		</dependency>
 
 		<dependency>

@@ -16,6 +16,7 @@ import se.l4.aurochs.hosts.HostsModule;
 import se.l4.commons.config.Config;
 import se.l4.commons.config.ConfigBuilder;
 import se.l4.commons.config.internal.FileSerializer;
+import se.l4.commons.guice.InstanceFactoryModule;
 import se.l4.commons.id.LongIdGenerator;
 import se.l4.commons.id.SimpleLongIdGenerator;
 import se.l4.commons.serialization.DefaultSerializerCollection;
@@ -24,7 +25,6 @@ import se.l4.commons.types.InstanceFactory;
 import se.l4.crayon.Contributions;
 import se.l4.crayon.CrayonModule;
 import se.l4.crayon.services.ServicesModule;
-
 /**
  * Module that binds up internal services.
  * 
@@ -44,6 +44,7 @@ public class InternalModule
 	@Override
 	protected void configure()
 	{
+		install(new InstanceFactoryModule());
 		install(new CoreModule());
 		install(new ServicesModule());
 		install(new HostsModule());
@@ -55,23 +56,9 @@ public class InternalModule
 	
 	@Provides
 	@Singleton
-	public SerializerCollection provideSerializerCollection(final Injector injector)
+	public SerializerCollection provideSerializerCollection(InstanceFactory factory)
 	{
-		DefaultSerializerCollection result = new DefaultSerializerCollection(new InstanceFactory()
-		{
-			@Override
-			public <T> T create(Class<T> type, Annotation[] annotations)
-			{
-				return injector.getInstance(type);
-			}
-			
-			@Override
-			public <T> T create(Class<T> type)
-			{
-				return injector.getInstance(type);
-			}
-		});
-		
+		DefaultSerializerCollection result = new DefaultSerializerCollection(factory);
 		result.bind(File.class, new FileSerializer(new File("").getAbsoluteFile()));
 		
 		return result;

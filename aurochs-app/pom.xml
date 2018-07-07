@@ -29,6 +29,11 @@
 			<artifactId>aurochs-sessions</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+
+		<dependency>
+			<groupId>se.l4.commons</groupId>
+			<artifactId>commons-guice</artifactId>
+		</dependency>
 		
 		<dependency>
 			<groupId>org.slf4j</groupId>

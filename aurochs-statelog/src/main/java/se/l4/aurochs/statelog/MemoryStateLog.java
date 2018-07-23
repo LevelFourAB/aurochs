@@ -6,7 +6,7 @@ import java.util.concurrent.CompletableFuture;
 
 import com.google.common.collect.Lists;
 
-import se.l4.commons.io.IoConsumer;
+import se.l4.commons.io.IOConsumer;
 
 /**
  * A {@link StateLog} that stores its data in memory. This is useful for
@@ -19,10 +19,10 @@ import se.l4.commons.io.IoConsumer;
 public class MemoryStateLog<T>
 	implements StateLog<T>
 {
-	private final IoConsumer<LogEntry<T>> applier;
+	private final IOConsumer<LogEntry<T>> applier;
 	private final MemoryLogData<T> logData;
 
-	public MemoryStateLog(IoConsumer<LogEntry<T>> applier)
+	public MemoryStateLog(IOConsumer<LogEntry<T>> applier)
 	{
 		this.applier = applier;
 		logData = new MemoryLogData<>();
@@ -99,17 +99,17 @@ public class MemoryStateLog<T>
 	{
 		return new StateLogBuilder<T>()
 		{
-			private IoConsumer<LogEntry<T>> applier;
+			private IOConsumer<LogEntry<T>> applier;
 
 			@Override
-			public StateLogBuilder<T> withApplier(IoConsumer<LogEntry<T>> applier)
+			public StateLogBuilder<T> withApplier(IOConsumer<LogEntry<T>> applier)
 			{
 				this.applier = applier;
 				return this;
 			}
 			
 			@Override
-			public StateLogBuilder<T> withVolatileApplier(IoConsumer<LogEntry<T>> applier)
+			public StateLogBuilder<T> withVolatileApplier(IOConsumer<LogEntry<T>> applier)
 			{
 				return withApplier(applier);
 			}

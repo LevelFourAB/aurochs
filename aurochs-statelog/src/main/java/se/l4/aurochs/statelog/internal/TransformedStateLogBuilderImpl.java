@@ -7,7 +7,7 @@ import se.l4.aurochs.statelog.LogEntry;
 import se.l4.aurochs.statelog.StateLog;
 import se.l4.aurochs.statelog.StateLogBuilder;
 import se.l4.aurochs.statelog.TransformedStateLogBuilder;
-import se.l4.commons.io.IoConsumer;
+import se.l4.commons.io.IOConsumer;
 
 /**
  * Implementation of {@link TransformedStateLogBuilder≈.
@@ -36,14 +36,14 @@ public class TransformedStateLogBuilderImpl<T, O>
 	}
 
 	@Override
-	public TransformedStateLogBuilder<T> withApplier(IoConsumer<LogEntry<T>> applier)
+	public TransformedStateLogBuilder<T> withApplier(IOConsumer<LogEntry<T>> applier)
 	{
 		builder.withApplier(new TransformingConsumer<>(codec, applier));
 		return this;
 	}
 
 	@Override
-	public TransformedStateLogBuilder<T> withVolatileApplier(IoConsumer<LogEntry<T>> applier)
+	public TransformedStateLogBuilder<T> withVolatileApplier(IOConsumer<LogEntry<T>> applier)
 	{
 		builder.withVolatileApplier(new TransformingConsumer<>(codec, applier));
 		return this;
@@ -56,12 +56,12 @@ public class TransformedStateLogBuilderImpl<T, O>
 	}
 	
 	private static class TransformingConsumer<T, O>
-		implements IoConsumer<LogEntry<O>>
+		implements IOConsumer<LogEntry<O>>
 	{
 		private final ChannelCodec<O, T> codec;
-		private final IoConsumer<LogEntry<T>> consumer;
+		private final IOConsumer<LogEntry<T>> consumer;
 
-		public TransformingConsumer(ChannelCodec<O, T> codec, IoConsumer<LogEntry<T>> consumer)
+		public TransformingConsumer(ChannelCodec<O, T> codec, IOConsumer<LogEntry<T>> consumer)
 		{
 			this.codec = codec;
 			this.consumer = consumer;

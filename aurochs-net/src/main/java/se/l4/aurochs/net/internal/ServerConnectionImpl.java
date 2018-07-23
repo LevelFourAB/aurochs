@@ -18,11 +18,11 @@ import org.slf4j.LoggerFactory;
 
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
+import se.l4.aurochs.channels.ByteMessage;
 import se.l4.aurochs.channels.Channel;
 import se.l4.aurochs.hosts.Hosts;
 import se.l4.aurochs.net.RemoteSession;
 import se.l4.aurochs.net.ServerConnection;
-import se.l4.commons.io.ByteMessage;
 
 /**
  * Implementation of {@link ServerConnection}.

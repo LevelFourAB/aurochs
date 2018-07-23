@@ -6,10 +6,10 @@ import java.util.Map;
 import com.google.common.collect.Maps;
 import com.google.common.hash.Hashing;
 
+import se.l4.aurochs.channels.ByteMessage;
 import se.l4.aurochs.channels.ChannelCodec;
-import se.l4.commons.io.ByteMessage;
+import se.l4.aurochs.channels.DefaultByteMessage;
 import se.l4.commons.io.Bytes;
-import se.l4.commons.io.DefaultByteMessage;
 
 public class NamedChannelCodec
 	implements ChannelCodec<ByteMessage, Bytes>

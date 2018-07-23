@@ -15,6 +15,7 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.ssl.SslHandler;
+import se.l4.aurochs.channels.ByteMessage;
 import se.l4.aurochs.net.ConnectionException;
 import se.l4.aurochs.net.ServerConnection.TLSMode;
 import se.l4.aurochs.net.internal.SslHelper;
@@ -26,7 +27,6 @@ import se.l4.aurochs.net.internal.handshake.Ok;
 import se.l4.aurochs.net.internal.handshake.Reject;
 import se.l4.aurochs.net.internal.handshake.SelectCapabilities;
 import se.l4.aurochs.net.internal.handshake.SessionStatus;
-import se.l4.commons.io.ByteMessage;
 
 public class ClientHandshakeHandler
 	extends ChannelInboundHandlerAdapter

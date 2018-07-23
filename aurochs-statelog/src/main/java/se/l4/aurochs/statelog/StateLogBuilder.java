@@ -3,7 +3,7 @@ package se.l4.aurochs.statelog;
 import java.util.function.Function;
 
 import se.l4.aurochs.channels.ChannelCodec;
-import se.l4.commons.io.IoConsumer;
+import se.l4.commons.io.IOConsumer;
 
 public interface StateLogBuilder<T>
 {
@@ -43,7 +43,7 @@ public interface StateLogBuilder<T>
 	 * @param applier
 	 * @return
 	 */
-	StateLogBuilder<T> withApplier(IoConsumer<LogEntry<T>> applier);
+	StateLogBuilder<T> withApplier(IOConsumer<LogEntry<T>> applier);
 	
 	/**
 	 * Set the consumer that is used to commit entries in the log, optionally specifying
@@ -54,7 +54,7 @@ public interface StateLogBuilder<T>
 	 * @param isVolatile
 	 * @return
 	 */
-	default StateLogBuilder<T> withApplier(IoConsumer<LogEntry<T>> applier, boolean isVolatile)
+	default StateLogBuilder<T> withApplier(IOConsumer<LogEntry<T>> applier, boolean isVolatile)
 	{
 		if(isVolatile)
 		{
@@ -75,7 +75,7 @@ public interface StateLogBuilder<T>
 	 * @param applier
 	 * @return
 	 */
-	StateLogBuilder<T> withVolatileApplier(IoConsumer<LogEntry<T>> applier);
+	StateLogBuilder<T> withVolatileApplier(IOConsumer<LogEntry<T>> applier);
 	
 	StateLog<T> build();
 }

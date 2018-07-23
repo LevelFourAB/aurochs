@@ -7,9 +7,9 @@ import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
-import se.l4.commons.io.ByteMessage;
+import se.l4.aurochs.channels.ByteMessage;
+import se.l4.aurochs.channels.DefaultByteMessage;
 import se.l4.commons.io.Bytes;
-import se.l4.commons.io.DefaultByteMessage;
 
 /**
  * Handler that receives messages and queues them on the specified executor.

@@ -8,13 +8,13 @@ import se.l4.aurochs.statelog.StreamingStateLog;
 import se.l4.aurochs.statelog.StreamingStateLogBuilder;
 import se.l4.commons.id.SimpleLongIdGenerator;
 import se.l4.commons.io.Bytes;
-import se.l4.commons.io.IoConsumer;
+import se.l4.commons.io.IOConsumer;
 
 public class ChunkingStateLogBuilder
 	implements StreamingStateLogBuilder<Bytes>
 {
 	private StateLogBuilder<Bytes> builder;
-	private IoConsumer<LogEntry<Iterator<Bytes>>> applier;
+	private IOConsumer<LogEntry<Iterator<Bytes>>> applier;
 	private boolean isVolatile;
 
 	public ChunkingStateLogBuilder(StateLogBuilder<Bytes> parent)
@@ -23,7 +23,7 @@ public class ChunkingStateLogBuilder
 	}
 	
 	@Override
-	public StateLogBuilder<Iterator<Bytes>> withApplier(IoConsumer<LogEntry<Iterator<Bytes>>> applier)
+	public StateLogBuilder<Iterator<Bytes>> withApplier(IOConsumer<LogEntry<Iterator<Bytes>>> applier)
 	{
 		this.applier = applier;
 		this.isVolatile = false;
@@ -31,7 +31,7 @@ public class ChunkingStateLogBuilder
 	}
 	
 	@Override
-	public StateLogBuilder<Iterator<Bytes>> withVolatileApplier(IoConsumer<LogEntry<Iterator<Bytes>>> applier)
+	public StateLogBuilder<Iterator<Bytes>> withVolatileApplier(IOConsumer<LogEntry<Iterator<Bytes>>> applier)
 	{
 		this.applier = applier;
 		this.isVolatile = true;

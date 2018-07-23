@@ -20,7 +20,7 @@ import se.l4.aurochs.statelog.StreamingStateLog;
 import se.l4.commons.id.LongIdGenerator;
 import se.l4.commons.io.Bytes;
 import se.l4.commons.io.ExtendedDataInput;
-import se.l4.commons.io.IoConsumer;
+import se.l4.commons.io.IOConsumer;
 
 /**
  * Implementation of {@link StreamingStateLog}.
@@ -34,13 +34,13 @@ public class ChunkingStateLogImpl
 	private final LongIdGenerator ids;
 	private final StateLog<Bytes> parent;
 	
-	private final IoConsumer<LogEntry<Iterator<Bytes>>> consumer;
+	private final IOConsumer<LogEntry<Iterator<Bytes>>> consumer;
 
 	public ChunkingStateLogImpl(
 			LongIdGenerator ids, 
 			StateLogBuilder<Bytes> parentBuilder,
 			boolean isVolatile,
-			IoConsumer<LogEntry<Iterator<Bytes>>> consumer)
+			IOConsumer<LogEntry<Iterator<Bytes>>> consumer)
 	{
 		this.ids = ids;
 		this.consumer = consumer;

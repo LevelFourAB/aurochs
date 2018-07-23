@@ -30,13 +30,13 @@ import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import se.l4.aurochs.channels.AbstractChannel;
+import se.l4.aurochs.channels.ByteMessage;
 import se.l4.aurochs.channels.MessageEvent;
 import se.l4.aurochs.net.ServerConnection;
 import se.l4.aurochs.net.ServerConnection.TLSMode;
 import se.l4.aurochs.net.internal.handlers.ClientHandshakeHandler;
 import se.l4.aurochs.net.internal.handlers.HandshakeDecoder;
 import se.l4.aurochs.net.internal.handlers.HandshakeEncoder;
-import se.l4.commons.io.ByteMessage;
 
 public class NettyClientChannel
 	extends AbstractChannel<ByteMessage>

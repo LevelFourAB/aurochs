@@ -2,8 +2,8 @@ package se.l4.aurochs.sessions;
 
 import com.google.inject.Key;
 
+import se.l4.aurochs.channels.ByteMessage;
 import se.l4.aurochs.channels.Channel;
-import se.l4.commons.io.ByteMessage;
 import se.l4.commons.io.Bytes;
 import se.l4.commons.serialization.Named;
 import se.l4.commons.serialization.SerializerCollection;

@@ -6,9 +6,11 @@ import java.util.stream.Collectors;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import com.google.inject.name.Named;
 
 import se.l4.aurochs.AutoLoad;
 import se.l4.aurochs.AutoLoader;
+import se.l4.commons.types.InstanceFactory;
 import se.l4.commons.types.TypeFinder;
 
 @Singleton
@@ -16,17 +18,22 @@ public class AutoLoaderImpl
 	implements AutoLoader
 {
 	private final TypeFinder typeFinder;
+	private final InstanceFactory instanceFactory;
 
 	@Inject
-	public AutoLoaderImpl(TypeFinder typeFinder)
+	public AutoLoaderImpl(@Named("internal-type-finder") TypeFinder typeFinder, InstanceFactory instanceFactory)
 	{
 		this.typeFinder = typeFinder;
+		this.instanceFactory = instanceFactory;
 	}
 
 	@Override
 	public <T> Set<? extends T> getSubTypesAsInstances(Class<T> type)
 	{
-		return typeFinder.getSubTypesAsInstances(type);
+		return typeFinder.getSubTypesOf(type)
+			.stream()
+			.map(instanceFactory::create)
+			.collect(Collectors.toSet());
 	}
 
 	@Override
@@ -44,7 +51,10 @@ public class AutoLoaderImpl
 	@Override
 	public Set<? extends Object> getTypesAnnotatedWithAsInstances(Class<? extends Annotation> annotationType)
 	{
-		return typeFinder.getTypesAnnotatedWithAsInstances(annotationType);
+		return typeFinder.getTypesAnnotatedWith(annotationType)
+			.stream()
+			.map(instanceFactory::create)
+			.collect(Collectors.toSet());
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })

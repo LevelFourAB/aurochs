@@ -5,6 +5,7 @@ import java.util.Set;
 
 import com.google.inject.Module;
 import com.google.inject.name.Named;
+import com.google.inject.name.Names;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import se.l4.aurochs.AutoLoad;
 import se.l4.aurochs.AutoLoader;
 import se.l4.aurochs.SerializerRegistration;
+import se.l4.aurochs.internal.AutoLoaderImpl;
 import se.l4.commons.serialization.SerializationException;
 import se.l4.commons.serialization.SerializerCollection;
 import se.l4.commons.serialization.Use;
@@ -44,7 +46,12 @@ public class AutoLoaderModule
 			.addPackages(packageNames)
 			.build();
 
-		bind(TypeFinder.class).toInstance(typeFinder);
+		bind(TypeFinder.class)
+			.annotatedWith(Names.named("internal-type-finder"))
+			.toInstance(typeFinder);
+
+		bind(AutoLoader.class).to(AutoLoaderImpl.class);	
+		bind(TypeFinder.class).to(AutoLoaderImpl.class);
 
 		for(Class<?> c : typeFinder.getTypesAnnotatedWith(AutoLoad.class))
 		{

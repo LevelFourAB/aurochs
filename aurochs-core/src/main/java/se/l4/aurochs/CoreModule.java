@@ -1,6 +1,5 @@
 package se.l4.aurochs;
 
-import se.l4.aurochs.internal.AutoLoaderImpl;
 import se.l4.crayon.CrayonModule;
 
 /**
@@ -13,7 +12,6 @@ public class CoreModule
 	@Override
 	protected void configure()
 	{
-		bind(AutoLoader.class).to(AutoLoaderImpl.class);	
 	}
 	
 }

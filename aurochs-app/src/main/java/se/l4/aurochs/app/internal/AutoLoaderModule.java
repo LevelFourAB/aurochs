@@ -3,12 +3,11 @@ package se.l4.aurochs.app.internal;
 import java.lang.reflect.Modifier;
 import java.util.Set;
 
-import org.reflections.Reflections;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.inject.Module;
 import com.google.inject.name.Named;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import se.l4.aurochs.AutoLoad;
 import se.l4.aurochs.AutoLoader;
@@ -16,6 +15,7 @@ import se.l4.aurochs.SerializerRegistration;
 import se.l4.commons.serialization.SerializationException;
 import se.l4.commons.serialization.SerializerCollection;
 import se.l4.commons.serialization.Use;
+import se.l4.commons.types.TypeFinder;
 import se.l4.crayon.CrayonModule;
 import se.l4.crayon.Order;
 
@@ -40,10 +40,13 @@ public class AutoLoaderModule
 	{
 		Logger logger = LoggerFactory.getLogger(AutoLoaderModule.class);
 
-		Reflections reflections = new Reflections(packageNames.toArray());
-		bind(Reflections.class).toInstance(reflections);
+		TypeFinder typeFinder = TypeFinder.builder()
+			.addPackages(packageNames)
+			.build();
 
-		for(Class<?> c : reflections.getTypesAnnotatedWith(AutoLoad.class))
+		bind(TypeFinder.class).toInstance(typeFinder);
+
+		for(Class<?> c : typeFinder.getTypesAnnotatedWith(AutoLoad.class))
 		{
 			if(Module.class.isAssignableFrom(c))
 			{

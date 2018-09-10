@@ -1,27 +1,50 @@
 package se.l4.aurochs.internal;
 
+import java.lang.annotation.Annotation;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import org.reflections.Reflections;
-
 import se.l4.aurochs.AutoLoad;
 import se.l4.aurochs.AutoLoader;
-import se.l4.commons.types.InstanceFactory;
-import se.l4.commons.types.internal.TypeFinderOverReflections;
+import se.l4.commons.types.TypeFinder;
 
 @Singleton
 public class AutoLoaderImpl
-	extends TypeFinderOverReflections
 	implements AutoLoader
 {
+	private final TypeFinder typeFinder;
+
 	@Inject
-	public AutoLoaderImpl(InstanceFactory instanceFactory, Reflections reflections)
+	public AutoLoaderImpl(TypeFinder typeFinder)
 	{
-		super(instanceFactory, reflections);
+		this.typeFinder = typeFinder;
+	}
+
+	@Override
+	public <T> Set<? extends T> getSubTypesAsInstances(Class<T> type)
+	{
+		return typeFinder.getSubTypesAsInstances(type);
+	}
+
+	@Override
+	public <T> Set<Class<? extends T>> getSubTypesOf(Class<T> type)
+	{
+		return typeFinder.getSubTypesOf(type);
+	}
+
+	@Override
+	public Set<Class<?>> getTypesAnnotatedWith(Class<? extends Annotation> annotationType)
+	{
+		return typeFinder.getTypesAnnotatedWith(annotationType);
+	}
+
+	@Override
+	public Set<? extends Object> getTypesAnnotatedWithAsInstances(Class<? extends Annotation> annotationType)
+	{
+		return typeFinder.getTypesAnnotatedWithAsInstances(annotationType);
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
